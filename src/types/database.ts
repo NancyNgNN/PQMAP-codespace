@@ -1,0 +1,246 @@
+export type UserRole = 'admin' | 'operator' | 'viewer';
+export type EventType = 'voltage_dip' | 'voltage_swell' | 'harmonic' | 'interruption' | 'transient' | 'flicker';
+export type SeverityLevel = 'critical' | 'high' | 'medium' | 'low';
+export type EventStatus = 'new' | 'acknowledged' | 'investigating' | 'resolved' | 'false';
+export type MeterStatus = 'active' | 'abnormal' | 'inactive';
+export type SubstationStatus = 'operational' | 'maintenance' | 'offline';
+export type CustomerType = 'residential' | 'commercial' | 'industrial';
+export type ServiceType = 'site_survey' | 'harmonic_analysis' | 'consultation';
+export type ReportType = 'supply_reliability' | 'annual_pq' | 'meter_availability' | 'customer_impact' | 'harmonic_analysis' | 'voltage_quality';
+export type NotificationType = 'email' | 'sms' | 'both';
+export type NotificationStatus = 'pending' | 'sent' | 'failed';
+export type ReportStatus = 'generating' | 'completed' | 'failed';
+export type SystemStatus = 'healthy' | 'degraded' | 'down';
+
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: UserRole;
+  department: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Substation {
+  id: string;
+  name: string;
+  code: string;
+  voltage_level: string;
+  latitude: number;
+  longitude: number;
+  region: string;
+  status: SubstationStatus;
+  created_at: string;
+}
+
+export interface PQMeter {
+  id: string;
+  meter_id: string;
+  substation_id: string;
+  location: string;
+  status: MeterStatus;
+  last_communication: string | null;
+  firmware_version: string | null;
+  installed_date: string | null;
+  created_at: string;
+  substation?: Substation;
+}
+
+export interface Customer {
+  id: string;
+  account_number: string;
+  name: string;
+  address: string | null;
+  substation_id: string | null;
+  transformer_id: string | null;
+  contract_demand_kva: number | null;
+  customer_type: CustomerType;
+  critical_customer: boolean;
+  created_at: string;
+  substation?: Substation;
+}
+
+export interface WaveformPoint {
+  time: number;
+  value: number;
+}
+
+export interface WaveformData {
+  voltage: WaveformPoint[];
+  current: WaveformPoint[];
+}
+
+export interface PQEvent {
+  id: string;
+  event_type: EventType;
+  substation_id: string | null;
+  meter_id: string | null;
+  timestamp: string;
+  duration_ms: number | null;
+  magnitude: number | null;
+  severity: SeverityLevel;
+  status: EventStatus;
+  is_mother_event: boolean;
+  parent_event_id: string | null;
+  root_cause: string | null;
+  affected_phases: string[];
+  waveform_data: WaveformData | null;
+  created_at: string;
+  resolved_at: string | null;
+  // Enhanced properties for Event Management
+  voltage_level: string;
+  circuit_id: string;
+  customer_count: number | null;
+  remaining_voltage: number | null;
+  validated_by_adms: boolean;
+  substation?: Substation;
+  meter?: PQMeter;
+  customer_impacts?: EventCustomerImpact[];
+}
+
+export interface EventCustomerImpact {
+  id: string;
+  event_id: string;
+  customer_id: string;
+  impact_level: string;
+  estimated_downtime_min: number | null;
+  created_at: string;
+  customer?: Customer;
+  event?: PQEvent;
+}
+
+export interface Notification {
+  id: string;
+  event_id: string | null;
+  recipient_email: string | null;
+  recipient_phone: string | null;
+  notification_type: NotificationType;
+  subject: string | null;
+  message: string | null;
+  status: NotificationStatus;
+  sent_at: string | null;
+  created_at: string;
+  event?: PQEvent;
+}
+
+export interface NotificationRule {
+  id: string;
+  name: string;
+  event_type: EventType | null;
+  severity_threshold: SeverityLevel;
+  recipients: string[];
+  include_waveform: boolean;
+  typhoon_mode_enabled: boolean;
+  active: boolean;
+  created_at: string;
+}
+
+export interface PQServiceRecord {
+  id: string;
+  customer_id: string | null;
+  service_date: string;
+  service_type: ServiceType;
+  findings: string | null;
+  recommendations: string | null;
+  benchmark_standard: string | null;
+  engineer_id: string | null;
+  created_at: string;
+  customer?: Customer;
+  engineer?: Profile;
+}
+
+export interface Report {
+  id: string;
+  report_type: ReportType;
+  title: string;
+  period_start: string;
+  period_end: string;
+  generated_by: string | null;
+  file_path: string | null;
+  status: ReportStatus;
+  created_at: string;
+  generated_by_profile?: Profile;
+}
+
+export interface SystemHealth {
+  id: string;
+  component: string;
+  status: SystemStatus;
+  message: string | null;
+  metrics: Record<string, any> | null;
+  checked_at: string;
+}
+
+export interface SARFIMetrics {
+  id: string;
+  substation_id: string | null;
+  period_year: number;
+  period_month: number;
+  sarfi_70: number | null;
+  sarfi_80: number | null;
+  sarfi_90: number | null;
+  total_events: number;
+  created_at: string;
+  substation?: Substation;
+}
+
+// Dashboard Statistics Interface
+export interface DashboardStats {
+  totalEvents: number;
+  criticalEvents: number;
+  activeSubstations: number;
+  averageDuration: number;
+  activePQMeters: number;
+  abnormalMeters: number;
+  totalCustomers: number;
+  criticalCustomers: number;
+}
+
+// Event Statistics Interface
+export interface EventStatistics {
+  eventsByType: Record<EventType, number>;
+  eventsBySeverity: Record<SeverityLevel, number>;
+  eventsByStatus: Record<EventStatus, number>;
+  hourlyDistribution: number[];
+  monthlyTrend: Array<{ month: string; count: number }>;
+}
+
+// Analytics Interfaces
+export interface ComplianceMetrics {
+  voltageTHD: {
+    average: number;
+    limit: number;
+    compliantPercentage: number;
+  };
+  currentTHD: {
+    average: number;
+    limit: number;
+    compliantPercentage: number;
+  };
+  ieee519Compliance: number;
+  en50160Compliance: number;
+}
+
+export interface PowerQualityMetrics {
+  voltageDips: number;
+  voltagSwells: number;
+  interruptions: number;
+  harmonicEvents: number;
+  transientEvents: number;
+  flickerEvents: number;
+}
+
+// API Response Types
+export interface ApiResponse<T> {
+  data: T;
+  error?: string;
+  count?: number;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}

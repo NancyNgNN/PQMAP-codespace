@@ -1,70 +1,131 @@
-# GitHub Codespaces ♥️ React
+# PQMAP - Power Quality Monitoring and Analysis Platform
 
-Welcome to your shiny new Codespace running React! We've got everything fired up and running for you to explore React.
+## Overview
 
-You've got a blank canvas to work on from a git perspective as well. There's a single initial commit with the what you're seeing right now - where you go from here is up to you!
+PQMAP is a comprehensive web-based platform for monitoring, analyzing, and reporting on power quality events across CLP's electrical grid. This React TypeScript application provides a unified interface for engineers and account managers to track voltage dips, harmonics, and other power disturbances.
 
-Everything you do here is contained within this one codespace. There is no repository on GitHub yet. If and when you’re ready you can click "Publish Branch" and we’ll create your repository and push up your project. If you were just exploring then and have no further need for this code then you can simply delete your codespace and it's gone forever.
+## Features
 
-This project was bootstrapped for you with [Vite](https://vitejs.dev/).
+- **Real-time Dashboard**: Monitor power quality events, SARFI metrics, and system health
+- **Event Management**: Track and analyze power quality events with waveform visualization
+- **Data Analytics**: Comprehensive analytics with IEEE 519 compliance tracking
+- **Asset Management**: Monitor PQ meters and their communication status
+- **Report Generation**: Generate compliance reports for various standards
+- **Notification System**: Configurable alerts for critical events
+- **Role-based Access**: Admin, Operator, and Viewer roles with appropriate permissions
 
-## Available Scripts
+## Technology Stack
 
-In the project directory, you can run:
+- **Frontend**: React 18 with TypeScript
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Database**: Supabase (PostgreSQL with Row Level Security)
+- **Authentication**: Supabase Auth
+- **Build Tool**: Vite
 
-### `npm start`
+## Getting Started
 
-We've already run this for you in the `Codespaces: server` terminal window below. If you need to stop the server for any reason you can just run `npm start` again to bring it back online.
+### Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000/](http://localhost:3000/) in the built-in Simple Browser (`Cmd/Ctrl + Shift + P > Simple Browser: Show`) to view your running application.
+- Node.js 18+ and npm
+- A Supabase account and project
 
-The page will reload automatically when you make changes.\
-You may also see any lint errors in the console.
+### Installation
 
-### `npm test`
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd PQMAP_Prototype
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-### `npm run build`
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Set up the database:
+   - Run the migrations in `supabase/migrations/` in your Supabase dashboard
+   - Or use the Supabase CLI:
+     ```bash
+     supabase db push
+     ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Development
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Start the development server:
+```bash
+npm run dev
+```
 
-## Learn More
+The application will be available at `http://localhost:5173`
 
-You can learn more in the [Vite documentation](https://vitejs.dev/guide/).
+### Building
 
-To learn Vitest, a Vite-native testing framework, go to [Vitest documentation](https://vitest.dev/guide/)
+Build for production:
+```bash
+npm run build
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Preview the production build:
+```bash
+npm run preview
+```
 
-### Code Splitting
+## Database Schema
 
-This section has moved here: [https://sambitsahoo.com/blog/vite-code-splitting-that-works.html](https://sambitsahoo.com/blog/vite-code-splitting-that-works.html)
+The application uses a comprehensive PostgreSQL schema with the following main tables:
 
-### Analyzing the Bundle Size
+- **profiles**: User profiles with role-based access
+- **substations**: Physical substation locations
+- **pq_meters**: Power quality monitoring devices
+- **pq_events**: Power quality events (dips, swells, harmonics, etc.)
+- **customers**: Customer accounts and service points
+- **event_customer_impact**: Links events to affected customers
+- **notifications**: Alert and notification records
+- **sarfi_metrics**: SARFI index calculations
+- **system_health**: System monitoring data
 
-This section has moved here: [https://github.com/btd/rollup-plugin-visualizer#rollup-plugin-visualizer](https://github.com/btd/rollup-plugin-visualizer#rollup-plugin-visualizer)
+## User Roles
 
-### Making a Progressive Web App
+1. **Admin**: Full system access, can manage all data and settings
+2. **Operator**: Can view and modify events, meters, and service records
+3. **Viewer**: Read-only access to all dashboards and reports
 
-This section has moved here: [https://dev.to/hamdankhan364/simplifying-progressive-web-app-pwa-development-with-vite-a-beginners-guide-38cf](https://dev.to/hamdankhan364/simplifying-progressive-web-app-pwa-development-with-vite-a-beginners-guide-38cf)
+## Demo Account
 
-### Advanced Configuration
+For demonstration purposes, you can create a demo user:
 
-This section has moved here: [https://vitejs.dev/guide/build.html#advanced-base-options](https://vitejs.dev/guide/build.html#advanced-base-options)
+1. Click "Create Demo User Account" on the login page
+2. Sign in with:
+   - Email: admin@clp.com
+   - Password: admin123
 
-### Deployment
+## Standards Compliance
 
-This section has moved here: [https://vitejs.dev/guide/build.html](https://vitejs.dev/guide/build.html)
+The system tracks compliance with international power quality standards:
 
-### Troubleshooting
+- **EN 50160**: Voltage characteristics of electricity supplied by public distribution systems
+- **IEEE 519**: Harmonic control in electrical power systems
+- **IEC 61000**: Electromagnetic compatibility (EMC)
+- **ITIC Curve**: Information Technology Industry Council power acceptability
 
-This section has moved here: [https://vitejs.dev/guide/troubleshooting.html](https://vitejs.dev/guide/troubleshooting.html)
+## Contributing
+
+1. Create a feature branch from `main`
+2. Make your changes
+3. Test thoroughly
+4. Submit a pull request
+
+## License
+
+Copyright (c) 2024 CLP Power. All rights reserved.
