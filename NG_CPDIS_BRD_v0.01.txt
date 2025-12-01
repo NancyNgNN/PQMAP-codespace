@@ -1,0 +1,984 @@
+[A blue circle with white letters Description automatically generated]
+
+_Next generation Customer disturbance information system_
+
+business requirement document
+
+Version 001
+
+VERSION HISTORY
+
++-----------+-----------+-----------+-----------+-----------+-----------+
+| VERSION   | IMPLEMENT | REVISION  | APPROVED  | APPROVAL  | REASON    |
+|           | ED        |           |           |           |           |
+|           |           | DATE      | BY        | DATE      |           |
+|           | BY        |           |           |           |           |
++-----------+-----------+-----------+-----------+-----------+-----------+
+| 001       |           | _15 March |           |           | Initial   |
+|           |           | 2024_     |           |           | Requireme |
+|           |           |           |           |           | nts       |
+|           |           |           |           |           | Definitio |
+|           |           |           |           |           | n         |
+|           |           |           |           |           | – First   |
+|           |           |           |           |           | draft     |
++-----------+-----------+-----------+-----------+-----------+-----------+
+|           |           |           |           |           |           |
++-----------+-----------+-----------+-----------+-----------+-----------+
+|           |           |           |           |           |           |
++-----------+-----------+-----------+-----------+-----------+-----------+
+
+_
+_
+
+TABLE OF CONTENTS
+
+1 INTRODUCTION 4
+
+1.1 PURPOSE OF THE DOCUMENT 4
+
+1.2 BACKGROUND 4
+
+1.3 PROBLEM STATEMENT 5
+
+1.4 GOAL STATEMENT AND BEBEFITS 5
+
+1.5 ROADMAP 6
+
+2 CURRENT STATE 7
+
+2.1 WHAT IS CPDIS 7
+
+2.2 CURRENT SOLUTION AND KEY COMPONENTS 7
+
+3 APPLICATION REQUIREMENT 8
+
+3.1 NEXT GENERATION CPDIS APPLCIATION SERVERS 8
+
+4 DATA SOURCE REQUIREMENT 9
+
+4.1 EXISTING CPDIS IN CMDI3 9
+
+4.2 POWER QUALITY MONITORING SYSTEM (PQMS) 10
+
+4.3 SUPPLY POINT SYSTEM (SPS) 10
+
+4.4 EWMS 10
+
+4.5 OTHER SYSTEM/CUSTOMIZED INPUT 10
+
+5 FEATURE OF SYSTEM 12
+
+5.1 INDIVIDUAL METER VIEW 12
+
+5.2 EVENT VIEW 14
+
+5.3 SYSTEM ANALYSIS TOOLS (EXPORT FEATURE IS REQUIRED) 17
+
+5.4 ASSET MANAGEMENT 24
+
+5.5 SYSTEM MAINTENANCE 25
+
+5.6 NOTIFICATION 26
+
+6 DELIVERABLE 26
+
+7 BUSINESS REQUIREMENT DOCUMENT APPROVAL 27
+
+
+
+ INTRODUCTION
+
+
+Purpose of the document
+
+This document communicates the business objectives of Next Generation
+Customer Power Disturbances Information System and its linkage to CLP’s
+vision of becoming the Utility of the Future.
+
+In addition, this document
+
+-   Describes the project’s background _and_ why it is needed.
+
+-   Describes the business benefits.
+
+-   Setting the scope of works.
+
+-   Defines the project’s functionality requirements (functional /
+    non-functional).
+
+-   Identifies key stakeholders and communicate project constraints.
+
+-   Expect delivery timeline and high-level project size.
+
+
+background
+
+To support the CLP Utility of the Future vision, _ENGAGE CUSTOMERS IN
+NEW AND IMPROVED WAYS_ and _INVEST IN NEW SOLUTIONS FOR WORLD-CLASS
+EFFICIENCY_, PSBG’s has a multi-year strategy to uplift their
+capabilities in Power Quality incident investigation and innovation in
+their proactive service offerings.
+
+A building block is _NEXT GENERATION CUSTOMER POWER DISTURBANCE
+INFORMATION SYSTEM (CPDIS)_, which is about creating a consolidated
+platform to enable these capabilities:
+
+-   Single view to customer side and CLP side PQ data and for some of
+    Hong Kong’s most critical infrastructures.
+
+-   A future-proof platform supporting multi-vendor procurement strategy
+    for PQ meter.
+
+-   Ability to relate PQ meters, Supply Points, Strategic Customer list,
+    and other high-fidelity PQ information.
+
+-   Ability to generate advanced reports and analytics in consistent
+    formats.
+
+-   An open platform enabling Machine Learning and Artificial
+    Intelligent capabilities.
+
+[]
+
+
+problem statement
+
+In recent years, there have been instances of ACB tripping, leading to
+supply outages for customers and attracting significant public
+attention. Additionally, with the increasing penetration of electronic
+loads and renewable power sources in our daily lives, the impact of
+harmonic emissions has become a growing concern for power utilities.
+
+Beside post-incident investigation of Power Quality (PQ) instances, CLP
+provides proactive services such as
+
+-   Voltage Dip Simulation Test
+
+-   Power Quality Measurement
+
+-   Planning-Ahead
+
+These services rely on Customer Power Disturbance Information System
+(CPDIS), which has been established since 2019 at strategic customer
+substations and Power Quality Management System (PQMS) at CLP
+substations. These systems capture various parameters for further
+analysis and evaluates existing mitigation measures to ensure optimal
+service for our customers.
+
+The current power quality incident investigation process could be a
+lengthy and complex process due to time needed in sourcing and
+transforming information from multiple platforms. Firstly, information
+is stored in two PQ platforms, and they do not have the same level of
+analytic capabilities. Secondly, engineers need to manually derive
+impact customers and sensitive customers from other systems, such as
+Supply Point System for customer and substation mapping and EWMS for
+incident, substation, and transformer mapping.
+
+In addition, not all engineers can access all PQ systems due to security
+deviation in previous network architecture design. The new OT Cyber
+Security Standard 2.0 introduced in September 2023 is a trigger for the
+business to rethink of a better way for access information.
+
+
+goal statement and bebefits
+
+The business proposes a consolidated PQ platform to provide engineers
+and account managers a single platform to improve CLP’s power quality
+services.
+
+A system where CLP engineers and account managers can
+
+-   Provide Voltage Dip Simulation Test, Power Quality Measurement &
+    Planning-Ahead services more efficiently and productively.
+
+-   Conduct post-incident investigation of with better speed and
+    accuracy, be it on CLP side or Customer side.
+
+-   Filter out the noisy events and focus on high impact power quality
+    events.
+
+The new consolidated PQ platform will allow CLP to be a more customer
+focus and supporting its vision of becoming the Utility of Future.
+
+Customers will benefit from receiving world-class and proactive
+measurement and monitoring services to mitigate PQ instances. In
+unavoidable PQ instances, customers will experience reduction in outage
+duration or equipment damage, result in minimization of financial and
+reputation loss.
+
+CLP will benefit from providing more value-adding PQ services,
+improvement in its corporate standing and uplifting employee
+satisfaction as it creates an environment where employees are Empowered
+with new skills and ways of working.
+
+
+roadmap
+
+To meet the business vision of a consolidated platform, and in view of
+business constraints such as financial, budgetary and procurement
+processes, team capacity and workload estimation, power quality team
+proposed a three stages approach, spreading the work over two years.
+
++-----------------------+-----------------------+-----------------------+
+| #                     | DESCRIPTION           | OBJECTIVES/OUTCOME    |
++=======================+=======================+=======================+
+| 1                     | 2024 Q1-Q2            | APPROVED: Solution &  |
+|                       |                       | Business Case         |
+|                       | Demand/Screening/Qual | approved.             |
+|                       | ified/Approved        |                       |
+|                       |                       | Supplier contract     |
+|                       |                       | awarded.              |
++-----------------------+-----------------------+-----------------------+
+| 2                     | 2024 Q3-Q4 DROP 1     | FOUNDATION: New CPDIS |
+|                       |                       | App & Server deployed |
+|                       | Planning/Exec/Deliver | with foundation       |
+|                       | ing                   | features and meeting  |
+|                       |                       | CyberSec              |
+|                       |                       | requirements.         |
++-----------------------+-----------------------+-----------------------+
+| 3                     | 2025 Q1-Q3 DROP 2     | INTEGRATION: with     |
+|                       |                       | other platforms: PQ,  |
+|                       | Exec/Delivering/Closi | Supply Point,         |
+|                       | ng/Closed             | Customer List, etc.   |
+|                       |                       |                       |
+|                       |                       | ADVANCED: Advanced    |
+|                       |                       | reporting & analytics |
+|                       |                       | features.             |
++-----------------------+-----------------------+-----------------------+
+
+Table 1.5 – Proposed project roadmap
+
+
+
+CURRENT STATE
+
+
+what is CPDIS
+
+Customer Power Disturbance Information System (CPDIS) is a real time
+system collecting power disturbance data on customer side in CLP’s
+distribution network. CLP engineers use the data collected to
+
+-   Strengthen supply reliability by formulating cost-effective solution
+    to alleviate the impacts of ACB tripping.
+
+-   Facilitate the restoration of customers’ equipment after voltage
+    dip.
+
+-   Monitor & facilitate the study of harmonics by non-linear loads and
+    provide consultation services to customers.
+
+[]
+
+Diagram 2.1.1 – CPDIS is part of Distribution Network business
+
+
+current solution and key components
+
+As of Nov 2023, 104 Power Quality (PQ) meters are installed at key
+customer’s substations, collecting PQ data and send back to CPDIS
+servers located in CDMI zone. PQ Meters are physically connected to a
+local 4G Router (with private APN 4G SIM card). The traffic is routed
+thru CSL’s 4G-LTE telecommunication network with encrypted connection.
+
+The CPDIS platform consists of servers and applications located inside
+CLP’s CMDI3 zone (MS-Azure). It is a landing zone for external
+telecommunication network traffic. A barrier to protect the CLP’s
+corporate network (CDN). CPDIS application is a head-end system. It is a
+proprietary application tied to the CPDIS PQ meters deployed. CPDIS has
+no linkage to other corporate systems or other CLP power quality
+management system.
+
+Currently, only whitelisted PSBG workstations can assess CPDIS’
+webserver (https), therefore, limited which system engineers can assess
+the data.
+
+[]
+
+Diagram 2.2.1 – CPDIS and other Power Quality systems
+
+
+
+APPLICATION REQUIREMENT
+
+
+next generation CPDIS applciation servers
+
+The Next Generation CPDIS servers will be established in CDN allowing
+wider user access.
+
+The existing servers will remain in CDMI3 but re-purpose as polling
+server (store and forward), that will collect the data from meters to
+pushed to the new server in CDN through sFTP or EIP.
+
+This requirement is to meet cyber security design requirements.
+
+[]
+
+Diagram 3.1.1 – Conceptual diagram of new CPDIS platform
+
+
+
+DATA SOURCE REQUIREMENT
+
+
+Existing CPDIS in CMDI3
+
+(Phase 1) Voltage dip file (XML file) 
+
+  When a voltage dip occurs, all the meters within the system will send
+  a signal to the broker server. This signal triggers the creation of an
+  XML file containing relevant information about the voltage dip, such
+  as the level of voltage dip for each phase, dip duration, location or
+  SCADA data, and other pertinent details. The XML file is then promptly
+  transmitted to the CDN servers, ensuring immediate delivery of the
+  voltage dip information.
+
+  This process has been in operation since 2023 but is for Power Quality
+  Monitoring System (PQMS).
+
+(Phase 1) Power Quality Data Interchange Format (PQDIF)
+
+  It is industrial standard. 10 minutes PQ parameters and waveform would
+  be included. The vendor shall capture the parameters and waveform into
+  webpage.
+
+  The file has been generated since 2023 to PQMS.
+
+  As per the industrial standard, the system requires the capture and
+  storage of 10-minute power quality (PQ) parameters and waveform data
+  in compliance with the PQDIF (Power Quality Data Interchange Format)
+  specification. The vendor is responsible for capturing these
+  parameters and waveform data in accordance with the PQDIF requirements
+  and presenting them on a dedicated webpage.
+
+  The PQDIF format ensures standardized data representation, enabling
+  compatibility and interoperability between different power quality
+  monitoring systems. The captured PQ parameters, such as voltage
+  levels, current values, harmonics, and flicker, should be stored in
+  the PQDIF format for easy sharing and analysis.
+
+  Furthermore, the waveform data, representing the time-domain
+  characteristics of the voltage and current signals during a voltage
+  dip event, should also be captured and stored in the PQDIF format.
+  This waveform data allows for detailed analysis and visualization of
+  the voltage dip waveform, aiding in troubleshooting and identifying
+  potential issues.
+
+  This process has been in operation since 2023 but is for Power Quality
+  Monitoring System (PQMS).
+
+(Phase 1) Information of meter status
+
+  The system is expected to provide meter status updates (e.g. csv file)
+  twice a day. These updates will include essential information such as
+  meter name, ID, voltage level, substation, circuit, location, brand,
+  model, asset number, serial number, IP address, longitude, and other
+  relevant details.
+
+  To meet this new requirement, the system must gather the specified
+  meter details twice a day. This information is vital for auto asset
+  verification in the future.
+
+
+Power Quality Monitoring System (PQMS)
+
+(Phase 1) Voltage dip file (XML file)
+
+  The requirement remains the same as stated in session 3.1.1 of the
+  specifications. This process has been in operation since 2016 but is
+  for Voltage Dip Information System (VDIMS).
+
+(Phase 2) Power Quality Data Interchange Format (PQDIF)
+
+  The requirement remains the same as stated in session 3.1.2 of the
+  specifications. This requirement is a new addition for PQMS.
+
+(Phase 2) Information of meter status
+
+  The requirement remains the same as stated in session 3.1.2 of the
+  specifications. This requirement is a new addition for PQMS.
+
+
+Supply Point System (SPS)
+
+(Phase 2) Relationship between customer name (account number), transformer in customer substation and transformer in primary substation
+
+  In order to determine the customers affected by an incident, the
+  system needs to establish a linkage between the customers and the
+  transformers in the primary substation. This linkage will help
+  identify which customers are impacted and enable effective incident
+  management.
+
+  Supply Point system (SPS) is scheduled for retirement and will be
+  replaced by a new ERP/DNOO system. Further discussions with IT
+  colleagues are required to finalize the arrangements for the
+  integration of the new system.
+
+
+EWMS
+
+(Phase 2) IDR information
+
+  The Incident Report (IDR) captures system faults within power system.
+  CPDIS is required to establish a mapping between voltage dips and
+  system faults in order to associate the two. This mapping will provide
+  valuable information such as the type of faulty equipment, the cause
+  of the fault, weather conditions, and other relevant details.
+
+  EWMS is scheduled for retirement and will be replaced by a new ERP
+  system. Further discussions with IT colleagues are required to
+  finalize the arrangements for the integration of the new system.
+
+
+Other System/customized input
+
+(Phase 2) Relationship between transformer in customer substation and primary substation
+
+  The existing feature provided to VDIMS includes the relationship
+  between transformers in customer substations and the primary
+  substation as managed by the System Operator (SO). VDIMS is scheduled
+  for retirement at end of 2024.
+
+(Phase 2) Weight factor
+
+  The number of customers associated with each transformer in the
+  customer substation is recorded and marked.
+
+  This information is available for download from the website of the
+  department of System Operation (SO). Currently, users can access the
+  SO's website to retrieve the data regarding the number of customers
+  assigned to specific transformers in the customer substations.
+
+  The new system is required to automate the mapping process. It should
+  conduct the mapping between transformers in the customer substation
+  and the primary substation automatically. This automation will
+  eliminate the need for manual intervention, ensuring a more efficient
+  and accurate mapping between the two substations in the system.
+
+ (Phase 2) Sensitive customer list
+
+  Currently, the list is updated annually by the account manager.
+  However, with the launch of DNOO/ADMS, the account manager will have
+  the capability to directly update the list within the system. This
+  transition allows for more streamlined and immediate updates to the
+  list. Further discussions will be held to finalize the arrangements
+  for this new update process. (new customer list is difference from the
+  list in DNOO/ADMS).
+
+
+
+FEATURE OF SYSTEM
+
+
+Individual meter view 
+
+(Phase 1) Voltage sag/swell: The system should support real-time event notification (notification requirement will show in later part of this document) from each individual meter to the central system whenever a voltage dip occurs. Upon receiving the notification from a specific meter, the system should promptly log and display the voltage sag events associated with that meter in a list format on a dedicated webpage.
+
+(Phase 1) Waveform: For each event, the system generates a waveform accompanied by advanced analysis features. These tools may include features such as zooming, scaling, filtering, harmonic analysis, and time-domain analysis.
+
+  [A screenshot of a computer Description automatically generated]
+
+(Phase 1) Meter event log: The meter is equipped with event logging capabilities, enabling it to record any events or incidents that occur within the meter itself. These events may include various types of issues, such as power quality disturbances, communication errors, or other meter-specific events.
+
+  Once an event is logged, the meter sends the event log to both the
+  broker server and the central server. The purpose of this data
+  transmission is to facilitate debugging and problem fixing processes.
+
+[A screenshot of a computer Description automatically generated]
+
+(Phase 1) 10 minutes log: The system or solution shall have the capability to log and record different parameter (as captured below) profiles at 10-minute intervals. This includes capturing and storing relevant parameters such as voltage levels, harmonics, flicker, and other characteristics specified in the EN50160 standard.
+
+(Phase 1) Voltage: voltage characteristics of electricity supplied by public distribution systems.
+
+(Phase 1) Current: no current transformer is fully deployed; the system will provide existing status according to site conditions
+
+(Phase 1) Power Factor: a measure of the efficiency of electrical power utilization. It indicates the ratio of real power (kW) to apparent power (kVA) in an electrical system.
+
+(Phase 1) Individual harmonic (i.e. up to 24^(th) order): additional frequency components present in an electrical system that are multiples of the fundamental frequency
+
+(Phase 1) TDD (Total Demand Distortion): TDD refers to the total harmonic distortion of the demand current or load current in an electrical system. It measures the distortion caused by harmonics in relation to the fundamental current. 
+
+(Phase 1) THDI (Total Harmonic Distortion of Current): THDI measures the distortion caused by harmonics in the current waveform of an electrical system. 
+
+(Phase 1) THDV (Total Harmonic Distortion of Voltage): THDV measures the distortion caused by harmonics in the voltage waveform of an electrical system. 
+
+  (Log profile included but not limited as mentioned)
+
+[A screenshot of a computer Description automatically generated]
+
+[A screenshot of a computer Description automatically generated]
+
+
+Event view
+
+(Phase 1) Sag/Swell (including affected customer, IDR and SARFI) with false event setting and filtering feature: The system provides a table where all voltage dip events can be listed. It includes features such as exporting the data in CSV/Excel format, false event settings, and filtering options. The affected customers are mapped to each event, allowing for the evaluation of societal impact.
+
+  In the previous VDIMS system, once a voltage dip occurred, the
+  affected customers were immediately mapped to the corresponding event.
+  It was not possible to add the affected customers back. To address
+  this challenge, discussions should be held to determine the best
+  approach, as management may express interest in specific customers
+  that were not initially mentioned. To tackle the concern, the past SPS
+  record, transformer mapping files, and other related data cannot be
+  removed from the system on a daily basis and should be retained for a
+  specified period of time.
+
+  The system also allows access to the waveform associated with each
+  event. Information included in the event list comprises the incident
+  time, voltage level, location, meter name, duration of the dip, dip
+  level of the three-phase voltage, IDR, and other relevant details.
+
+(Phase 1) Mother event list: refers to the primary event that serves as the source of a system fault, which subsequently triggers a voltage dip. In the case of a transmission fault, a group of events is triggered as a result of the voltage dip.
+
++-----------------------------------------------------------------------+
+| (reference to existing mechanism)                                     |
+|                                                                       |
+| In the event of a voltage dip, the system will enter a pending state  |
+| for a few minutes to collect all triggered XML files from different   |
+| meters.                                                               |
+|                                                                       |
+| After a few minutes, the system will examine the triggered files to   |
+| determine if they include data from 132kV and 400kV meters. If both   |
+| 132kV/400kV and 11kV meters are triggered simultaneously, the voltage |
+| dip event will be identified, recorded in the system, and a           |
+| notification will be generated. The number of meters that can trigger |
+| the event is configurable, with a current minimum requirement of at   |
+| least three meters at the 132kV/400kV and 11kV levels.                |
+|                                                                       |
+| If no transmission level meters are triggered, the system will check  |
+| for an 11kV voltage dip. If two meters with the same SCADA name but   |
+| connected to different transformers are triggered simultaneously,     |
+| indicating that the transformers are in parallel, the event will be   |
+| identified.                                                           |
+|                                                                       |
+| If only one meter is triggered, the system will check for overcurrent |
+| triggers or fault recorder triggers. If both occur simultaneously,    |
+| the event can be identified.                                          |
+|                                                                       |
+| In cases where overcurrent or fault recorder alarms are not           |
+| available, the system will mark it down in a list labelled "11kV      |
+| Overcurrent Filtering." If a meter is triggered without an            |
+| overcurrent or fault recorder trigger but is present in the list, the |
+| event will be identified.                                             |
+|                                                                       |
+| If an event does not meet the requirements as mentioned, it will be   |
+| considered a "false alarm" and ignored by the system.                 |
++-----------------------------------------------------------------------+
+
+(Phase 1) All event list: include detailed information about each event, such as timestamp, duration, location, and any associated data or parameters. 
+
+(Phase 1) Search incident (with different search criteria): allows users to search for specific incidents based on different criteria; may include incident timestamp, location, voltage level, duration, affected customers, or any other relevant parameters available in the system.
+
+  [A screenshot of a computer Description automatically generated]
+
+(Phase 2) Reporting for supply reliability: includes a reporting feature specifically designed to generate supply reliability reports. These reports provide the more detailed information of the system fault that updated in IDR and EWMS. (note that EWMS is scheduled to retirement in 2025 or 2026; further arrangement will be discussed)
+
+[A screenshot of a calendar Description automatically generated]
+
+(Phase 1) Harmonic events: EN50160 addresses harmonics and specifies limits for harmonic distortion in voltage and current waveforms. These limits aim to ensure the quality of the electricity supply and protect electrical equipment from the adverse effects of excessive harmonics.
+
+(Phase 1) Voltage deviation events: According to EN50160, a voltage deviation event refers to a departure from the specified voltage levels in an electrical system. EN50160 defines limits for voltage deviations to ensure the quality and stability of the electricity supply.
+
+(Phase 1) Flickering Events: Flickering is typically caused by rapid voltage fluctuations. EN50160 addresses flickering and provides guidelines to ensure acceptable levels of flicker in electrical systems. The standard defines limits for flicker severity and flicker perception to maintain the quality of the electricity supply.
+
+(Phase 1) Transient Events: Transient events refer to short-duration disturbances in the electrical system characterized by sudden changes in voltage or current. EN50160 specifies limits for transient disturbances, such as voltage dips and voltage surges, to ensure that they remain within acceptable levels. These limits define parameters related to the magnitude, duration, and frequency of transients.
+
+(Phase 1) Power Factor list: It represents the ratio of real power to apparent power. EN50160 defines limits for power factor to ensure that it remains within acceptable levels. These limits specify the minimum required power factor for different types of electrical installations or consumer categories.
+
+
+System analysis tools (export feature is required)
+
+(Phase 2) SARFI: SARFIx, represents the average number of specified short-duration RMS variation measurement events that occurred over monitoring period per customer served from the assessed system. (generate SARFI10 to SARFI90 with different weight factors, profile and period)
+
+[A math equations and formulas Description automatically generated with
+medium confidence]
+
+(Phase 1) Voltage dip benchmarking (ITIC, SEMI F47, IEC61000-11/34): Voltage dip benchmarking is a process that involves comparing voltage dip events in an electrical system against established standards or guidelines to determine compliance and performance. The three commonly referenced standards for voltage dip benchmarking are ITIC (Information Technology Industry Council), SEMI F47, and IEC61000-11/34.
+
+  ITIC provides guidelines for voltage dip immunity levels for
+  information technology equipment. SEMI is an international industry
+  association focusing on semiconductor manufacturing and related
+  industries. This standard, published by the International
+  Electrotechnical Commission (IEC), provides guidelines for voltage dip
+  immunity levels for electrical equipment connected to low-voltage
+  power supply networks.
+
+[A screenshot of a computer Description automatically generated]
+
+(Phase 1) Harmonic level (IEEE519, supply rule, EMSD requirement)/harmonic chart: This includes referencing the harmonic levels specified by the IEEE 519 standard, supply rules, and the specific requirements set forth by the EMSD (Electrical and Mechanical Services Department). Furthermore, a detailed harmonic chart will be provided to illustrate the expected harmonic characteristics of the electrical system.
+
+[A graph with green and blue text Description automatically generated]
+
+(Phase 1) ACB tripping analysis (Slow voltage recovery/effectiveness evaluation of NOC setting): The analysis of ACB tripping, specifically focusing on slow voltage recovery and evaluating the effectiveness of NOC settings, is currently underway to assess the situation and make necessary improvements.
+
++-----------------------------------------------------------------------+
+| Slow Voltage Recovery                                                 |
+|                                                                       |
+|   To analyse the tripping cases lead to power outage arising from     |
+|   simultaneous restarting of air conditioners in residential          |
+|   buildings.                                                          |
+|                                                                       |
+|   Add a new report page on CPDIS web:                                 |
+|                                                                       |
+| [A screenshot of a computer Description automatically generated]      |
+|                                                                       |
+| _Fig. 1 New Report page – Slow Voltage Recovery_                      |
+|                                                                       |
+| [A screenshot of a computer Description automatically generated]      |
+|                                                                       |
+| _Fig. 2 Voltage Recovery and Load Recovery Profile_                   |
+|                                                                       |
+|   _ENQUIRY PAGE_                                                      |
+|                                                                       |
+| 1.  Meter selection: Option to select meters                          |
+|                                                                       |
+| 2.  Date and Time Range                                               |
+|                                                                       |
+| 3.  Click on RMSR button to load the RMS recorder                     |
+|                                                                       |
+| 4.  Only apply to Dip events with duration < 60s                      |
+|                                                                       |
+| 5.  Voltage Recovery (%)                                              |
+|                                                                       |
+| -   Default RMS recording = 10s @ 10ms step by default (Configurable  |
+|       to Max. 72s @10ms step)                                         |
+|                                                                       |
+| -   Up to 3 Colour markers to show different % of voltage recovery    |
+|       (configurable by admin users)                                   |
+|                                                                       |
+| -   Red line: Event Start at 0 ms                                     |
+|                                                                       |
+| -   Colour legend:                                                    |
+|                                                                       |
+| -   Red: >=50%, the first recovered value after the lowest point >=   |
+|       50%                                                             |
+|                                                                       |
+| -   Orange: >=70%, the first recovered value after the lowest         |
+|       point >= 70%                                                    |
+|                                                                       |
+| -   Green: >=90%, the first recovered value after the lowest point >= |
+|       90%                                                             |
+|                                                                       |
+| -   Markers can be set ON/OFF and with different %,                   |
+|                                                                       |
+| 6.  Load Recovery Profile (A)                                         |
+|                                                                       |
+| -   Pre-fault: 50 cycles (default), Green                             |
+|                                                                       |
+| -   Post-fault: ~10s at default (Max. 72s) Red                        |
+|                                                                       |
+| 7.  Load the next page with 100ms data,                               |
+|                                                                       |
+| 8.  Load the pervious page with 100ms data.                           |
+|                                                                       |
+| 9.  To facilitate a quick search in RMSR, use a double-arrow to load  |
+|     next 1000ms data                                                  |
+|                                                                       |
+| 10. V & I default range: from -1s to 10s (max. 72s) in steps of 10ms  |
+|                                                                       |
+| 11. Export feature for the recovery profile in csv / xls format       |
+|                                                                       |
+| Long Recovery Voltage Dip Notification                                |
+|                                                                       |
+|   To alert users of voltage dip incidents with possibly ACB tripping  |
+|   phenomenon for follow-up                                            |
+|                                                                       |
+|   _PARAMETER SETTINGS_                                                |
+|                                                                       |
+| 1.  Summer Period                                                     |
+|                                                                       |
+| -   Activate this function only in Summer                             |
+|                                                                       |
+| -   Default: from 1 Jun – 30 Sept                                     |
+|                                                                       |
+| 2.  Report only when the following are both hit                       |
+|                                                                       |
+| -   Alert time                                                        |
+|                                                                       |
+| -   Report only voltage dips happened during the period               |
+|                                                                       |
+| -   Default: from 20:00 to 02:00                                      |
+|                                                                       |
+| -   Long Recovery Time                                                |
+|                                                                       |
+| -   Filter voltage dips and interruptions longer than the setting     |
+|                                                                       |
+| -   Default: 2s to 60s                                                |
+|                                                                       |
+|   _NOTIFICATION_                                                      |
+|                                                                       |
+| 1.  Internal Users by Email/SMS                                       |
+|                                                                       |
+| 2.  Notification recipients can be set by Admin Users                 |
+|                                                                       |
+|   _UI FOR ADMIN SETTING_                                              |
+|                                                                       |
+| 1.  Set and change notification recipients (by user groups)           |
+|                                                                       |
+| 2.  Set and change the “Summer Period” setting                        |
+|                                                                       |
+| 3.  Set and change the “Alert Time” setting                           |
+|                                                                       |
+| 4.  Set and change the “Long Recovery Time” setting                   |
+|                                                                       |
+| Evaluation of Effectiveness of NOC Setting                            |
+|                                                                       |
+| [A screenshot of a computer Description automatically generated]      |
+|                                                                       |
+| _Fig. 3 Evaluation of Effectiveness of NOC Setting_                   |
+|                                                                       |
+| To study the effectiveness of the NOC setting w.r.t. the predicted    |
+| ACB tripping cases.                                                   |
+|                                                                       |
+|   _ENQUIRY PAGE_                                                      |
+|                                                                       |
+| 1.  Meter selection: Option to select meters                          |
+|                                                                       |
+| 2.  Date and Time Range                                               |
+|                                                                       |
+| 3.  Enquiry Options                                                   |
+|                                                                       |
+| -   Show events occurred from 20:00 to 02:00 by default               |
+|       (Configurable)                                                  |
+|                                                                       |
+| -   Show Meters with NOC Status = “Y” by default (or “ALL Meters”)    |
+|                                                                       |
+| -   Show “ACB Tripping” cases (or “ALL” Meters”)                      |
+|                                                                       |
+|   _RESULT PAGE_                                                       |
+|                                                                       |
+| 1.  Report listed by meter name and the voltage dip events with the   |
+|     suspected ACB tripped result, waveform and RMS plot.              |
+|                                                                       |
+| 2.  Meter, Region, OC, Customer Count, Load Type and NOC Status are   |
+|     from Meter Inventory.                                             |
+|                                                                       |
+| 3.  Export feature for the recovery profile in csv / xls format       |
+|                                                                       |
+|   _ACB TRIPPING DETECTION LOGIC (**ACB TRIPPING LOGIC SETTING IS SET  |
+|   BY ADMIN USERS ONLY)_                                               |
+|                                                                       |
+| 1.  Parameters:                                                       |
+|                                                                       |
+| -   Only apply to Dip events with duration < 60s                      |
+|                                                                       |
+| -   “Time Delay for Recovery Current Detection (Td)” – Default at     |
+|       10s. The 10s time delay is counting from the event start time.  |
+|       (According to the voltage dip event)                            |
+|                                                                       |
+| -   “Recovery Current Threshold Setting (R%)” – Default at 50% of the |
+|       pre-fault (Irms). If the Recovery Current at (Td) is < (R%),    |
+|       then assume ACB Tripping.                                       |
+|                                                                       |
+| -   “Pre-fault setting (cycle)” – default at 10 cycles                |
+|                                                                       |
+| 2.  Logic:                                                            |
+|                                                                       |
+|   With the default setting, the pre-fault (Irms) is the average of    |
+|   the 10 RMS pre-fault samples on 3 phases. When the load current     |
+|   cannot get back to 50% or more of the pre-fault loading (Irms)      |
+|   within 10s, it will be treated as an ACB tripping case, i.e. the    |
+|   “ACB tripping” field is “Y”.                                        |
++-----------------------------------------------------------------------+
+
+(Phase 1) EN50160 Report (based on the requirement, 7 days included in the report): The EN50160 Report, which includes a comprehensive analysis spanning a period of 7 days as per the requirement, is currently being compiled to provide insights and findings based on the specified criteria.
+
+(Phase 2) Measurement report (with AI features): The power quality measurement report, incorporating an AI feature that utilizes machine learning to draft the entire report, is currently in progress. The AI technology is employed to streamline the process and generate comprehensive insights for the report.
+
+(Phase 1) PQ data summary: The PQ data summary is being prepared, allowing the selection of specific PQ parameters in a table format for further in-depth study and analysis. This feature enables efficient exploration and examination of the chosen parameters for detailed insights.
+
+(Phase 2) Dashboard with flexible parameters (using PowerBI): A dynamic dashboard, integrated with Power BI, is being developed to provide users with flexibility in selecting various parameters for presentation, study, and analysis. This interactive system or webpage allows users to customize the x-y axis parameters, enabling them to visualize data according to their specific needs. The dashboard also has the capability to automatically update the data, ensuring the latest information is always available for analysis.
+
+  [A screenshot of a graph Description automatically generated][A map of
+  the world with many colored circles Description automatically
+  generated]
+
+(Phase 2) Annual performance: An annual power quality performance report can be generated, incorporating different standards such as supply rules, EN50160, IEEE519, IEC61000-2, and the supply code. This comprehensive report provides an overview of the power quality performance throughout the year, ensuring compliance with various industry standards and regulations.
+
+[A screenshot of a computer Description automatically generated]
+
+(Phase 2) Power Quality Service information (reference to PQSIS): The services provided to both internal and external customers will be logged and utilized to calculate AECS (Allocation of Estimated Cost Sharing), measure our efforts, and more. These services can be mapped with voltage dip events and the corresponding affected customers. Additionally, the report feature is included to present comprehensive insights and findings related to customer services and voltage dip events. The information, including customer name, service date, charging party, service detail and etc, will be inputted in system.
+
+[A screenshot of a computer Description automatically generated]
+
+[A screenshot of a computer Description automatically generated]
+
+(Phase 1) AI report generation: One of major tasks of PQ team is report generation for customer alleviated solutions based on measured data. A huge amount of data is collected for analysing the data. Manual processes are prone to mistakes and inaccurate. Generating reports and obtaining professional advice after data collection takes significant time. To tackle the pain points, AI tools would be developed with open AI in MS Azure. 
+
+  [A screenshot of a chat Description automatically generated]
+
+
+Asset management
+
+(Phase 1) Meter Status (Active, Abnormal, Inactive): The system shall provide updated information for each meter, categorizing them as active, abnormal, or inactive. This allows for quick identification and monitoring of meter functionality. Active meters are those currently operational and functioning normally. Abnormal status indicates meters with detected anomalies or issues that require attention. Inactive meters are those temporarily out of service or not currently operational.
+
+(Phase 1) Map View: The system shall include a map view feature that displays the geographical locations of meters. Each meter's location will be marked on the map along with additional information such as building type and connection status. The map view will provide a visual representation of the meter distribution across various locations. Filter options will be available, enabling users to sort and view meters based on different criteria, such as building type, meter status, voltage level, and more.
+
+(Phase 1) Meter Inventory (Combined with Meter Hierarchy): The system shall maintain a comprehensive meter inventory, which includes a list of all meters within the system. Each meter will be identified with an asset number and will be associated with specific details such as location, serial number, IP address, and other relevant information. The meter inventory will be synchronized with the SAP/ERP system to ensure accurate and up-to-date asset information. The data in the meter inventory will be updated twice a day to reflect any changes or additions to the metering infrastructure. The features will fulfil the requirements of automate asset verification process.
+
+
+System maintenance
+
+(Phase 1) Meter Enabling:
+
+  The system shall provide a functionality to enable/disable
+  notifications during maintenance or unexpected incidents. This feature
+  allows users to temporarily suspend notifications to avoid unnecessary
+  alerts during maintenance activities or when dealing with unforeseen
+  incidents.
+
+(Phase 1) Parameter Configuration:
+
+  The system shall allow for easy configuration of system parameters.
+  Users will have the ability to adjust and customize various settings
+  such as measurement intervals, data collection parameters, and other
+  relevant parameters to meet specific requirements.
+
+(Phase 1) Meter Log:
+
+  The system shall maintain a log of meter activities and events. This
+  log will provide a historical record of meter operations, including
+  data related to measurements, communication events, alarms, and other
+  significant events. The meter log will serve as a valuable resource
+  for troubleshooting, analysis, and auditing purposes.
+
+(Phase 1) User Profile Management:
+
+  The system shall support user profile management, allowing
+  administrators to create, modify, and control user access levels and
+  privileges. User profiles will be associated with specific roles,
+  ensuring secure and controlled access to system functionalities based
+  on individual user responsibilities.
+
+(Phase 1) Report of Meter Data and Communication Availability:
+
+  The system shall generate reports consolidating meter data and
+  communication availability. These reports will provide insights into
+  the performance of the metering infrastructure, data availability,
+  communication status, and other relevant metrics. The reports will aid
+  in system monitoring, analysis, and decision-making processes.
+
+(Phase 2) Customer Information and Transformer Mapping:
+
+  The system shall include a module to linkage between customer and
+  supply transformer. This functionality will enable the association of
+  meters with their respective customers and facilitate impact of each
+  voltage dip event.
+
+(Phase 1) Notification Template:
+
+  The system shall provide customizable notification templates for
+  various events and conditions. Users will be able to configure
+  notifications based on specific thresholds, alarms, or events,
+  ensuring timely and accurate communication of critical information to
+  relevant stakeholders.
+
+(Phase 1) SCADA Code Name Mapping:
+
+  The system includes SCADA codes in the meter names, which serves as a
+  unique identifier for each meter. The system shall provide full name
+  of the SCADA code, which corresponds to the location name. By
+  providing the location name associated with each meter,
+  non-engineering staff members can easily track issues and provide
+  support to customers using familiar location references.
+
+(Phase 1) 11kV Overcurrent Filtering:
+
+  Typically, overcurrent signals are checked when a voltage dip event is
+  triggered. However, there may be situations where the current
+  transformer or other current detection devices are unavailable or
+  malfunctioning. To address this, the system includes a feature that
+  allows the user to disable the counter check of each meter. Disabling
+  the counter check prevents the system from overlooking voltage dip
+  events due to missing or faulty current detection devices.
+
+(Phase 2) Weight Factor for SARFI Calculation:
+
+  The system shall support the input and management of weight factors
+  required for SARFI (System Average RMS Flicker Index) calculation.
+  Weight factors can be directly inputted from the System Operator (SO)
+  and updated on a daily and yearly basis. The ability to configure the
+  frequency of weight factor updates will be a configurable option
+  within the system.
+
+
+Notification
+
+(Phase 1) Event notification (i.e. voltage dip)
+
+(Phase 1)The system shall provide event notifications through SMS and email to the system administrator and users, if necessary. This ensures that relevant stakeholders receive timely voltage dip notifications.
+
+ (Phase 1)Additionally, the system will generate XML/API files that can be transmitted to the DNOO, PIOCO, or other CLP systems. These files will contain relevant event information, facilitating seamless integration and information exchange between different systems.
+
+(Phase 1) System alert 
+
+(Phase 1) Disconnected from on-premises servers and systems
+
+  The system will monitor the connection status to on-premises servers
+  and systems, including existing PQMS (Power Quality Monitoring System)
+  and existing CPDIS (Centralized Power Distribution Information
+  System). Regular health check files and event files will be sent from
+  these on-premises systems. In the event that no file is received
+  within a defined timeframe, an alert will be generated and sent to
+  system administrators. This alert will serve as a notification of the
+  disconnection, enabling prompt investigation and resolution of any
+  connectivity issues.
+
+
+
+DELIVERABLE
+
+
+Here’s the other non-functional deliverables expected.
+
+-   The system will comply with IEEE 519, IEC 61000-4-11/34, or
+    EN 50160.
+
+-   The required documentation deliverables included system manuals,
+    user guides, operation manual, operation instruction and etc.
+
+
+
+BUSINESS REQUIREMENT DOCUMENT APPROVAL
+
+
+The undersigned ACKNOWLEDGE they have reviewed the BUSINESS REQUIREMENT
+DOCUMENT and agree with the approach it presents. Any changes to this
+document will be coordinated with and approved by the undersigned or
+their designated representatives.
+
+  Signature:                        Date:   
+  ------------- ------------------- ------- --
+  Print Name:                               
+  Title:        Principal Manager           
+
+  Signature:                        Date:   
+  ------------- ------------------- ------- --
+  Print Name:                               
+  Title:        Principal Manager           
+
+  Signature:                        Date:   
+  ------------- ------------------- ------- --
+  Print Name:                               
+  Title:        Principal Manager           
+
+  Signature:                        Date:   
+  ------------- ------------------- ------- --
+  Print Name:                               
+  Title:        Principal Manager           
+
+  Signature:                        Date:   
+  ------------- ------------------- ------- --
+  Print Name:                               
+  Title:        Principal Manager           
+
+Appendix A: References and supporting documents
+
+  The following table summarizes the documents referenced in this
+  document.
+
+  DOCUMENT NAME AND VERSION                          LOCATION
+  -------------------------------------------------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  _cpdis sharing_2feb2024.pptx_                      https://clpgroup.sharepoint.com/:p:/r/sites/CPDISMigrationProject2024-2025/Shared%20Documents/General/99-Reference/cpdis%20sharing_2feb2024.pptx?d=we0f7c6dca00d48d692d9197d0207f8b2&csf=1&web=1&e=PinBQS
+  _CPDIS Technical requirement 2024_5feb2024.docx_   https://clpgroup.sharepoint.com/:w:/r/sites/CPDISMigrationProject2024-2025/Shared%20Documents/General/99-Reference/CPDIS%20Technical%20requirement%202024_5feb2024.docx?d=w11aad6c527d043ac83f8541c701637db&csf=1&web=1&e=Qqh9FS

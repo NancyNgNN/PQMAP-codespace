@@ -6,7 +6,8 @@ import EventDetails from './EventDetails';
 import FalseEventConfig from './FalseEventConfig';
 import FalseEventAnalytics from './FalseEventAnalytics';
 import { falseEventDetector } from '../../utils/falseEventDetection';
-import { Activity, Plus, GitBranch, Filter, Search, Calendar, MapPin, Zap, Users, AlertTriangle, Shield, BarChart3 } from 'lucide-react';
+import { MotherEventGroupingService } from '../../services/mother-event-grouping';
+import { Activity, Plus, GitBranch, Filter, Search, Calendar, MapPin, Zap, Users, AlertTriangle, Shield, BarChart3, Group, Ungroup, Check, X } from 'lucide-react';
 
 export default function EventManagement() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -21,6 +22,11 @@ export default function EventManagement() {
   const [eventOperations, setEventOperations] = useState<EventOperation[]>([]);
   const [falseEventRules, setFalseEventRules] = useState<any[]>([]);
   const [falseEventResults, setFalseEventResults] = useState<any[]>([]);
+  
+  // Multi-select and grouping states
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+  const [groupingInProgress, setGroupingInProgress] = useState(false);
   
   // Filter states
   const [filters, setFilters] = useState<EventFilter>({
@@ -299,61 +305,106 @@ export default function EventManagement() {
   };
 
   const handleGroupEvents = async (eventIds: string[]) => {
-    // Create a mother event and link child events to it
-    const motherEventData = {
-      ...events[0], // Use first event as template
-      id: undefined, // Will be auto-generated
-      is_mother_event: true,
-      parent_event_id: null,
-      timestamp: new Date().toISOString(),
-      event_type: 'cascading_failure'
-    };
+    if (eventIds.length < 2) {
+      alert('Please select at least 2 events to group.');
+      return;
+    }
 
+    setGroupingInProgress(true);
+    
     try {
-      const { data: motherEvent, error: motherError } = await supabase
-        .from('pq_events')
-        .insert([motherEventData])
-        .select()
-        .single();
+      // Check if events can be grouped
+      const selectedEvents = events.filter(e => eventIds.includes(e.id));
+      const validation = MotherEventGroupingService.canGroupEvents(selectedEvents);
+      
+      if (!validation.canGroup) {
+        alert(validation.reason);
+        return;
+      }
 
-      if (motherError) throw motherError;
-
-      // Update child events to reference mother event
-      const { error: updateError } = await supabase
-        .from('pq_events')
-        .update({ parent_event_id: motherEvent.id })
-        .in('id', eventIds);
-
-      if (updateError) throw updateError;
-
-      loadData();
+      // Perform manual grouping
+      const result = await MotherEventGroupingService.performManualGrouping(eventIds);
+      
+      if (result) {
+        console.log('Events grouped successfully:', result);
+        await loadData(); // Reload events to show new grouping
+        setSelectedEventIds(new Set()); // Clear selection
+        setIsMultiSelectMode(false); // Exit multi-select mode
+      }
     } catch (error) {
       console.error('Error grouping events:', error);
+      alert('Failed to group events. Please try again.');
+    } finally {
+      setGroupingInProgress(false);
     }
   };
 
   const handleUngroupEvents = async (parentEventId: string) => {
+    if (!confirm('Are you sure you want to ungroup these events?')) {
+      return;
+    }
+
+    setGroupingInProgress(true);
+    
     try {
-      // Remove parent reference from child events
-      const { error: updateError } = await supabase
-        .from('pq_events')
-        .update({ parent_event_id: null })
-        .eq('parent_event_id', parentEventId);
-
-      if (updateError) throw updateError;
-
-      // Delete the mother event
-      const { error: deleteError } = await supabase
-        .from('pq_events')
-        .delete()
-        .eq('id', parentEventId);
-
-      if (deleteError) throw deleteError;
-
-      loadData();
+      const success = await MotherEventGroupingService.ungroupEvents(parentEventId);
+      
+      if (success) {
+        console.log('Events ungrouped successfully');
+        await loadData(); // Reload events to show ungrouping
+      } else {
+        alert('Failed to ungroup events. Please try again.');
+      }
     } catch (error) {
       console.error('Error ungrouping events:', error);
+      alert('Failed to ungroup events. Please try again.');
+    } finally {
+      setGroupingInProgress(false);
     }
+  };
+
+  // Handle automatic grouping
+  const handleAutoGroupEvents = async () => {
+    setGroupingInProgress(true);
+    
+    try {
+      const ungroupedEvents = events.filter(e => !e.parent_event_id && !e.is_mother_event);
+      const results = await MotherEventGroupingService.performAutomaticGrouping(ungroupedEvents);
+      
+      if (results.length > 0) {
+        console.log(`Automatically grouped ${results.length} event groups`);
+        await loadData(); // Reload events to show new groupings
+        alert(`Successfully created ${results.length} event groups automatically.`);
+      } else {
+        alert('No events were suitable for automatic grouping.');
+      }
+    } catch (error) {
+      console.error('Error performing automatic grouping:', error);
+      alert('Failed to perform automatic grouping. Please try again.');
+    } finally {
+      setGroupingInProgress(false);
+    }
+  };
+
+  // Handle multi-select toggle
+  const toggleEventSelection = (eventId: string) => {
+    const newSelection = new Set(selectedEventIds);
+    if (newSelection.has(eventId)) {
+      newSelection.delete(eventId);
+    } else {
+      newSelection.add(eventId);
+    }
+    setSelectedEventIds(newSelection);
+  };
+
+  // Handle select all/none
+  const handleSelectAll = () => {
+    const ungroupedEvents = filteredEvents.filter(e => !e.parent_event_id && !e.is_mother_event);
+    setSelectedEventIds(new Set(ungroupedEvents.map(e => e.id)));
+  };
+
+  const handleSelectNone = () => {
+    setSelectedEventIds(new Set());
   };
 
   if (loading) {
@@ -429,6 +480,56 @@ export default function EventManagement() {
               >
                 <Filter className="w-4 h-4" />
                 Filters
+              </button>
+
+              {/* Multi-select and Grouping Controls */}
+              <button
+                onClick={() => setIsMultiSelectMode(!isMultiSelectMode)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                  isMultiSelectMode 
+                    ? 'bg-green-600 text-white border-green-600' 
+                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                <Check className="w-4 h-4" />
+                {isMultiSelectMode ? 'Exit Select' : 'Multi-Select'}
+              </button>
+
+              {isMultiSelectMode && (
+                <>
+                  <button
+                    onClick={handleSelectAll}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={handleSelectNone}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                    Clear
+                  </button>
+                  {selectedEventIds.size > 1 && (
+                    <button
+                      onClick={() => handleGroupEvents(Array.from(selectedEventIds))}
+                      disabled={groupingInProgress}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-all"
+                    >
+                      <Group className="w-4 h-4" />
+                      Group ({selectedEventIds.size})
+                    </button>
+                  )}
+                </>
+              )}
+
+              <button
+                onClick={handleAutoGroupEvents}
+                disabled={groupingInProgress}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all"
+              >
+                <GitBranch className="w-4 h-4" />
+                Auto Group
               </button>
             </div>
             <button
@@ -533,39 +634,72 @@ export default function EventManagement() {
                     {eventTree.map((node) => (
                       <div key={node.id} className="border rounded-lg p-4">
                         <div
-                          onClick={() => handleEventSelect(node.event)}
-                          className={`p-3 rounded cursor-pointer transition-all ${
+                          className={`p-3 rounded transition-all ${
                             selectedEvent?.id === node.id
                               ? 'bg-blue-50 border-blue-300'
                               : 'bg-white hover:bg-slate-50'
                           } ${
                             node.event.isFlaggedAsFalse ? 'border-l-4 border-l-orange-500' : ''
+                          } ${
+                            selectedEventIds.has(node.id) ? 'bg-green-50 border-green-300' : ''
                           }`}
                         >
                           <div className="flex items-center gap-3">
+                            {/* Multi-select checkbox */}
+                            {isMultiSelectMode && !node.event.is_mother_event && !node.event.parent_event_id && (
+                              <input
+                                type="checkbox"
+                                checked={selectedEventIds.has(node.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  toggleEventSelection(node.id);
+                                }}
+                                className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                              />
+                            )}
+                            
+                            {/* Mother event indicator and ungroup button */}
                             {node.event.is_mother_event && (
-                              <GitBranch className="w-4 h-4 text-purple-600" />
+                              <div className="flex items-center gap-2">
+                                <GitBranch className="w-4 h-4 text-purple-600" />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUngroupEvents(node.id);
+                                  }}
+                                  disabled={groupingInProgress}
+                                  className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                                >
+                                  <Ungroup className="w-3 h-3" />
+                                </button>
+                              </div>
                             )}
-                            {node.event.isFlaggedAsFalse && (
-                              <AlertTriangle className="w-4 h-4 text-orange-500" title="Potential false positive" />
-                            )}
-                            <div className="flex-1">
-                              <p className="font-semibold text-slate-900 capitalize">
-                                {node.event.event_type.replace('_', ' ')}
-                              </p>
-                              <p className="text-sm text-slate-600">{node.event.circuit_id}</p>
-                              <p className="text-xs text-slate-500">
-                                {new Date(node.event.timestamp).toLocaleString()}
-                              </p>
+                            
+                            <div
+                              onClick={() => handleEventSelect(node.event)}
+                              className="flex-1 cursor-pointer"
+                            >
+                              {node.event.isFlaggedAsFalse && (
+                                <AlertTriangle className="w-4 h-4 text-orange-500" />
+                              )}
+                              <div className="flex-1">
+                                <p className="font-semibold text-slate-900 capitalize">
+                                  {node.event.event_type.replace('_', ' ')}
+                                </p>
+                                <p className="text-sm text-slate-600">{node.event.circuit_id}</p>
+                                <p className="text-xs text-slate-500">
+                                  {new Date(node.event.timestamp).toLocaleString()}
+                                </p>
+                              </div>
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                node.event.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                                node.event.severity === 'high' ? 'bg-orange-100 text-orange-700' :
+                                node.event.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-green-100 text-green-700'
+                              }`}>
+                                {node.event.severity}
+                              </span>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${
-                              node.event.severity === 'critical' ? 'bg-red-100 text-red-700' :
-                              node.event.severity === 'high' ? 'bg-orange-100 text-orange-700' :
-                              node.event.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-green-100 text-green-700'
-                            }`}>
-                              {node.event.severity}
-                            </span>
                           </div>
                         </div>
                         
@@ -602,43 +736,76 @@ export default function EventManagement() {
                     return (
                       <div
                         key={event.id}
-                        onClick={() => handleEventSelect(event)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        className={`p-4 rounded-lg border-2 transition-all ${
                           selectedEvent?.id === event.id
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-slate-200 hover:border-slate-300 bg-white'
                         } ${
                           event.isFlaggedAsFalse ? 'border-l-4 border-l-orange-500' : ''
+                        } ${
+                          selectedEventIds.has(event.id) ? 'bg-green-50 border-green-500' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
+                            {/* Multi-select checkbox */}
+                            {isMultiSelectMode && !event.is_mother_event && !event.parent_event_id && (
+                              <input
+                                type="checkbox"
+                                checked={selectedEventIds.has(event.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  toggleEventSelection(event.id);
+                                }}
+                                className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 mt-1"
+                              />
+                            )}
+
+                            {/* Mother event indicator and ungroup button */}
                             {event.is_mother_event && (
-                              <GitBranch className="w-4 h-4 text-purple-600 mt-1" />
+                              <div className="flex items-center gap-2">
+                                <GitBranch className="w-4 h-4 text-purple-600 mt-1" />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUngroupEvents(event.id);
+                                  }}
+                                  disabled={groupingInProgress}
+                                  className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                                >
+                                  <Ungroup className="w-3 h-3" />
+                                </button>
+                              </div>
                             )}
-                            {!event.validated_by_adms && (
-                              <AlertTriangle className="w-4 h-4 text-yellow-500 mt-1" />
-                            )}
-                            {event.isFlaggedAsFalse && (
-                              <AlertTriangle className="w-4 h-4 text-orange-500 mt-1" title="Potential false positive" />
-                            )}
-                            <div>
-                              <p className="font-semibold text-slate-900">{substation?.name || event.circuit_id}</p>
-                              <p className="text-sm text-slate-600 capitalize">{event.event_type.replace('_', ' ')}</p>
-                              <p className="text-xs text-slate-500 mt-1">
-                                {new Date(event.timestamp).toLocaleString()}
-                              </p>
-                              {event.customer_count && (
-                                <p className="text-xs text-slate-500">
-                                  <Users className="w-3 h-3 inline mr-1" />
-                                  {event.customer_count} customers
-                                </p>
+
+                            <div
+                              onClick={() => handleEventSelect(event)}
+                              className="flex-1 cursor-pointer"
+                            >
+                              {!event.validated_by_adms && (
+                                <AlertTriangle className="w-4 h-4 text-yellow-500 mt-1" />
                               )}
                               {event.isFlaggedAsFalse && (
-                                <p className="text-xs text-orange-600 mt-1">
-                                  ⚠ Potential false positive
-                                </p>
+                                <AlertTriangle className="w-4 h-4 text-orange-500 mt-1" />
                               )}
+                              <div>
+                                <p className="font-semibold text-slate-900">{substation?.name || event.circuit_id}</p>
+                                <p className="text-sm text-slate-600 capitalize">{event.event_type.replace('_', ' ')}</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                  {new Date(event.timestamp).toLocaleString()}
+                                </p>
+                                {event.customer_count && (
+                                  <p className="text-xs text-slate-500">
+                                    <Users className="w-3 h-3 inline mr-1" />
+                                    {event.customer_count} customers
+                                  </p>
+                                )}
+                                {event.isFlaggedAsFalse && (
+                                  <p className="text-xs text-orange-600 mt-1">
+                                    ⚠ Potential false positive
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <div className="text-right">

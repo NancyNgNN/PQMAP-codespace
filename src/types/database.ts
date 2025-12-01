@@ -88,6 +88,10 @@ export interface PQEvent {
   waveform_data: WaveformData | null;
   created_at: string;
   resolved_at: string | null;
+  // Mother Event Grouping properties
+  is_child_event: boolean;
+  grouping_type: 'automatic' | 'manual' | null;
+  grouped_at: string | null;
   // Enhanced properties for Event Management
   voltage_level: string;
   circuit_id: string;
