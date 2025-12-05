@@ -4,7 +4,7 @@ import LoginPage from './components/LoginPage';
 import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard/Dashboard';
 import EventManagement from './components/EventManagement/EventManagement';
-import DataAnalytics from './components/DataAnalytics';
+import ImpactAnalysis from './components/ImpactAnalysis';
 import AssetManagement from './components/AssetManagement';
 import Reports from './components/Reports';
 import Notifications from './components/Notifications';
@@ -36,7 +36,7 @@ function AppContent() {
       <main className="flex-1 overflow-y-auto">
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'events' && <EventManagement />}
-        {currentView === 'analytics' && <DataAnalytics />}
+        {currentView === 'analytics' && <ImpactAnalysis />}
         {currentView === 'assets' && <AssetManagement />}
         {currentView === 'reports' && <Reports />}
         {currentView === 'notifications' && <Notifications />}

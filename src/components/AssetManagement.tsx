@@ -143,7 +143,9 @@ export default function AssetManagement() {
                       </span>
                     </td>
                     <td className="py-3 px-4 text-sm text-slate-700">
-                      {new Date(meter.last_communication).toLocaleString()}
+                      {meter.last_communication 
+                        ? new Date(meter.last_communication).toLocaleString()
+                        : 'Never'}
                     </td>
                     <td className="py-3 px-4 text-sm text-slate-700">{meter.firmware_version}</td>
                   </tr>

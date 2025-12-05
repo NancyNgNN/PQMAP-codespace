@@ -12,7 +12,7 @@ export default function Navigation({ currentView, onViewChange }: NavigationProp
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'events', icon: Activity, label: 'Event Management' },
-    { id: 'analytics', icon: BarChart3, label: 'Data Analytics' },
+    { id: 'analytics', icon: BarChart3, label: 'Impact Analysis' },
     { id: 'assets', icon: Database, label: 'Asset Management' },
     { id: 'reports', icon: FileText, label: 'Reports' },
     { id: 'notifications', icon: Bell, label: 'Notifications' },

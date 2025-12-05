@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { PQEvent } from '../types/database';
 import { BarChart3, TrendingUp, Activity } from 'lucide-react';
 
-export default function DataAnalytics() {
+export default function ImpactAnalysis() {
   const [events, setEvents] = useState<PQEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +35,7 @@ export default function DataAnalytics() {
   const maxEvents = Math.max(...Object.values(eventsByHour));
 
   const harmonicEvents = events.filter(e => e.event_type === 'harmonic');
-  const avgTHD = harmonicEvents.reduce((acc, e) => acc + e.magnitude, 0) / harmonicEvents.length || 0;
+  const avgTHD = harmonicEvents.reduce((acc, e) => acc + (e.magnitude || 0), 0) / harmonicEvents.length || 0;
 
   if (loading) {
     return (
@@ -50,8 +50,8 @@ export default function DataAnalytics() {
       <div className="flex items-center gap-3">
         <BarChart3 className="w-8 h-8 text-slate-700" />
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Data Analytics</h1>
-          <p className="text-slate-600 mt-1">Power quality analysis and visualization</p>
+          <h1 className="text-3xl font-bold text-slate-900">Impact Analysis</h1>
+          <p className="text-slate-600 mt-1">Power quality impact analysis and visualization</p>
         </div>
       </div>
 
