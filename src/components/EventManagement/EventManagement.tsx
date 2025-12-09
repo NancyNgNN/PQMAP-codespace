@@ -99,6 +99,14 @@ export default function EventManagement() {
     }
   };
 
+  const handleEventDeleted = () => {
+    // Clear selected event
+    setSelectedEvent(null);
+    setImpacts([]);
+    // Reload event list
+    loadData();
+  };
+
   // Build tree structure for mother events
   const buildEventTree = (events: PQEvent[]): EventTreeNode[] => {
     const nodeMap = new Map<string, EventTreeNode>();
@@ -836,6 +844,7 @@ export default function EventManagement() {
                   substation={substations.find(s => s.id === selectedEvent.substation_id)}
                   impacts={impacts}
                   onStatusChange={updateEventStatus}
+                  onEventDeleted={handleEventDeleted}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-slate-400">

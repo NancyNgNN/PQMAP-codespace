@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, MapPin, Zap, AlertTriangle, Users, ArrowLeft, GitBranch } from 'lucide-react';
+import { Clock, MapPin, Zap, AlertTriangle, Users, ArrowLeft, GitBranch, Trash2 } from 'lucide-react';
 import { PQEvent, Substation, EventCustomerImpact } from '../../types/database';
 import { supabase } from '../../lib/supabase';
 import WaveformDisplay from './WaveformDisplay';
@@ -9,9 +9,10 @@ interface EventDetailsProps {
   substation?: Substation;
   impacts: EventCustomerImpact[];
   onStatusChange: (eventId: string, status: string) => void;
+  onEventDeleted?: () => void;
 }
 
-export default function EventDetails({ event: initialEvent, substation: initialSubstation, impacts: initialImpacts, onStatusChange }: EventDetailsProps) {
+export default function EventDetails({ event: initialEvent, substation: initialSubstation, impacts: initialImpacts, onStatusChange, onEventDeleted }: EventDetailsProps) {
   // Navigation state
   const [currentEvent, setCurrentEvent] = useState<PQEvent>(initialEvent);
   const [currentSubstation, setCurrentSubstation] = useState<Substation | undefined>(initialSubstation);
@@ -25,6 +26,10 @@ export default function EventDetails({ event: initialEvent, substation: initialS
   // Child events state
   const [childEvents, setChildEvents] = useState<PQEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Delete confirmation state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Update state when props change
   useEffect(() => {
@@ -116,6 +121,49 @@ export default function EventDetails({ event: initialEvent, substation: initialS
       setCurrentSubstation(previous.substation);
       setCurrentImpacts(previous.impacts);
       setNavigationStack(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    setDeleting(true);
+    try {
+      // If it's a mother event, delete child events first
+      if (currentEvent.is_mother_event && childEvents.length > 0) {
+        const childIds = childEvents.map(child => child.id);
+        const { error: childError } = await supabase
+          .from('pq_events')
+          .delete()
+          .in('id', childIds);
+        
+        if (childError) {
+          console.error('Error deleting child events:', childError);
+          alert('Failed to delete child events. Please try again.');
+          setDeleting(false);
+          return;
+        }
+      }
+
+      // Delete the main event
+      const { error } = await supabase
+        .from('pq_events')
+        .delete()
+        .eq('id', currentEvent.id);
+
+      if (error) {
+        console.error('Error deleting event:', error);
+        alert('Failed to delete event. Please try again.');
+      } else {
+        // Success - notify parent component
+        setShowDeleteConfirm(false);
+        if (onEventDeleted) {
+          onEventDeleted();
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('An unexpected error occurred. Please try again.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -218,15 +266,24 @@ export default function EventDetails({ event: initialEvent, substation: initialS
       )}
 
       <div>
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold text-slate-900">
-            Event Details
-          </h2>
-          {currentEvent.parent_event_id && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded">
-              Child
-            </span>
-          )}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-slate-900">
+              Event Details
+            </h2>
+            {currentEvent.parent_event_id && (
+              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded">
+                Child
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+            title="Delete Event"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
         </div>
         <p className="text-sm text-slate-600 mt-1">ID: {currentEvent.id.substring(0, 8)}</p>
       </div>
@@ -375,6 +432,56 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Delete Event</h3>
+            </div>
+            
+            <p className="text-slate-600 mb-2">
+              Are you sure you want to delete this event?
+            </p>
+            
+            {currentEvent.is_mother_event && childEvents.length > 0 && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg mb-4">
+                <p className="text-sm text-orange-800 font-semibold">
+                  ⚠️ This is a mother event
+                </p>
+                <p className="text-sm text-orange-700 mt-1">
+                  {childEvents.length} child event{childEvents.length !== 1 ? 's' : ''} will also be deleted.
+                </p>
+              </div>
+            )}
+            
+            <p className="text-sm text-slate-500 mb-6">
+              This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteEvent}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}
