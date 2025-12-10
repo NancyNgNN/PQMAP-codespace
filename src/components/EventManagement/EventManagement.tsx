@@ -53,29 +53,37 @@ export default function EventManagement() {
   const [filterProfiles, setFilterProfiles] = useState<FilterProfile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [profileName, setProfileName] = useState('');
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const [showMeterDropdown, setShowMeterDropdown] = useState(false);
   const [meterSearchQuery, setMeterSearchQuery] = useState('');
   const [selectedVoltageLevelsForMeters, setSelectedVoltageLevelsForMeters] = useState<string[]>([]);
+  const [showVoltageLevelDropdown, setShowVoltageLevelDropdown] = useState(false);
 
   useEffect(() => {
     loadData();
     loadFilterProfiles();
   }, []);
 
-  // Close meter dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (showMeterDropdown && !target.closest('.meter-dropdown-container')) {
         setShowMeterDropdown(false);
       }
+      if (showProfileDropdown && !target.closest('.profile-dropdown-container')) {
+        setShowProfileDropdown(false);
+      }
+      if (showVoltageLevelDropdown && !target.closest('.voltage-dropdown-container')) {
+        setShowVoltageLevelDropdown(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMeterDropdown]);
+  }, [showMeterDropdown, showProfileDropdown, showVoltageLevelDropdown]);
 
   const loadData = async () => {
     try {
@@ -191,7 +199,12 @@ export default function EventManagement() {
 
         if (error) {
           console.error('Error updating profile:', error);
-          alert('Failed to update profile. Please try again.');
+          // Check for duplicate name error
+          if (error.code === '23505') {
+            alert(`A profile named "${profileName.trim()}" already exists. Please choose a different name.`);
+          } else {
+            alert('Failed to update profile. Please try again.');
+          }
           return;
         }
       } else {
@@ -207,7 +220,12 @@ export default function EventManagement() {
 
         if (error) {
           console.error('Error creating profile:', error);
-          alert('Failed to create profile. Please try again.');
+          // Check for duplicate name error (PostgreSQL unique constraint violation)
+          if (error.code === '23505') {
+            alert(`A profile named "${profileName.trim()}" already exists. Please choose a different name.`);
+          } else {
+            alert('Failed to create profile. Please try again.');
+          }
           return;
         }
       }
@@ -237,6 +255,7 @@ export default function EventManagement() {
       setProfileName(profile.name);
       setEditingProfileId(profileId);
       setShowProfileDialog(true);
+      setShowProfileDropdown(false);
     }
   };
 
@@ -244,6 +263,8 @@ export default function EventManagement() {
     if (!confirm('Are you sure you want to delete this profile?')) {
       return;
     }
+
+    setShowProfileDropdown(false);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -274,6 +295,8 @@ export default function EventManagement() {
   };
 
   const handleSetDefaultProfile = async (profileId: string) => {
+    setShowProfileDropdown(false);
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -709,46 +732,79 @@ export default function EventManagement() {
               </div>
 
               {filterProfiles.length > 0 && (
-                <div className="relative">
-                  <select
-                    value={selectedProfileId || ''}
-                    onChange={(e) => e.target.value ? handleLoadProfile(e.target.value) : setSelectedProfileId(null)}
-                    className="px-4 py-2 pr-10 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all appearance-none cursor-pointer"
+                <div className="relative profile-dropdown-container">
+                  <button
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    className="px-4 py-2 pr-10 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all min-w-[200px] text-left"
                   >
-                    <option value="">Select Profile...</option>
-                    {filterProfiles.map(profile => (
-                      <option key={profile.id} value={profile.id}>
-                        {profile.is_default ? '⭐ ' : ''}{profile.name}
-                      </option>
-                    ))}
-                  </select>
+                    {selectedProfileId 
+                      ? filterProfiles.find(p => p.id === selectedProfileId)?.name || 'Select Profile...'
+                      : 'Select Profile...'}
+                  </button>
                   <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
                   
-                  {selectedProfileId && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 flex gap-1 z-10">
-                      {!filterProfiles.find(p => p.id === selectedProfileId)?.is_default && (
-                        <button
-                          onClick={() => handleSetDefaultProfile(selectedProfileId)}
-                          className="p-1.5 hover:bg-green-50 rounded text-green-600"
-                          title="Set as Default"
+                  {showProfileDropdown && (
+                    <div className="absolute left-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-20 min-w-[250px] max-h-[300px] overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setSelectedProfileId(null);
+                          setShowProfileDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                      >
+                        Select Profile...
+                      </button>
+                      {filterProfiles.map(profile => (
+                        <div
+                          key={profile.id}
+                          className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 transition-colors group"
                         >
-                          <Check className="w-4 h-4" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleEditProfile(selectedProfileId)}
-                        className="p-1.5 hover:bg-slate-100 rounded text-slate-600"
-                        title="Edit Profile"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProfile(selectedProfileId)}
-                        className="p-1.5 hover:bg-red-50 rounded text-red-600"
-                        title="Delete Profile"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                          <button
+                            onClick={() => {
+                              handleLoadProfile(profile.id);
+                              setShowProfileDropdown(false);
+                            }}
+                            className="flex-1 text-left text-sm text-slate-700 flex items-center gap-2"
+                          >
+                            {profile.is_default && <span className="text-yellow-500">⭐</span>}
+                            {profile.name}
+                          </button>
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {!profile.is_default && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSetDefaultProfile(profile.id);
+                                }}
+                                className="p-1 hover:bg-green-50 rounded text-green-600"
+                                title="Set as Default"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditProfile(profile.id);
+                              }}
+                              className="p-1 hover:bg-slate-100 rounded text-slate-600"
+                              title="Edit Profile"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProfile(profile.id);
+                              }}
+                              className="p-1 hover:bg-red-50 rounded text-red-600"
+                              title="Delete Profile"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -837,8 +893,14 @@ export default function EventManagement() {
                   <input
                     type="datetime-local"
                     value={filters.startDate}
-                    onChange={(e) => setFilters((prev: any) => ({ ...prev, startDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    onChange={(e) => {
+                      setFilters((prev: any) => ({ ...prev, startDate: e.target.value }));
+                      // Auto-close on selection
+                      if (e.target.value) {
+                        setTimeout(() => e.target.blur(), 100);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200"
                   />
                 </div>
                 <div>
@@ -846,8 +908,14 @@ export default function EventManagement() {
                   <input
                     type="datetime-local"
                     value={filters.endDate}
-                    onChange={(e) => setFilters((prev: any) => ({ ...prev, endDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    onChange={(e) => {
+                      setFilters((prev: any) => ({ ...prev, endDate: e.target.value }));
+                      // Auto-close on selection
+                      if (e.target.value) {
+                        setTimeout(() => e.target.blur(), 100);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200"
                   />
                 </div>
 
@@ -876,25 +944,46 @@ export default function EventManagement() {
                 {/* Voltage Level Filter */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-1">
-                    Voltage Level (Event Filter) {filters.voltageLevels.length > 0 && `(${filters.voltageLevels.length} selected)`}
+                    Voltage Level (Event Filter) {filters.voltageLevels.length > 0 && `(${filters.voltageLevels.length})`}
                   </label>
-                  <select
-                    multiple
-                    value={filters.voltageLevels}
-                    onChange={(e) => {
-                      const selected = Array.from(e.target.selectedOptions, option => option.value);
-                      setFilters((prev: any) => ({ ...prev, voltageLevels: selected }));
-                    }}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    size={5}
-                  >
-                    <option value="400kV">400kV</option>
-                    <option value="132kV">132kV</option>
-                    <option value="33kV">33kV</option>
-                    <option value="11kV">11kV</option>
-                    <option value="380V">380V</option>
-                  </select>
-                  <p className="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                  <div className="relative voltage-dropdown-container">
+                    <button
+                      onClick={() => setShowVoltageLevelDropdown(!showVoltageLevelDropdown)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-left text-sm hover:bg-slate-50 transition-all flex items-center justify-between"
+                    >
+                      <span className="text-slate-700">
+                        {filters.voltageLevels.length === 0 ? 'Select voltage levels...' : `${filters.voltageLevels.length} level(s) selected`}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </button>
+                    
+                    {showVoltageLevelDropdown && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                        <div className="p-2">
+                          {['400kV', '132kV', '33kV', '11kV', '380V'].map(voltage => (
+                            <label
+                              key={voltage}
+                              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={filters.voltageLevels.includes(voltage)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setFilters(prev => ({ ...prev, voltageLevels: [...prev.voltageLevels, voltage] }));
+                                  } else {
+                                    setFilters(prev => ({ ...prev, voltageLevels: prev.voltageLevels.filter(v => v !== voltage) }));
+                                  }
+                                }}
+                                className="rounded text-blue-600"
+                              />
+                              <span className="text-sm font-medium text-slate-700">⚡ {voltage}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* PQ Meter Filter with Voltage Level Grouping */}
