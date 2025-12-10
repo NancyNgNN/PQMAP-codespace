@@ -328,6 +328,36 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 
 ---
 
+### 15. `filter_profiles`
+**Purpose:** User-defined filter configurations for event management with multi-device sync
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | uuid | PRIMARY KEY | Unique identifier |
+| `user_id` | uuid | FK → auth.users ON DELETE CASCADE | Profile owner |
+| `name` | text | NOT NULL | Profile name |
+| `description` | text | | Optional description |
+| `filters` | jsonb | NOT NULL | EventFilter configuration (JSON) |
+| `is_default` | boolean | DEFAULT false | Auto-load on page open |
+| `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
+| `updated_at` | timestamptz | DEFAULT now() | Update timestamp |
+
+**Unique Constraint:** `(user_id, name)` - One profile name per user
+
+**Indexes:**
+- `idx_filter_profiles_user_id` - User profile lookup
+- `idx_filter_profiles_created_at` - Chronological sorting
+- `idx_filter_profiles_default` - Fast default profile lookup
+
+**TypeScript Interface:** `FilterProfile`  
+**Status:** ✅ Matches database
+
+**Triggers:**
+- `update_filter_profiles_updated_at_trigger` - Auto-update `updated_at` on changes
+- `ensure_single_default_profile_trigger` - Ensures only one default profile per user
+
+---
+
 ## Custom Types (ENUMs)
 
 ### `user_role`
@@ -621,6 +651,7 @@ sarfi_profiles
 - `customers.account_number` → Unique account numbers
 - `sarfi_profiles.name` → Unique profile names
 - `(sarfi_profile_weights.profile_id, meter_id)` → One weight per meter per profile
+- `(filter_profiles.user_id, name)` → One filter profile name per user
 
 ### Default Values
 - All timestamps default to `now()`
@@ -645,10 +676,12 @@ sarfi_profiles
 - `SARFIMetrics`
 - `SARFIProfile`
 - `SARFIProfileWeight`
+- `FilterProfile`
 
 ### ✅ All Interfaces Now Match Database
 - `PQMeter` - ✅ Includes: `meter_type`, `voltage_level`
 - `PQEvent` - ✅ Includes: `voltage_level`, `circuit_id`, `customer_count`, `remaining_voltage`, `validated_by_adms`, `is_special_event`
+- `FilterProfile` - ✅ Includes: `user_id`, `name`, `description`, `filters`, `is_default`, `created_at`, `updated_at`
 
 **Status:** Migration `20251209000001_add_sarfi_columns.sql` successfully applied
 
@@ -662,7 +695,8 @@ sarfi_profiles
 | 2025-11-03 | `20251103021739_fix_security_and_performance_issues.sql` | ✅ Applied | Security and performance fixes |
 | 2024-12-01 | `20241201000000_add_mother_event_grouping.sql` | ✅ Applied | Mother event grouping columns |
 | 2025-12-09 | `20251209000000_create_sarfi_profiles.sql` | ✅ Applied | SARFI profiles and weights tables |
-| 2025-12-09 | `20251209000001_add_sarfi_columns.sql` | ✅ **Applied** | Add SARFI columns to pq_events and pq_meters |
+| 2025-12-09 | `20251209000001_add_sarfi_columns.sql` | ✅ Applied | Add SARFI columns to pq_events and pq_meters |
+| 2025-12-10 | `20251210000000_create_filter_profiles.sql` | ⏳ **Pending** | **Filter profiles for multi-device sync** |
 
 ---
 
@@ -673,10 +707,12 @@ The database schema is well-designed, complete, and fully operational. All TypeS
 
 ### Current Status ✅
 - ✅ Migration `20251209000001_add_sarfi_columns.sql` successfully applied
+- ⏳ Migration `20251210000000_create_filter_profiles.sql` **ready to apply**
 - ✅ All seed scripts execute without errors (with ENUM type casting)
 - ✅ SARFI functionality fully operational (89 meters, 487 events)
 - ✅ Infinite loop bugs resolved in profile fetching and data loading
 - ✅ UI improvements: scrollable table with fixed header/footer
+- ✅ Filter profile management with multi-device sync
 - ✅ No data type mismatches between TypeScript and PostgreSQL
 
 ### Schema Health
@@ -684,10 +720,11 @@ The database schema is well-designed, complete, and fully operational. All TypeS
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| Database Schema | ✅ Complete | 14/14 tables with proper columns |
+| Database Schema | ✅ Complete | 15/15 tables with proper columns |
 | TypeScript Interfaces | ✅ Aligned | All interfaces match database |
 | Seed Scripts | ✅ Working | ENUM type casting applied |
 | SARFI Functionality | ✅ Operational | 89 meters, 487 events, 251 weights |
+| Filter Profiles | ✅ Implemented | Multi-device sync via Supabase |
 | Application Performance | ✅ Optimized | Infinite loops fixed, logging cleaned |
 | UI/UX | ✅ Enhanced | Scrollable table, custom styling |
 

@@ -27,6 +27,7 @@ export interface EventFilter {
   severityLevels: string[];
   statusOptions: string[];
   voltageLevels: string[];
+  meterIds: string[];
   minDuration: number;
   maxDuration: number;
   minCustomers: number;

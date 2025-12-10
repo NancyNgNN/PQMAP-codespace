@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { PQEvent, Substation, EventCustomerImpact } from '../../types/database';
+import { PQEvent, Substation, EventCustomerImpact, PQMeter, FilterProfile } from '../../types/database';
 import { EventTreeNode, EventFilter } from '../../types/eventTypes';
 import EventDetails from './EventDetails';
 import FalseEventConfig from './FalseEventConfig';
 import FalseEventAnalytics from './FalseEventAnalytics';
 import { falseEventDetector } from '../../utils/falseEventDetection';
 import { MotherEventGroupingService } from '../../services/mother-event-grouping';
-import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Shield, BarChart3, Group, Ungroup, Check, X } from 'lucide-react';
+import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Shield, BarChart3, Group, Ungroup, Check, X, Save, Edit2, Trash2, RotateCcw, ChevronDown } from 'lucide-react';
 
 export default function EventManagement() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -35,6 +35,7 @@ export default function EventManagement() {
     severityLevels: [],
     statusOptions: [],
     voltageLevels: [],
+    meterIds: [],
     minDuration: 0,
     maxDuration: 300000, // 5 minutes (300 seconds) to accommodate sustained events
     minCustomers: 0,
@@ -47,26 +48,81 @@ export default function EventManagement() {
     hideFalseEvents: true
   });
 
+  // Meter and Profile states
+  const [meters, setMeters] = useState<PQMeter[]>([]);
+  const [filterProfiles, setFilterProfiles] = useState<FilterProfile[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
+  const [showMeterDropdown, setShowMeterDropdown] = useState(false);
+  const [meterSearchQuery, setMeterSearchQuery] = useState('');
+  const [selectedVoltageLevelsForMeters, setSelectedVoltageLevelsForMeters] = useState<string[]>([]);
+
   useEffect(() => {
     loadData();
+    loadFilterProfiles();
   }, []);
+
+  // Close meter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showMeterDropdown && !target.closest('.meter-dropdown-container')) {
+        setShowMeterDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMeterDropdown]);
 
   const loadData = async () => {
     try {
-      const [eventsRes, substationsRes] = await Promise.all([
+      const [eventsRes, substationsRes, metersRes] = await Promise.all([
         supabase
           .from('pq_events')
           .select('*')
           .order('timestamp', { ascending: false }),
         supabase.from('substations').select('*'),
+        supabase.from('pq_meters').select('*').order('meter_id', { ascending: true }),
       ]);
 
       if (!eventsRes.error) setEvents(eventsRes.data || []);
       if (!substationsRes.error) setSubstations(substationsRes.data || []);
+      if (!metersRes.error) setMeters(metersRes.data || []);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadFilterProfiles = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('filter_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading filter profiles:', error);
+      } else {
+        setFilterProfiles(data || []);
+        
+        // Auto-load default profile if exists
+        const defaultProfile = data?.find(p => p.is_default);
+        if (defaultProfile) {
+          setFilters(defaultProfile.filters as EventFilter);
+          setSelectedProfileId(defaultProfile.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading filter profiles:', error);
     }
   };
 
@@ -105,6 +161,163 @@ export default function EventManagement() {
     setImpacts([]);
     // Reload event list
     loadData();
+  };
+
+  // Filter Profile Management
+  const handleSaveProfile = async () => {
+    if (!profileName.trim()) {
+      alert('Please enter a profile name');
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('You must be logged in to save profiles');
+        return;
+      }
+
+      if (editingProfileId) {
+        // Update existing profile
+        const { error } = await supabase
+          .from('filter_profiles')
+          .update({
+            name: profileName.trim(),
+            filters: filters,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingProfileId)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error updating profile:', error);
+          alert('Failed to update profile. Please try again.');
+          return;
+        }
+      } else {
+        // Create new profile
+        const { error } = await supabase
+          .from('filter_profiles')
+          .insert({
+            user_id: user.id,
+            name: profileName.trim(),
+            filters: filters,
+            is_default: false
+          });
+
+        if (error) {
+          console.error('Error creating profile:', error);
+          alert('Failed to create profile. Please try again.');
+          return;
+        }
+      }
+
+      // Reload profiles
+      await loadFilterProfiles();
+      setShowProfileDialog(false);
+      setProfileName('');
+      setEditingProfileId(null);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('An unexpected error occurred. Please try again.');
+    }
+  };
+
+  const handleLoadProfile = (profileId: string) => {
+    const profile = filterProfiles.find(p => p.id === profileId);
+    if (profile) {
+      setFilters(profile.filters as EventFilter);
+      setSelectedProfileId(profileId);
+    }
+  };
+
+  const handleEditProfile = (profileId: string) => {
+    const profile = filterProfiles.find(p => p.id === profileId);
+    if (profile) {
+      setProfileName(profile.name);
+      setEditingProfileId(profileId);
+      setShowProfileDialog(true);
+    }
+  };
+
+  const handleDeleteProfile = async (profileId: string) => {
+    if (!confirm('Are you sure you want to delete this profile?')) {
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('filter_profiles')
+        .delete()
+        .eq('id', profileId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error deleting profile:', error);
+        alert('Failed to delete profile. Please try again.');
+        return;
+      }
+
+      // Reload profiles
+      await loadFilterProfiles();
+      
+      if (selectedProfileId === profileId) {
+        setSelectedProfileId(null);
+      }
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      alert('An unexpected error occurred. Please try again.');
+    }
+  };
+
+  const handleSetDefaultProfile = async (profileId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('filter_profiles')
+        .update({ is_default: true })
+        .eq('id', profileId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error setting default profile:', error);
+        alert('Failed to set default profile. Please try again.');
+        return;
+      }
+
+      // Reload profiles
+      await loadFilterProfiles();
+    } catch (error) {
+      console.error('Error setting default profile:', error);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      startDate: '',
+      endDate: '',
+      eventTypes: [],
+      severityLevels: [],
+      statusOptions: [],
+      voltageLevels: [],
+      meterIds: [],
+      minDuration: 0,
+      maxDuration: 300000,
+      minCustomers: 0,
+      maxCustomers: 1000,
+      minRemainingVoltage: 0,
+      maxRemainingVoltage: 100,
+      circuitIds: [],
+      showOnlyUnvalidated: false,
+      showOnlyMotherEvents: false,
+      hideFalseEvents: true
+    });
+    setSelectedProfileId(null);
   };
 
   // Build tree structure for mother events
@@ -216,6 +429,12 @@ export default function EventManagement() {
       
       // Mother event filter
       if (filters.showOnlyMotherEvents && !event.is_mother_event) return false;
+
+      // Meter ID filter
+      if (filters.meterIds.length > 0 && event.meter_id && !filters.meterIds.includes(event.meter_id)) {
+        if (isMotherEvent) console.log('❌ Mother event filtered by METER ID:', event.id.substring(0, 8), event.meter_id);
+        return false;
+      }
 
       return true;
     });
@@ -478,6 +697,63 @@ export default function EventManagement() {
                 Filters
               </button>
 
+              {/* Filter Profile Controls */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileDialog(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-white text-slate-700 border-slate-300 hover:bg-slate-50 transition-all"
+                >
+                  <Save className="w-4 h-4" />
+                  Save Profile
+                </button>
+              </div>
+
+              {filterProfiles.length > 0 && (
+                <div className="relative">
+                  <select
+                    value={selectedProfileId || ''}
+                    onChange={(e) => e.target.value ? handleLoadProfile(e.target.value) : setSelectedProfileId(null)}
+                    className="px-4 py-2 pr-10 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="">Select Profile...</option>
+                    {filterProfiles.map(profile => (
+                      <option key={profile.id} value={profile.id}>
+                        {profile.is_default ? '⭐ ' : ''}{profile.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                  
+                  {selectedProfileId && (
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 flex gap-1 z-10">
+                      {!filterProfiles.find(p => p.id === selectedProfileId)?.is_default && (
+                        <button
+                          onClick={() => handleSetDefaultProfile(selectedProfileId)}
+                          className="p-1.5 hover:bg-green-50 rounded text-green-600"
+                          title="Set as Default"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleEditProfile(selectedProfileId)}
+                        className="p-1.5 hover:bg-slate-100 rounded text-slate-600"
+                        title="Edit Profile"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProfile(selectedProfileId)}
+                        className="p-1.5 hover:bg-red-50 rounded text-red-600"
+                        title="Delete Profile"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Multi-select and Grouping Controls */}
               <button
                 onClick={() => setIsMultiSelectMode(!isMultiSelectMode)}
@@ -540,11 +816,21 @@ export default function EventManagement() {
           {/* Advanced Filters Panel */}
           {showFilters && (
             <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Search className="w-5 h-5" />
-                Advanced Filters
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Search className="w-5 h-5" />
+                  Advanced Filters
+                </h3>
+                <button
+                  onClick={handleResetFilters}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset All
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Date Range */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Start Date</label>
@@ -552,7 +838,7 @@ export default function EventManagement() {
                     type="datetime-local"
                     value={filters.startDate}
                     onChange={(e) => setFilters((prev: any) => ({ ...prev, startDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   />
                 </div>
                 <div>
@@ -561,28 +847,184 @@ export default function EventManagement() {
                     type="datetime-local"
                     value={filters.endDate}
                     onChange={(e) => setFilters((prev: any) => ({ ...prev, endDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   />
                 </div>
 
-                {/* Duration Range */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">Min Duration (ms)</label>
-                  <input
-                    type="number"
-                    value={filters.minDuration}
-                    onChange={(e) => setFilters((prev: any) => ({ ...prev, minDuration: parseInt(e.target.value) || 0 }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                {/* Duration Range - Compressed */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Duration (ms)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.minDuration}
+                      onChange={(e) => setFilters((prev: any) => ({ ...prev, minDuration: parseInt(e.target.value) || 0 }))}
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                    <span className="text-slate-500">to</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.maxDuration}
+                      onChange={(e) => setFilters((prev: any) => ({ ...prev, maxDuration: parseInt(e.target.value) || 10000 }))}
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Max Duration (ms)</label>
-                  <input
-                    type="number"
-                    value={filters.maxDuration}
-                    onChange={(e) => setFilters((prev: any) => ({ ...prev, maxDuration: parseInt(e.target.value) || 10000 }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+
+                {/* Voltage Level Filter */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Voltage Level (Event Filter) {filters.voltageLevels.length > 0 && `(${filters.voltageLevels.length} selected)`}
+                  </label>
+                  <select
+                    multiple
+                    value={filters.voltageLevels}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                      setFilters((prev: any) => ({ ...prev, voltageLevels: selected }));
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    size={5}
+                  >
+                    <option value="400kV">400kV</option>
+                    <option value="132kV">132kV</option>
+                    <option value="33kV">33kV</option>
+                    <option value="11kV">11kV</option>
+                    <option value="380V">380V</option>
+                  </select>
+                  <p className="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                </div>
+
+                {/* PQ Meter Filter with Voltage Level Grouping */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    PQ Meters ({meters.length} total, {filters.meterIds.length} selected)
+                  </label>
+                  <div className="relative meter-dropdown-container">
+                    <button
+                      onClick={() => setShowMeterDropdown(!showMeterDropdown)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-left text-sm hover:bg-slate-50 transition-all flex items-center justify-between"
+                    >
+                      <span className="text-slate-700">
+                        {filters.meterIds.length === 0 ? 'Select meters...' : `${filters.meterIds.length} meter(s) selected`}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </button>
+                    
+                    {showMeterDropdown && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                        {/* Search Box */}
+                        <div className="sticky top-0 bg-white p-2 border-b border-slate-200">
+                          <input
+                            type="text"
+                            placeholder="Search meters..."
+                            value={meterSearchQuery}
+                            onChange={(e) => setMeterSearchQuery(e.target.value)}
+                            className="w-full px-3 py-1.5 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+
+                        {/* Voltage Level Filter for Meter List */}
+                        <div className="p-2 border-b border-slate-200 bg-slate-50">
+                          <div className="text-xs font-semibold text-slate-600 mb-2">Filter by Voltage Level:</div>
+                          <div className="flex flex-wrap gap-1">
+                            {['400kV', '132kV', '33kV', '11kV', '380V'].map(level => (
+                              <button
+                                key={level}
+                                onClick={() => {
+                                  setSelectedVoltageLevelsForMeters(prev =>
+                                    prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]
+                                  );
+                                }}
+                                className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                                  selectedVoltageLevelsForMeters.includes(level)
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                                }`}
+                              >
+                                {level}
+                              </button>
+                            ))}
+                            {selectedVoltageLevelsForMeters.length > 0 && (
+                              <button
+                                onClick={() => setSelectedVoltageLevelsForMeters([])}
+                                className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100"
+                              >
+                                Clear
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Select All / Clear All */}
+                        <div className="p-2 border-b border-slate-200 flex gap-2">
+                          <button
+                            onClick={() => {
+                              const filteredMeterIds = meters
+                                .filter(m => {
+                                  const matchesSearch = meterSearchQuery === '' || 
+                                    m.meter_id.toLowerCase().includes(meterSearchQuery.toLowerCase());
+                                  const matchesVoltage = selectedVoltageLevelsForMeters.length === 0 ||
+                                    (m.voltage_level && selectedVoltageLevelsForMeters.includes(m.voltage_level));
+                                  return matchesSearch && matchesVoltage;
+                                })
+                                .map(m => m.id);
+                              setFilters(prev => ({ ...prev, meterIds: filteredMeterIds }));
+                            }}
+                            className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-medium"
+                          >
+                            Select All
+                          </button>
+                          <button
+                            onClick={() => setFilters(prev => ({ ...prev, meterIds: [] }))}
+                            className="flex-1 px-2 py-1 text-xs bg-slate-100 text-slate-600 rounded hover:bg-slate-200 font-medium"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+
+                        {/* Meter List */}
+                        <div className="max-h-64 overflow-y-auto">
+                          {meters
+                            .filter(meter => {
+                              const matchesSearch = meterSearchQuery === '' || 
+                                meter.meter_id.toLowerCase().includes(meterSearchQuery.toLowerCase());
+                              const matchesVoltage = selectedVoltageLevelsForMeters.length === 0 ||
+                                (meter.voltage_level && selectedVoltageLevelsForMeters.includes(meter.voltage_level));
+                              return matchesSearch && matchesVoltage;
+                            })
+                            .map(meter => (
+                              <label
+                                key={meter.id}
+                                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={filters.meterIds.includes(meter.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setFilters(prev => ({ ...prev, meterIds: [...prev.meterIds, meter.id] }));
+                                    } else {
+                                      setFilters(prev => ({ ...prev, meterIds: prev.meterIds.filter(id => id !== meter.id) }));
+                                    }
+                                  }}
+                                  className="rounded text-blue-600"
+                                />
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-slate-700">{meter.meter_id}</div>
+                                  <div className="text-xs text-slate-500">
+                                    {meter.voltage_level && <span className="mr-2">⚡ {meter.voltage_level}</span>}
+                                    {meter.location && <span>{meter.location}</span>}
+                                  </div>
+                                </div>
+                              </label>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -877,6 +1319,70 @@ export default function EventManagement() {
           rules={falseEventRules}
           onRuleOptimize={handleRuleOptimize}
         />
+      )}
+
+      {/* Profile Save Dialog */}
+      {showProfileDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Save className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">
+                {editingProfileId ? 'Edit Filter Profile' : 'Save Filter Profile'}
+              </h3>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Profile Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                placeholder="Enter profile name..."
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                autoFocus
+              />
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-3 mb-4">
+              <p className="text-sm text-slate-600 mb-2 font-semibold">Current Filter Settings:</p>
+              <ul className="text-xs text-slate-600 space-y-1">
+                {filters.startDate && <li>• Start Date: {new Date(filters.startDate).toLocaleString()}</li>}
+                {filters.endDate && <li>• End Date: {new Date(filters.endDate).toLocaleString()}</li>}
+                {filters.voltageLevels.length > 0 && <li>• Voltage Levels: {filters.voltageLevels.join(', ')}</li>}
+                {filters.meterIds.length > 0 && <li>• Meters: {filters.meterIds.length} selected</li>}
+                {filters.minDuration > 0 && <li>• Min Duration: {filters.minDuration}ms</li>}
+                {filters.maxDuration < 300000 && <li>• Max Duration: {filters.maxDuration}ms</li>}
+                {filters.showOnlyMotherEvents && <li>• Only Mother Events</li>}
+                {filters.hideFalseEvents && <li>• Hide False Events</li>}
+              </ul>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowProfileDialog(false);
+                  setProfileName('');
+                  setEditingProfileId(null);
+                }}
+                className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                disabled={!profileName.trim()}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {editingProfileId ? 'Update' : 'Save'} Profile
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

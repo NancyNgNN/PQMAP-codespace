@@ -44,6 +44,8 @@ export interface PQMeter {
   firmware_version: string | null;
   installed_date: string | null;
   created_at: string;
+  meter_type?: string;
+  voltage_level?: string;
   substation?: Substation;
 }
 
@@ -245,6 +247,17 @@ export interface DashboardStats {
 }
 
 // Event Statistics Interface
+export interface FilterProfile {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string | null;
+  filters: Record<string, any>; // EventFilter stored as JSONB
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface EventStatistics {
   eventsByType: Record<EventType, number>;
   eventsBySeverity: Record<SeverityLevel, number>;
