@@ -5,7 +5,6 @@ import SubstationMap from './SubstationMap';
 import EventList from './EventList';
 import SARFIChart from './SARFIChart';
 import StatsCards from './StatsCards';
-import RootCauseChart from './RootCauseChart';
 
 export default function Dashboard() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -66,10 +65,7 @@ export default function Dashboard() {
 
       <StatsCards events={events} substations={substations} />
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <SubstationMap substations={substations} events={events} />
-        <RootCauseChart events={events} />
-      </div>
+      <SubstationMap substations={substations} events={events} />
 
       <SARFIChart metrics={sarfiMetrics} />
 

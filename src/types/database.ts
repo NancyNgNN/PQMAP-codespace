@@ -328,6 +328,31 @@ export interface PowerQualityMetrics {
   flickerEvents: number;
 }
 
+// Substation Map Interfaces
+export interface SubstationMapFilters {
+  profileId: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface SubstationMapProfile {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubstationEventCount {
+  substationId: string;
+  substation: Substation;
+  eventCount: number;
+  services: string[];
+}
+
 // API Response Types
 export interface ApiResponse<T> {
   data: T;

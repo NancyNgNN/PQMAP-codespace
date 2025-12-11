@@ -105,7 +105,7 @@ interface ExportRow {
 
 ### Export Button
 
-**Standard Implementation:**
+**Standard Implementation (Icon-only):**
 
 ```tsx
 <div className="relative export-dropdown-container">
@@ -120,12 +120,30 @@ interface ExportRow {
 </div>
 ```
 
+**Alternative Implementation (With Label):**
+
+```tsx
+<div className="relative export-dropdown-container">
+  <button
+    onClick={() => setShowExportDropdown(!showExportDropdown)}
+    disabled={isExporting}
+    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+    title="Export Events"
+  >
+    <Download className="w-4 h-4" />
+    Export
+  </button>
+</div>
+```
+
 **Key Attributes:**
-- Color: `text-blue-600` for export actions
-- Hover: `hover:bg-blue-50` for subtle background
+- **Icon-only style:** `p-2 text-blue-600 hover:bg-blue-50` (preferred for toolbars)
+- **Button with label:** `px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white` (for prominent actions)
+- Hover: `hover:bg-blue-50` (icon-only) or `hover:bg-blue-700` (with label)
 - Disabled: `disabled:opacity-50` for visual feedback
-- Icon: Lucide's `Download` icon at `w-5 h-5`
-- Tooltip: Use `title` attribute for accessibility
+- Icon: Lucide's `Download` icon at `w-5 h-5` (icon-only) or `w-4 h-4` (with label)
+- Tooltip: **Always use `title` attribute** for accessibility, especially on icon-only buttons
+- Transition: `transition-all` for smooth hover effects
 
 ### Action Buttons
 
@@ -150,13 +168,27 @@ interface ExportRow {
 </button>
 ```
 
+**Settings/Config Button:**
+```tsx
+<button className="p-2 hover:bg-slate-100 rounded-lg" title="Configure Filters">
+  <Settings2 className="w-5 h-5 text-slate-600" />
+</button>
+```
+
+**Standard Pattern:**
+- Size: `p-2` padding for icon-only buttons
+- Icon size: `w-5 h-5` for all action buttons
+- Hover: Match color with lightened background (e.g., `text-blue-600 hover:bg-blue-50`)
+- Always include `title` attribute for tooltips
+- Use `rounded-lg` for consistent corner radius
+
 ---
 
 ## Dropdown Patterns
 
 ### Export Dropdown Menu
 
-**Standard Structure:**
+**Standard Structure (Multi-format):**
 
 ```tsx
 {showExportDropdown && (
@@ -188,6 +220,29 @@ interface ExportRow {
   </div>
 )}
 ```
+
+**Single Export Option:**
+
+```tsx
+{showExportDropdown && (
+  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-50">
+    <button
+      onClick={handleExportMap}
+      disabled={isExporting}
+      className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+    >
+      <Download className="w-4 h-4" />
+      Export Map as Image
+    </button>
+  </div>
+)}
+```
+
+**Styling Guidelines:**
+- Container: `shadow-xl border border-slate-200 py-2 z-50` (not just `shadow-lg`)
+- Buttons: Always include `flex items-center gap-2` for icon alignment
+- Text color: `text-slate-700` (not `text-slate-900`) for dropdown items
+- Width: `w-48` is standard, adjust as needed for longer text
 
 ### Click Outside Handler
 
@@ -557,6 +612,49 @@ if (event.false_event) { /* hide */ }
 - Custom column selection interface
 - Export to additional formats (JSON, XML)
 - Email export delivery option
+
+---
+
+## Special Use Cases
+
+### Dual Export Functionality
+
+**SubstationMap Component:**
+
+The SubstationMap component has two separate export functions:
+1. **Map Export** - Exports the visual map with bubbles as a PNG image
+2. **Table Export** - Handled by SubstationEventsTable component (Excel/CSV/PDF)
+
+```tsx
+// Map-level export dropdown (exports map visualization)
+<div className="relative export-dropdown-container">
+  <button
+    onClick={() => setShowExportDropdown(!showExportDropdown)}
+    disabled={isExporting}
+    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
+    title="Export Map and Data"
+  >
+    <Download className="w-5 h-5" />
+  </button>
+  {showExportDropdown && (
+    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-50">
+      <button onClick={handleExportMap} className="...">
+        Export Map as Image
+      </button>
+    </div>
+  )}
+</div>
+
+// Table-level export (in SubstationEventsTable component)
+// Exports event data as Excel/CSV/PDF
+```
+
+**Implementation Notes:**
+- Use clear labeling to distinguish between map export and data export
+- Tooltip on export button: "Export Map and Data" to indicate dual functionality
+- Map export: Single option dropdown with "Export Map as Image"
+- Table export: Separate export button in SubstationEventsTable with Excel/CSV/PDF options
+- Both use the same icon-only button style for consistency
 
 ---
 
