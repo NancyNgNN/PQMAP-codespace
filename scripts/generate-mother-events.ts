@@ -13,7 +13,7 @@ const MOTHER_EVENT_SCENARIOS = [
     motherEvent: {
       event_type: 'interruption',
       severity: 'critical',
-      root_cause: 'Grid switching operation - Primary breaker malfunction',
+      cause: 'Circuit Breaker Trip',
       duration_ms: 245000, // 4+ minutes
       magnitude: 0, // Complete interruption
     },
@@ -21,7 +21,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'voltage_dip',
         severity: 'high',
-        root_cause: 'Downstream voltage dip from upstream switching',
+        cause: 'Equipment Failure',
         duration_ms: 850,
         magnitude: 72.3,
         delay_ms: 15000, // 15 seconds later
@@ -29,7 +29,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'voltage_dip', 
         severity: 'high',
-        root_cause: 'Secondary cascade effect from grid switching',
+        cause: 'Secondary cascade effect from grid switching',
         duration_ms: 1200,
         magnitude: 68.7,
         delay_ms: 35000, // 35 seconds later
@@ -37,7 +37,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'voltage_dip',
         severity: 'medium',
-        root_cause: 'Tertiary voltage disturbance',
+        cause: 'Tertiary voltage disturbance',
         duration_ms: 650,
         magnitude: 81.2,
         delay_ms: 95000, // 1 minute 35 seconds later
@@ -50,7 +50,7 @@ const MOTHER_EVENT_SCENARIOS = [
     motherEvent: {
       event_type: 'voltage_swell',
       severity: 'high',
-      root_cause: 'Transformer tap operation under high load conditions',
+      cause: 'Transformer tap operation under high load conditions',
       duration_ms: 125000, // 2+ minutes
       magnitude: 112.8,
     },
@@ -58,7 +58,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'harmonic',
         severity: 'medium', 
-        root_cause: 'Harmonic distortion from transformer saturation',
+        cause: 'Harmonic distortion from transformer saturation',
         duration_ms: 45000,
         magnitude: 8.7, // 8.7% THD
         delay_ms: 8000, // 8 seconds later
@@ -66,7 +66,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'harmonic',
         severity: 'medium',
-        root_cause: 'Secondary harmonic resonance effect',
+        cause: 'Secondary harmonic resonance effect',
         duration_ms: 38000,
         magnitude: 6.3, // 6.3% THD  
         delay_ms: 62000, // 1 minute 2 seconds later
@@ -74,7 +74,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'flicker',
         severity: 'low',
-        root_cause: 'Voltage flicker from transformer instability',
+        cause: 'Voltage flicker from transformer instability',
         duration_ms: 28000,
         magnitude: 2.1,
         delay_ms: 145000, // 2 minutes 25 seconds later
@@ -87,7 +87,7 @@ const MOTHER_EVENT_SCENARIOS = [
     motherEvent: {
       event_type: 'interruption',
       severity: 'critical',
-      root_cause: 'Weather-related - Lightning strike on main transmission line',
+      cause: 'Weather-related - Lightning strike on main transmission line',
       duration_ms: 1850000, // 30+ minutes
       magnitude: 0,
     },
@@ -95,7 +95,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'transient',
         severity: 'high',
-        root_cause: 'Lightning-induced transient overvoltage',
+        cause: 'Lightning-induced transient overvoltage',
         duration_ms: 12,
         magnitude: 185.3,
         delay_ms: 2500, // 2.5 seconds later
@@ -103,7 +103,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'voltage_dip',
         severity: 'high', 
-        root_cause: 'System recovery voltage dip after lightning',
+        cause: 'System recovery voltage dip after lightning',
         duration_ms: 3400,
         magnitude: 63.1,
         delay_ms: 45000, // 45 seconds later
@@ -111,7 +111,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'interruption',
         severity: 'medium',
-        root_cause: 'Secondary protection trip from weather damage',
+        cause: 'Secondary protection trip from weather damage',
         duration_ms: 125000,
         magnitude: 0,
         delay_ms: 280000, // 4 minutes 40 seconds later
@@ -119,7 +119,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'voltage_swell',
         severity: 'medium',
-        root_cause: 'Load redistribution after weather outage',
+        cause: 'Load redistribution after weather outage',
         duration_ms: 8500,
         magnitude: 108.4,
         delay_ms: 920000, // 15 minutes 20 seconds later
@@ -132,7 +132,7 @@ const MOTHER_EVENT_SCENARIOS = [
     motherEvent: {
       event_type: 'harmonic',
       severity: 'high',
-      root_cause: 'Industrial customer - Large VFD startup harmonic injection',
+      cause: 'Industrial customer - Large VFD startup harmonic injection',
       duration_ms: 85000,
       magnitude: 12.4, // 12.4% THD
     },
@@ -140,7 +140,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'harmonic',
         severity: 'medium',
-        root_cause: 'Harmonic amplification in adjacent feeder',
+        cause: 'Harmonic amplification in adjacent feeder',
         duration_ms: 32000,
         magnitude: 7.8,
         delay_ms: 12000, // 12 seconds later
@@ -148,7 +148,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'flicker',
         severity: 'medium',
-        root_cause: 'Voltage flicker from harmonic interactions',
+        cause: 'Voltage flicker from harmonic interactions',
         duration_ms: 25000,
         magnitude: 3.2,
         delay_ms: 28000, // 28 seconds later
@@ -156,7 +156,7 @@ const MOTHER_EVENT_SCENARIOS = [
       {
         event_type: 'voltage_dip',
         severity: 'low',
-        root_cause: 'Voltage regulation response to harmonic load',
+        cause: 'Voltage regulation response to harmonic load',
         duration_ms: 1800,
         magnitude: 88.7,
         delay_ms: 55000, // 55 seconds later

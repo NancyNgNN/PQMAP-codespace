@@ -206,10 +206,10 @@ export const generatePQEvents = (substations: Substation[], meters: PQMeter[]): 
   const eventTypes = ['voltage_dip', 'voltage_swell', 'harmonic', 'interruption', 'transient', 'flicker'];
   const severities = ['critical', 'high', 'medium', 'low'];
   const statuses = ['new', 'acknowledged', 'investigating', 'resolved'];
-  const rootCauses = [
-    'Grid switching operation', 'Equipment malfunction', 'Weather-related',
-    'Transformer tap operation', 'Load variation', 'External system fault',
-    'Maintenance activity', 'Power plant dispatch', 'Harmonic resonance'
+  const causes = [
+    'Equipment Failure', 'Lightning Strike', 'Overload', 'Tree Contact',
+    'Animal Contact', 'Cable Fault', 'Transformer Failure', 'Circuit Breaker Trip',
+    'Planned Maintenance', 'Weather Conditions', 'Third Party Damage', 'Aging Infrastructure'
   ];
   
   // Generate events for the past 6 months
@@ -232,17 +232,15 @@ export const generatePQEvents = (substations: Substation[], meters: PQMeter[]): 
       groupTimestamp.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60), Math.floor(Math.random() * 60));
       
       const groupSubstation = substations[Math.floor(Math.random() * substations.length)];
-      const groupCause = rootCauses[Math.floor(Math.random() * rootCauses.length)];
-      
       // Mother event
-      const motherEvent = createEvent(groupSubstation, meters, groupTimestamp, groupCause, true, null);
+      const motherEvent = createEvent(groupSubstation, meters, groupTimestamp, true, null);
       events.push(motherEvent);
       
       // Child events (2-4 related events within 5 minutes)
       const childCount = Math.floor(Math.random() * 3) + 2;
       for (let c = 0; c < childCount; c++) {
         const childTimestamp = new Date(groupTimestamp.getTime() + (c + 1) * 60000 + Math.random() * 180000); // 1-4 minutes later
-        const childEvent = createEvent(groupSubstation, meters, childTimestamp, groupCause, false, null);
+        const childEvent = createEvent(groupSubstation, meters, childTimestamp, false, null);
         events.push(childEvent);
       }
     } else {
@@ -252,21 +250,21 @@ export const generatePQEvents = (substations: Substation[], meters: PQMeter[]): 
         eventDate.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60), Math.floor(Math.random() * 60));
         
         const substation = substations[Math.floor(Math.random() * substations.length)];
-        const cause = rootCauses[Math.floor(Math.random() * rootCauses.length)];
         
-        events.push(createEvent(substation, meters, eventDate, cause, false, null));
+        events.push(createEvent(substation, meters, eventDate, false, null));
       }
     }
   }
 
   // Helper function to create individual events
-  function createEvent(substation: any, meters: any[], timestamp: Date, rootCause: string, isMotherEvent: boolean, parentId: string | null) {
+  function createEvent(substation: any, meters: any[], timestamp: Date, isMotherEvent: boolean, parentId: string | null) {
     const substationMeters = meters.filter(m => m.substation_id === substation.id);
     const meter = substationMeters.length > 0 ? substationMeters[Math.floor(Math.random() * substationMeters.length)] : null;
     
     const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
     const severity = severities[Math.floor(Math.random() * severities.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const cause = causes[Math.floor(Math.random() * causes.length)];
     
     return {
       event_type: eventType,
@@ -285,7 +283,7 @@ export const generatePQEvents = (substations: Substation[], meters: PQMeter[]): 
       status: status,
       is_mother_event: isMotherEvent,
       parent_event_id: parentId,
-      root_cause: rootCause,
+      cause: cause,
       affected_phases: Math.random() < 0.7 ? ['A', 'B', 'C'] : 
         Math.random() < 0.5 ? ['A'] : 
         Math.random() < 0.5 ? ['B'] : ['C'],

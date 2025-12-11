@@ -156,7 +156,7 @@
         magnitude: Math.random() * 50 + 10,
         severity: severities[Math.floor(Math.random() * severities.length)],
         status: statuses[Math.floor(Math.random() * statuses.length)],
-        root_cause: 'Equipment fault',
+        cause: 'Equipment Failure',
         affected_phases: ['A', 'B', 'C']
       });
     }

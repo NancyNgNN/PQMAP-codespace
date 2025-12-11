@@ -5,6 +5,7 @@ import SubstationMap from './SubstationMap';
 import EventList from './EventList';
 import SARFIChart from './SARFIChart';
 import StatsCards from './StatsCards';
+import RootCauseChart from './RootCauseChart';
 
 export default function Dashboard() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -67,7 +68,20 @@ export default function Dashboard() {
 
       <SubstationMap substations={substations} events={events} />
 
+      {/* SARFI Chart - Full Width with integrated data table */}
       <SARFIChart metrics={sarfiMetrics} />
+
+      {/* Root Cause Chart - Half Width (ready for another chart next to it) */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <RootCauseChart events={events} />
+        {/* Space reserved for future dashboard component */}
+        <div className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 p-12 flex items-center justify-center">
+          <div className="text-center text-slate-400">
+            <p className="text-lg font-medium">Future Dashboard Component</p>
+            <p className="text-sm mt-2">This space is reserved for the next chart</p>
+          </div>
+        </div>
+      </div>
 
       <EventList events={events} substations={substations} />
     </div>

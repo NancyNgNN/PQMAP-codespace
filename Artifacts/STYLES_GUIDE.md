@@ -656,6 +656,66 @@ The SubstationMap component has two separate export functions:
 - Table export: Separate export button in SubstationEventsTable with Excel/CSV/PDF options
 - Both use the same icon-only button style for consistency
 
+### Dashboard Chart Components with Filters
+
+**RootCauseChart & Similar Components:**
+
+Dashboard chart components follow a consistent pattern with:
+1. **Independent date filters** - Each chart has its own filter configuration
+2. **Profile management** - Save and load date range preferences
+3. **Export as image** - Using html2canvas to capture visualization
+4. **Filter persistence** - Stored in localStorage
+
+```tsx
+// Component structure
+const [filters, setFilters] = useState<RootCauseFilters>(() => {
+  const saved = localStorage.getItem('rootCauseFilters');
+  return saved ? JSON.parse(saved) : { profileId: '', startDate: '', endDate: '' };
+});
+
+// Filter events
+const getFilteredEvents = (): PQEvent[] => {
+  return events.filter(event => {
+    if (event.false_event) return false; // Always exclude false events
+    if (filters.startDate && new Date(event.timestamp) < new Date(filters.startDate)) return false;
+    if (filters.endDate && new Date(event.timestamp) > new Date(filters.endDate)) return false;
+    return true;
+  });
+};
+
+// Header with filters and export
+<div className="flex items-center justify-between mb-6">
+  <div className="flex items-center gap-3">
+    <BarChart3 className="w-6 h-6 text-slate-700" />
+    <div>
+      <h2 className="text-xl font-bold text-slate-900">Root Cause Analysis</h2>
+      <p className="text-sm text-slate-600 mt-1">
+        {filteredEvents.length} events analyzed
+      </p>
+    </div>
+  </div>
+  <div className="flex items-center gap-2">
+    {/* Export button */}
+    {/* Config button */}
+  </div>
+</div>
+```
+
+**Key Features:**
+- **Independent Filters**: Each chart maintains its own filter state
+- **Profile Support**: ConfigModal components (e.g., RootCauseConfigModal) for saving date ranges
+- **False Event Exclusion**: Always filter out `event.false_event === true`
+- **Event Count Display**: Show filtered event count in subtitle
+- **Empty State**: Display helpful message when no data matches filters
+- **Export via html2canvas**: Capture entire chart div including headers
+
+**Filter Storage Pattern:**
+```typescript
+// Key naming convention: `{componentName}Filters` and `{componentName}Profiles`
+localStorage.setItem('rootCauseFilters', JSON.stringify(filters));
+localStorage.setItem('rootCauseProfiles', JSON.stringify(profiles));
+```
+
 ---
 
 **End of Styles Guide**

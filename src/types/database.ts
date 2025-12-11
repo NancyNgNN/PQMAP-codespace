@@ -85,7 +85,6 @@ export interface PQEvent {
   status: EventStatus;
   is_mother_event: boolean;
   parent_event_id: string | null;
-  root_cause: string | null;
   affected_phases: string[];
   waveform_data: WaveformData | null;
   created_at: string;
@@ -351,6 +350,24 @@ export interface SubstationEventCount {
   substation: Substation;
   eventCount: number;
   services: string[];
+}
+
+// Root Cause Chart Interfaces
+export interface RootCauseFilters {
+  profileId: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface RootCauseProfile {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // API Response Types
