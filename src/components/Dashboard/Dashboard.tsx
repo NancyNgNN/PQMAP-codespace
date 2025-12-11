@@ -6,6 +6,7 @@ import EventList from './EventList';
 import SARFIChart from './SARFIChart';
 import StatsCards from './StatsCards';
 import RootCauseChart from './RootCauseChart';
+import InsightChart from './InsightChart';
 
 export default function Dashboard() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -22,9 +23,10 @@ export default function Dashboard() {
       const [eventsRes, substationsRes, sarfiRes] = await Promise.all([
         supabase
           .from('pq_events')
-          .select('*')
+          .select('*, substation:substations(*)', { count: 'exact' })
+          .gte('timestamp', '2023-01-01')
           .order('timestamp', { ascending: false })
-          .limit(100),
+          .limit(5000),
         supabase.from('substations').select('*'),
         supabase
           .from('sarfi_metrics')
@@ -71,16 +73,10 @@ export default function Dashboard() {
       {/* SARFI Chart - Full Width with integrated data table */}
       <SARFIChart metrics={sarfiMetrics} />
 
-      {/* Root Cause Chart - Half Width (ready for another chart next to it) */}
+      {/* Root Cause Chart & Insight Chart - Half Width Each */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <RootCauseChart events={events} />
-        {/* Space reserved for future dashboard component */}
-        <div className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 p-12 flex items-center justify-center">
-          <div className="text-center text-slate-400">
-            <p className="text-lg font-medium">Future Dashboard Component</p>
-            <p className="text-sm mt-2">This space is reserved for the next chart</p>
-          </div>
-        </div>
+        <InsightChart events={events} />
       </div>
 
       <EventList events={events} substations={substations} />
