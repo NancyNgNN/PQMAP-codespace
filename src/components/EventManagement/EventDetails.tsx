@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Clock, MapPin, Zap, AlertTriangle, Users, ArrowLeft, GitBranch, Trash2, ChevronDown, ChevronUp, CheckCircle, XCircle, Ungroup, Download } from 'lucide-react';
+import { Clock, MapPin, Zap, AlertTriangle, Users, ArrowLeft, GitBranch, Trash2, ChevronDown, ChevronUp, CheckCircle, XCircle, Ungroup, Download, FileText, Edit, Save, X as XIcon } from 'lucide-react';
 import { PQEvent, Substation, EventCustomerImpact } from '../../types/database';
 import { supabase } from '../../lib/supabase';
 import WaveformDisplay from './WaveformDisplay';
 import { MotherEventGroupingService } from '../../services/mother-event-grouping';
 import { ExportService } from '../../services/exportService';
 
-type TabType = 'overview' | 'technical' | 'impact' | 'children' | 'timeline';
+type TabType = 'overview' | 'technical' | 'impact' | 'children' | 'timeline' | 'idr';
 
 interface EventDetailsProps {
   event: PQEvent;
@@ -46,6 +46,34 @@ export default function EventDetails({ event: initialEvent, substation: initialS
   // Export states
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // IDR editing states
+  const [isEditingIDR, setIsEditingIDR] = useState(false);
+  const [idrFormData, setIDRFormData] = useState({
+    idr_no: currentEvent.idr_no || '',
+    status: currentEvent.status,
+    voltage_level: currentEvent.voltage_level || '',
+    address: currentEvent.address || '',
+    duration_ms: currentEvent.duration_ms || 0,
+    v1: currentEvent.v1 || 0,
+    v2: currentEvent.v2 || 0,
+    v3: currentEvent.v3 || 0,
+    equipment_type: currentEvent.equipment_type || '',
+    cause_group: currentEvent.cause_group || '',
+    cause: currentEvent.cause || '',
+    remarks: currentEvent.remarks || '',
+    object_part_group: currentEvent.object_part_group || '',
+    object_part_code: currentEvent.object_part_code || '',
+    damage_group: currentEvent.damage_group || '',
+    damage_code: currentEvent.damage_code || '',
+    fault_type: currentEvent.fault_type || '',
+    outage_type: currentEvent.outage_type || '',
+    weather: currentEvent.weather || '',
+    weather_condition: currentEvent.weather_condition || '',
+    responsible_oc: currentEvent.responsible_oc || '',
+    total_cmi: currentEvent.total_cmi || 0,
+  });
+  const [savingIDR, setSavingIDR] = useState(false);
 
   // Update state when props change
   useEffect(() => {
@@ -474,6 +502,19 @@ export default function EventDetails({ event: initialEvent, substation: initialS
             }`}
           >
             Timeline
+          </button>
+          <button
+            onClick={() => setActiveTab('idr')}
+            className={`px-4 py-2 font-semibold text-sm whitespace-nowrap transition-all ${
+              activeTab === 'idr'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              IDR
+            </div>
           </button>
         </div>
       </div>
@@ -1021,6 +1062,569 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                       : 'Ongoing'
                     }
                   </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* IDR TAB */}
+        {activeTab === 'idr' && (
+          <div className="space-y-4 animate-fadeIn">
+            {/* Edit/Save/Cancel Buttons */}
+            <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-100">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                <span className="font-semibold text-slate-900">Incident Data Record (IDR)</span>
+                {currentEvent.manual_create_idr && (
+                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                    Manual
+                  </span>
+                )}
+                {!currentEvent.manual_create_idr && (
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                    Auto
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {!isEditingIDR ? (
+                  <button
+                    onClick={() => {
+                      setIsEditingIDR(true);
+                      setIDRFormData({
+                        idr_no: currentEvent.idr_no || '',
+                        status: currentEvent.status,
+                        voltage_level: currentEvent.voltage_level || '',
+                        address: currentEvent.address || '',
+                        duration_ms: currentEvent.duration_ms || 0,
+                        v1: currentEvent.v1 || 0,
+                        v2: currentEvent.v2 || 0,
+                        v3: currentEvent.v3 || 0,
+                        equipment_type: currentEvent.equipment_type || '',
+                        cause_group: currentEvent.cause_group || '',
+                        cause: currentEvent.cause || '',
+                        remarks: currentEvent.remarks || '',
+                        object_part_group: currentEvent.object_part_group || '',
+                        object_part_code: currentEvent.object_part_code || '',
+                        damage_group: currentEvent.damage_group || '',
+                        damage_code: currentEvent.damage_code || '',
+                        fault_type: currentEvent.fault_type || '',
+                        outage_type: currentEvent.outage_type || '',
+                        weather: currentEvent.weather || '',
+                        weather_condition: currentEvent.weather_condition || '',
+                        responsible_oc: currentEvent.responsible_oc || '',
+                        total_cmi: currentEvent.total_cmi || 0,
+                      });
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={async () => {
+                        setSavingIDR(true);
+                        try {
+                          const { error } = await supabase
+                            .from('pq_events')
+                            .update({
+                              idr_no: idrFormData.idr_no,
+                              status: idrFormData.status,
+                              voltage_level: idrFormData.voltage_level,
+                              address: idrFormData.address,
+                              duration_ms: idrFormData.duration_ms,
+                              v1: idrFormData.v1,
+                              v2: idrFormData.v2,
+                              v3: idrFormData.v3,
+                              equipment_type: idrFormData.equipment_type,
+                              cause_group: idrFormData.cause_group,
+                              cause: idrFormData.cause,
+                              remarks: idrFormData.remarks,
+                              object_part_group: idrFormData.object_part_group,
+                              object_part_code: idrFormData.object_part_code,
+                              damage_group: idrFormData.damage_group,
+                              damage_code: idrFormData.damage_code,
+                              fault_type: idrFormData.fault_type,
+                              outage_type: idrFormData.outage_type,
+                              weather: idrFormData.weather,
+                              weather_condition: idrFormData.weather_condition,
+                              responsible_oc: idrFormData.responsible_oc,
+                              total_cmi: idrFormData.total_cmi,
+                            })
+                            .eq('id', currentEvent.id);
+
+                          if (error) {
+                            console.error('Error saving IDR:', error);
+                            alert('Failed to save IDR changes. Please try again.');
+                          } else {
+                            setIsEditingIDR(false);
+                            if (onEventUpdated) onEventUpdated();
+                            // Update current event state
+                            setCurrentEvent({
+                              ...currentEvent,
+                              ...idrFormData
+                            });
+                          }
+                        } catch (error) {
+                          console.error('Error saving IDR:', error);
+                          alert('An unexpected error occurred. Please try again.');
+                        } finally {
+                          setSavingIDR(false);
+                        }
+                      }}
+                      disabled={savingIDR}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold disabled:opacity-50"
+                    >
+                      <Save className="w-4 h-4" />
+                      {savingIDR ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingIDR(false);
+                        setIDRFormData({
+                          idr_no: currentEvent.idr_no || '',
+                          status: currentEvent.status,
+                          voltage_level: currentEvent.voltage_level || '',
+                          address: currentEvent.address || '',
+                          duration_ms: currentEvent.duration_ms || 0,
+                          v1: currentEvent.v1 || 0,
+                          v2: currentEvent.v2 || 0,
+                          v3: currentEvent.v3 || 0,
+                          equipment_type: currentEvent.equipment_type || '',
+                          cause_group: currentEvent.cause_group || '',
+                          cause: currentEvent.cause || '',
+                          remarks: currentEvent.remarks || '',
+                          object_part_group: currentEvent.object_part_group || '',
+                          object_part_code: currentEvent.object_part_code || '',
+                          damage_group: currentEvent.damage_group || '',
+                          damage_code: currentEvent.damage_code || '',
+                          fault_type: currentEvent.fault_type || '',
+                          outage_type: currentEvent.outage_type || '',
+                          weather: currentEvent.weather || '',
+                          weather_condition: currentEvent.weather_condition || '',
+                          responsible_oc: currentEvent.responsible_oc || '',
+                          total_cmi: currentEvent.total_cmi || 0,
+                        });
+                      }}
+                      disabled={savingIDR}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-500 text-white rounded-lg hover:bg-slate-600 transition-colors text-sm font-semibold disabled:opacity-50"
+                    >
+                      <XIcon className="w-4 h-4" />
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* IDR Content - Grouped Cards Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {/* Basic Information */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3">
+                <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-blue-500 rounded"></span>
+                  Basic Information
+                </h4>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">IDR No.</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.idr_no}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, idr_no: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                          placeholder="Enter IDR No."
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.idr_no || '-'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Timestamp</label>
+                      <p className="text-sm font-semibold text-slate-900 mt-1">
+                        {new Date(currentEvent.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Status</label>
+                      {isEditingIDR ? (
+                        <select
+                          value={idrFormData.status}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, status: e.target.value as any })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        >
+                          <option value="new">New</option>
+                          <option value="acknowledged">Acknowledged</option>
+                          <option value="investigating">Investigating</option>
+                          <option value="resolved">Resolved</option>
+                        </select>
+                      ) : (
+                        <span className={`inline-flex mt-1 px-2 py-0.5 rounded text-xs font-semibold ${
+                          currentEvent.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                          currentEvent.status === 'investigating' ? 'bg-blue-100 text-blue-700' :
+                          currentEvent.status === 'acknowledged' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-slate-100 text-slate-700'
+                        }`}>
+                          {currentEvent.status}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Voltage Level</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.voltage_level}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, voltage_level: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.voltage_level || '-'}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Duration (ms)</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="number"
+                        value={idrFormData.duration_ms}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, duration_ms: Number(e.target.value) })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">
+                        {currentEvent.duration_ms ? `${currentEvent.duration_ms} ms (${(currentEvent.duration_ms / 1000).toFixed(2)}s)` : '-'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Location & Equipment */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3">
+                <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-green-500 rounded"></span>
+                  Location & Equipment
+                </h4>
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Region</label>
+                    <p className="text-sm font-semibold text-slate-900 mt-1">{currentSubstation?.region || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Address</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.address}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, address: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.address || '-'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Equipment Type</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.equipment_type}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, equipment_type: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.equipment_type || '-'}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Fault Details */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3">
+                <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-red-500 rounded"></span>
+                  Fault Details
+                </h4>
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Faulty Phase</label>
+                    <div className="mt-1 space-y-1">
+                      {['A', 'B', 'C'].map(phase => {
+                        const isAffected = currentEvent.affected_phases.includes(phase);
+                        const voltage = phase === 'A' ? currentEvent.v1 : phase === 'B' ? currentEvent.v2 : currentEvent.v3;
+                        return (
+                          <div key={phase} className="flex items-center justify-between text-sm">
+                            <span className="font-medium">Phase {phase}:</span>
+                            <span className={`flex items-center gap-1 ${isAffected ? 'text-red-600 font-semibold' : 'text-green-600'}`}>
+                              {voltage ? `${voltage}V` : '-'}
+                              {isAffected ? ' (affected)' : ' ✓'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">V1 (V)</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={idrFormData.v1}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, v1: Number(e.target.value) })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.v1 || '-'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">V2 (V)</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={idrFormData.v2}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, v2: Number(e.target.value) })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.v2 || '-'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">V3 (V)</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={idrFormData.v3}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, v3: Number(e.target.value) })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.v3 || '-'}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Fault Type</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.fault_type}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, fault_type: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.fault_type || '-'}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Cause Analysis */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3">
+                <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-yellow-500 rounded"></span>
+                  Cause Analysis
+                </h4>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Cause Group</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.cause_group}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, cause_group: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.cause_group || '-'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Cause</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.cause}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, cause: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.cause || '-'}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Remarks</label>
+                    {isEditingIDR ? (
+                      <textarea
+                        value={idrFormData.remarks}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, remarks: e.target.value })}
+                        rows={2}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.remarks || '-'}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Object Part Group</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.object_part_group}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, object_part_group: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.object_part_group || '-'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Object Part Code</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.object_part_code}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, object_part_code: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.object_part_code || '-'}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Damage Group</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.damage_group}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, damage_group: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.damage_group || '-'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Damage Code</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.damage_code}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, damage_code: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.damage_code || '-'}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Environment & Operations */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3 lg:col-span-2">
+                <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-purple-500 rounded"></span>
+                  Environment & Operations
+                </h4>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Weather (Code)</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.weather}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, weather: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        placeholder="e.g., W01"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.weather || '-'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Weather Condition</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.weather_condition}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, weather_condition: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        placeholder="e.g., Heavy Rain"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.weather_condition || '-'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Outage Type</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.outage_type}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, outage_type: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.outage_type || '-'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Responsible OC</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.responsible_oc}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, responsible_oc: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.responsible_oc || '-'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Total CMI</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="number"
+                        value={idrFormData.total_cmi}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, total_cmi: Number(e.target.value) })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentEvent.total_cmi || '-'}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

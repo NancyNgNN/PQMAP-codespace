@@ -136,6 +136,11 @@ export interface PQEvent {
   outage_type: string | null;
   weather: string | null;
   total_cmi: number | null;
+  // IDR (Incident Data Record) Fields
+  fault_type: string | null;
+  weather_condition: string | null;
+  responsible_oc: string | null;
+  manual_create_idr: boolean;
   // Voltage Measurements (V1, V2, V3)
   v1: number | null;
   v2: number | null;
