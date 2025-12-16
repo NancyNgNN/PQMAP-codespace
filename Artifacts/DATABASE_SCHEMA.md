@@ -54,6 +54,9 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 - `20251215000001_create_customer_transformer_matching.sql`
 - `20251215000002_remove_transformer_id_from_customers.sql`
 - `20251215000003_create_auto_customer_impact_function.sql`
+- `20251215110000_backup_tables.sql`
+- `20251215120000_update_clp_substations.sql`
+- `20251215160000_update_circuit_ids_h1_h2_h3.sql`
 
 **Status:** ✅ **APPLIED**  
 **Date:** December 15, 2025  
@@ -64,8 +67,16 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 - Severity mapping: critical→severe, high→moderate, medium/low→minor
 - Downtime calculation from event duration (ms / 60000)
 - RLS policies for admin/operator/viewer access control
-- Removed obsolete `transformer_id` column from customers table  
-**Region Update:** Standardize substations.region to 'WE', 'NR', or 'CN' with CHECK constraint
+- Removed obsolete `transformer_id` column from customers table
+- **25 Real CLP Substations**: Replaced test data with production substation codes (APA through CYS)
+- **Circuit ID Format**: Updated to H1/H2/H3 (real transformer numbers, 1-3 per substation)
+- **Region Standardization**: Substations.region uses 'WE' (West), 'NR' (North), 'CN' (Central)
+- **Backfill Support**: Script available to generate customer impacts for historical events
+
+**Important Notes:**
+- **Historical Events**: Run `scripts/backfill_customer_impacts.sql` to populate customer impacts for existing events
+- **Event Display**: Yellow card shows `customer_count` (estimate), blue card shows actual `event_customer_impact` records
+- **Data Consistency**: Customer names only appear after backfill creates detailed impact records
 
 ---
 
@@ -96,16 +107,22 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 |--------|------|-------------|-------------|
 | `id` | uuid | PRIMARY KEY | Unique identifier |
 | `name` | text | NOT NULL | Substation name |
-| `code` | text | UNIQUE | Substation code |
-| `voltage_level` | text | | e.g., "132kV", "11kV", "400kV" |
+| `code` | text | UNIQUE | Substation code (e.g., APA, APB, CHS) |
+| `voltage_level` | text | | e.g., "132kV", "11kV", "400kV", "380V" |
 | `latitude` | decimal(10,6) | | GPS latitude |
 | `longitude` | decimal(10,6) | | GPS longitude |
-| `region` | text | | Geographic region |
+| `region` | text | CHECK IN ('WE','NR','CN') | WE=West, NR=North, CN=Central |
 | `status` | substation_status | DEFAULT 'operational' | operational, maintenance, offline |
 | `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
 
 **TypeScript Interface:** `Substation`  
 **Status:** ✅ Matches database
+
+**✅ Real CLP Substations (25 Total):**
+Production substations with official codes and coordinates:
+- **West Region (WE)**: APA, APB, AWR, BKP, CCM, CCN, CCS, CHS, CPK (9 substations)
+- **North Region (NR)**: ATA, ATB, BAL, CLR (4 substations)
+- **Central Region (CN)**: AUS, BCH, BOU, CAN, CHF, CHI, CHY, CKL, CPR, CTN, CWS, CYS (12 substations)
 
 ---
 
@@ -280,11 +297,16 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 | `id` | uuid | PRIMARY KEY | Unique identifier |
 | `customer_id` | uuid | FK → customers ON DELETE CASCADE | Customer account |
 | `substation_id` | uuid | FK → substations ON DELETE RESTRICT | Substation |
-| `circuit_id` | text | NOT NULL | Circuit/Transformer ID |
+| `circuit_id` | text | NOT NULL | Transformer ID (H1, H2, or H3) |
 | `active` | boolean | DEFAULT true | Is mapping active? |
 | `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
 | `updated_at` | timestamptz | DEFAULT now() | Last update timestamp |
 | `updated_by` | uuid | FK → profiles | Last updated by user |
+
+**Circuit ID Format:**
+- Uses real CLP transformer numbers: `H1`, `H2`, or `H3`
+- Each substation has 1-3 transformers (randomized distribution)
+- Updated via migration `20251215160000_update_circuit_ids_h1_h2_h3.sql`
 
 **Indexes:**
 - UNIQUE (customer_id, substation_id, circuit_id) WHERE active
@@ -323,6 +345,18 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 - Maps event severity to impact_level: critical→severe, high→moderate, medium/low→minor
 - Calculates downtime: duration_ms / 60000 (rounded to 2 decimals)
 - Matches on (substation_id + circuit_id) from active customer_transformer_matching records
+
+**⚠️ Important - Historical Events:**
+Historical events (created before the trigger was added) will have `customer_count` populated but NO `event_customer_impact` records. This causes the Customer Impact tab to show:
+- **Yellow Card**: 56 customers (from `pq_events.customer_count`)
+- **Blue Card**: 0 detailed records (no `event_customer_impact` entries)
+- **Result**: Customer names and details won't display
+
+**Solution**: Run the backfill script to populate impacts for all existing events:
+```sql
+-- Execute in Supabase SQL Editor
+\i scripts/backfill_customer_impacts.sql
+```
 
 **TypeScript Interface:** `EventCustomerImpact`  
 **Status:** ✅ Matches database

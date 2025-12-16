@@ -128,6 +128,79 @@ export class MotherEventGroupingService {
   }
 
   /**
+   * Ungroup specific child events from their mother event
+   * Keeps other children grouped with the mother
+   * Removes mother status only if no children remain after ungrouping
+   */
+  static async ungroupSpecificEvents(childEventIds: string[]): Promise<boolean> {
+    try {
+      if (childEventIds.length === 0) {
+        throw new Error('No child events specified for ungrouping');
+      }
+
+      // Get the first child to find the mother event ID
+      const { data: firstChild, error: fetchError } = await supabase
+        .from('pq_events')
+        .select('parent_event_id')
+        .eq('id', childEventIds[0])
+        .single();
+
+      if (fetchError || !firstChild?.parent_event_id) {
+        throw new Error('Failed to find parent event for child events');
+      }
+
+      const motherEventId = firstChild.parent_event_id;
+
+      // Update the selected child events to become standalone
+      const { error: childError } = await supabase
+        .from('pq_events')
+        .update({ 
+          parent_event_id: null,
+          is_child_event: false
+        })
+        .in('id', childEventIds);
+
+      if (childError) {
+        throw childError;
+      }
+
+      // Check if there are any remaining children
+      const { data: remainingChildren, error: remainingError } = await supabase
+        .from('pq_events')
+        .select('id')
+        .eq('parent_event_id', motherEventId);
+
+      if (remainingError) {
+        throw remainingError;
+      }
+
+      // If no children remain, remove mother event status
+      if (!remainingChildren || remainingChildren.length === 0) {
+        const { error: motherError } = await supabase
+          .from('pq_events')
+          .update({ 
+            is_mother_event: false,
+            grouping_type: null,
+            grouped_at: null
+          })
+          .eq('id', motherEventId);
+
+        if (motherError) {
+          throw motherError;
+        }
+      }
+
+      // Log the ungrouping operation
+      await this.logGroupingOperation('ungroup_specific', motherEventId, childEventIds);
+
+      return true;
+    } catch (error) {
+      console.error('Error ungrouping specific events:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get grouping candidates for manual selection
    */
   static async getGroupingCandidates(timeWindowHours: number = 1): Promise<GroupingCandidate[]> {
@@ -285,7 +358,7 @@ export class MotherEventGroupingService {
   }
 
   private static async logGroupingOperation(
-    operation: 'automatic' | 'manual' | 'ungroup',
+    operation: 'automatic' | 'manual' | 'ungroup' | 'ungroup_specific',
     motherEventId: string,
     childEventIds: string[]
   ): Promise<void> {

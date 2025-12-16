@@ -1,0 +1,77 @@
+name: User Story
+description: Create a new user story for feature development
+title: "[STORY] "
+labels: ["story", "requirements"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## User Story Template
+        Please fill out the information below to create a new user story.
+  
+  - type: input
+    id: story-id
+    attributes:
+      label: Story ID
+      description: Unique identifier (e.g., US-001)
+      placeholder: "US-XXX"
+    validations:
+      required: true
+  
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: As a [user type], I want [goal] so that [benefit]
+      placeholder: |
+        As a power quality engineer,
+        I want to view SARFI events on a map,
+        So that I can quickly identify affected areas
+    validations:
+      required: true
+  
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: List the conditions that must be met for this story to be complete
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+  
+  - type: input
+    id: estimated-points
+    attributes:
+      label: Story Points
+      description: Estimated effort (1, 2, 3, 5, 8, 13)
+      placeholder: "5"
+  
+  - type: textarea
+    id: related-requirements
+    attributes:
+      label: Related Requirements
+      description: Link to requirements document section
+      placeholder: "See Artifacts/PROJECT_FUNCTION_DESIGN.md - Section X.Y"
+  
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Technical Notes
+      description: Any technical considerations or dependencies

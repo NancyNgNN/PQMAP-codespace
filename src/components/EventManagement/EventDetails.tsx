@@ -42,6 +42,8 @@ export default function EventDetails({ event: initialEvent, substation: initialS
   
   // Ungroup state
   const [ungrouping, setUngrouping] = useState(false);
+  const [isUngroupMode, setIsUngroupMode] = useState(false);
+  const [selectedChildIds, setSelectedChildIds] = useState<string[]>([]);
   
   // Export states
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -271,6 +273,75 @@ export default function EventDetails({ event: initialEvent, substation: initialS
       alert('Failed to ungroup events. Please try again.');
     } finally {
       setUngrouping(false);
+    }
+  };
+
+  // Toggle ungroup mode - shows checkboxes
+  const handleUngroupMode = () => {
+    setIsUngroupMode(true);
+    setSelectedChildIds([]);
+  };
+
+  // Cancel ungroup mode - hides checkboxes and clears selection
+  const handleCancelUngroup = () => {
+    setIsUngroupMode(false);
+    setSelectedChildIds([]);
+  };
+
+  // Save ungroup - ungroup selected children
+  const handleSaveUngroup = async () => {
+    if (selectedChildIds.length === 0) {
+      alert('Please select at least one child event to ungroup.');
+      return;
+    }
+
+    const confirmMessage = `Are you sure you want to ungroup ${selectedChildIds.length} selected event(s)? They will become standalone events.`;
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setUngrouping(true);
+    try {
+      const success = await MotherEventGroupingService.ungroupSpecificEvents(selectedChildIds);
+      
+      if (success) {
+        console.log(`Successfully ungrouped ${selectedChildIds.length} event(s)`);
+        // Reset ungroup mode and selection
+        setIsUngroupMode(false);
+        setSelectedChildIds([]);
+        // Reload child events and notify parent
+        await loadChildEvents(currentEvent.id);
+        if (onEventUpdated) {
+          onEventUpdated();
+        }
+      } else {
+        alert('Failed to ungroup selected events. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error ungrouping selected events:', error);
+      alert('Failed to ungroup selected events. Please try again.');
+    } finally {
+      setUngrouping(false);
+    }
+  };
+
+  // Handle checkbox selection toggle
+  const handleCheckboxChange = (childId: string) => {
+    setSelectedChildIds(prev => {
+      if (prev.includes(childId)) {
+        return prev.filter(id => id !== childId);
+      } else {
+        return [...prev, childId];
+      }
+    });
+  };
+
+  // Toggle select all checkboxes
+  const handleSelectAllChildren = () => {
+    if (selectedChildIds.length === childEvents.length) {
+      setSelectedChildIds([]);
+    } else {
+      setSelectedChildIds(childEvents.map(child => child.id));
     }
   };
 
@@ -909,6 +980,61 @@ export default function EventDetails({ event: initialEvent, substation: initialS
               )}
             </button>
 
+            {/* Ungroup Action Buttons */}
+            {childEventsExpanded && childEvents.length > 0 && (
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  {isUngroupMode && (
+                    <>
+                      <input
+                        type="checkbox"
+                        checked={selectedChildIds.length === childEvents.length}
+                        onChange={handleSelectAllChildren}
+                        className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                      />
+                      <span className="font-medium">
+                        {selectedChildIds.length > 0 
+                          ? `${selectedChildIds.length} selected`
+                          : 'Select all'
+                        }
+                      </span>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {!isUngroupMode ? (
+                    <button
+                      onClick={handleUngroupMode}
+                      disabled={ungrouping}
+                      className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Ungroup className="w-4 h-4" />
+                      Ungroup
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleCancelUngroup}
+                        disabled={ungrouping}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <XIcon className="w-4 h-4" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveUngroup}
+                        disabled={ungrouping || selectedChildIds.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Save className="w-4 h-4" />
+                        {ungrouping ? 'Saving...' : 'Ungroup'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Expandable Table */}
             {childEventsExpanded && (
               <div className="overflow-x-auto border border-slate-200 rounded-lg">
@@ -920,6 +1046,16 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                   <table className="w-full">
                     <thead className="bg-slate-50 border-b border-slate-200">
                       <tr>
+                        {isUngroupMode && (
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase w-12">
+                            <input
+                              type="checkbox"
+                              checked={selectedChildIds.length === childEvents.length}
+                              onChange={handleSelectAllChildren}
+                              className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                            />
+                          </th>
+                        )}
                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">#</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Type</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Time</th>
@@ -936,9 +1072,24 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                       {childEvents.map((childEvent, index) => (
                         <tr
                           key={childEvent.id}
-                          className="hover:bg-slate-50 cursor-pointer transition-colors"
-                          onClick={() => handleChildEventClick(childEvent)}
+                          className={`hover:bg-slate-50 transition-colors ${
+                            isUngroupMode ? '' : 'cursor-pointer'
+                          } ${
+                            selectedChildIds.includes(childEvent.id) ? 'bg-blue-50' : ''
+                          }`}
+                          onClick={() => !isUngroupMode && handleChildEventClick(childEvent)}
                         >
+                          {isUngroupMode && (
+                            <td className="px-4 py-3">
+                              <input
+                                type="checkbox"
+                                checked={selectedChildIds.includes(childEvent.id)}
+                                onChange={() => handleCheckboxChange(childEvent.id)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                              />
+                            </td>
+                          )}
                           <td className="px-4 py-3 text-sm text-slate-600">{index + 1}</td>
                           <td className="px-4 py-3 text-sm font-medium text-slate-900 capitalize">
                             {childEvent.event_type.replace('_', ' ')}

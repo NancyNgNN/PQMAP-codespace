@@ -587,7 +587,144 @@ interface PQServiceRecord {
 
 ---
 
-### 8. System Health Module
+### 8. Data Maintenance Module ✨ NEW (Dec 15, 2025)
+
+**Purpose**: Manage customer-transformer relationships for automatic customer impact generation
+
+#### Components
+
+##### Customer Transformer Matching
+**Location**: Navigation → Data Maintenance → Customer Transformer Matching
+
+**Purpose**: Define which customers are served by which substation transformers to enable automatic customer impact record generation when PQ events occur.
+
+**Key Features**:
+1. **Filter Section**
+   - Filter by substation (dropdown)
+   - Filter by circuit/transformer (H1, H2, H3)
+   - Filter by customer (search by name or account)
+   - Filter by status (active/inactive)
+
+2. **Data Table**
+   - Customer name and account number
+   - Substation code and name
+   - Circuit/Transformer ID (H1, H2, H3)
+   - Active status with toggle
+   - Actions: Edit, Delete
+   - Pagination for large datasets
+
+3. **Add/Edit Modal**
+   - Customer selection (searchable dropdown)
+   - Substation selection (searchable dropdown)
+   - Circuit selection (dropdown shows available transformers for selected substation)
+   - Active status checkbox
+   - Validation: Prevents duplicate active mappings
+
+4. **Bulk Operations**
+   - Excel export of current filter
+   - Bulk import via Excel (placeholder button)
+
+5. **Mapping Statistics**
+   - Total active mappings
+   - Customers with mappings
+   - Unmapped customers warning
+
+#### Data Structure
+```typescript
+interface CustomerTransformerMatching {
+  id: string;
+  customer_id: string;
+  substation_id: string;
+  circuit_id: string;  // H1, H2, or H3
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+  updated_by: string | null;
+  
+  // Relations (loaded via Supabase join)
+  customer?: {
+    id: string;
+    name: string;
+    account_number: string;
+    address: string;
+  };
+  substation?: {
+    id: string;
+    code: string;
+    name: string;
+    voltage_level: string;
+  };
+}
+```
+
+#### Circuit ID Format
+**Real CLP Transformer Numbers**:
+- `H1` - Primary transformer at substation
+- `H2` - Secondary transformer (if exists)
+- `H3` - Tertiary transformer (if exists)
+
+**Distribution**: Each substation has 1-3 transformers (randomized in current data)
+
+#### Automatic Customer Impact Generation
+
+**Trigger**: PostgreSQL trigger on `pq_events` table fires AFTER INSERT
+
+**Function**: `generate_customer_impacts_for_event(event_id UUID)`
+
+**Logic**:
+```sql
+-- Find all active customers connected to event's substation + circuit
+SELECT ctm.customer_id
+FROM customer_transformer_matching ctm
+WHERE ctm.substation_id = event.substation_id
+  AND ctm.circuit_id = event.circuit_id
+  AND ctm.active = true;
+
+-- For each customer, create event_customer_impact record
+INSERT INTO event_customer_impact (
+  event_id,
+  customer_id,
+  impact_level,              -- Mapped from event severity
+  estimated_downtime_min,    -- Calculated from duration_ms
+  notification_sent
+) VALUES (...);
+
+-- Severity Mapping:
+-- critical → severe
+-- high → moderate
+-- medium → minor
+-- low → minor
+
+-- Downtime Calculation:
+-- estimated_downtime_min = ROUND(duration_ms / 60000.0, 2)
+```
+
+**Customer Impact Display**:
+- **Yellow Card**: Shows `pq_events.customer_count` (estimate stored in event record)
+- **Blue Card**: Shows count of actual `event_customer_impact` records
+- **Customer Names**: Displayed in table below when impact records exist
+
+**Important Note**: Historical events (created before trigger was added) require backfill:
+```bash
+# Run this script in Supabase SQL Editor
+scripts/backfill_customer_impacts.sql
+```
+
+#### Service Layer
+**File**: `src/services/customerTransformerService.ts`
+
+**Methods**:
+- `fetchCustomerTransformerMappings(filters)` - Get mappings with full joins
+- `getCircuitsForSubstation(substationId)` - Get available H1/H2/H3 circuits
+- `createCustomerTransformerMapping(input, userId)` - Create new mapping
+- `updateCustomerTransformerMapping(input, userId)` - Update existing mapping
+- `deleteCustomerTransformerMapping(id, userId)` - Soft delete (set active=false)
+- `permanentlyDeleteMapping(id)` - Hard delete from database
+- `getMappingStatistics()` - Get counts by substation
+
+---
+
+### 9. System Health Module
 
 **Purpose**: Monitor system components and integrations
 
