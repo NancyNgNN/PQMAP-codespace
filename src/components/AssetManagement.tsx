@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { PQMeter, Substation } from '../types/database';
-import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface FilterState {
@@ -36,6 +36,10 @@ export default function AssetManagement() {
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   
+  // Sort states
+  const [sortField, setSortField] = useState<string>('meter_id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
@@ -43,6 +47,11 @@ export default function AssetManagement() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Debug: Log sort state changes
+  useEffect(() => {
+    console.log('Sort state changed - Field:', sortField, 'Direction:', sortDirection);
+  }, [sortField, sortDirection]);
 
   const loadData = async () => {
     try {
@@ -64,6 +73,23 @@ export default function AssetManagement() {
     acc[s.id] = s;
     return acc;
   }, {} as Record<string, Substation>);
+
+  // Sorting handler
+  const handleSort = (field: string) => {
+    console.log('handleSort called with field:', field);
+    console.log('Current sortField:', sortField, 'sortDirection:', sortDirection);
+    
+    if (sortField === field) {
+      const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      console.log('Toggling direction to:', newDirection);
+      setSortDirection(newDirection);
+    } else {
+      console.log('Changing sort field to:', field, 'direction: asc');
+      setSortField(field);
+      setSortDirection('asc');
+    }
+    setCurrentPage(1); // Reset to first page when sorting
+  };
 
   // Get unique values for filter dropdowns
   const uniqueBrands = Array.from(new Set(meters.map(m => m.brand).filter(Boolean))).sort();
@@ -112,9 +138,40 @@ export default function AssetManagement() {
     (filters.model ? 1 : 0) +
     (filters.searchText ? 1 : 0);
 
+  // Apply sorting
+  const sortedMeters = [...filteredMeters].sort((a, b) => {
+    let aVal: any;
+    let bVal: any;
+
+    // Get values based on sort field
+    switch (sortField) {
+      case 'substation':
+        aVal = substationMap[a.substation_id]?.name || '';
+        bVal = substationMap[b.substation_id]?.name || '';
+        break;
+      case 'last_communication':
+        aVal = a.last_communication ? new Date(a.last_communication).getTime() : 0;
+        bVal = b.last_communication ? new Date(b.last_communication).getTime() : 0;
+        break;
+      default:
+        aVal = (a as any)[sortField] || '';
+        bVal = (b as any)[sortField] || '';
+    }
+
+    // Handle different types
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      aVal = aVal.toLowerCase();
+      bVal = bVal.toLowerCase();
+    }
+
+    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   // Pagination
-  const totalPages = Math.ceil(filteredMeters.length / itemsPerPage);
-  const paginatedMeters = filteredMeters.slice(
+  const totalPages = Math.ceil(sortedMeters.length / itemsPerPage);
+  const paginatedMeters = sortedMeters.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -302,7 +359,7 @@ export default function AssetManagement() {
           <div>
             <h2 className="text-xl font-bold text-slate-900">Meter Inventory</h2>
             <p className="text-sm text-slate-600 mt-1">
-              Showing {paginatedMeters.length} of {filteredMeters.length} meters
+              Showing {paginatedMeters.length} of {sortedMeters.length} meters
               {activeFilterCount > 0 && ` (${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active)`}
             </p>
           </div>
@@ -362,18 +419,185 @@ export default function AssetManagement() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">Meter ID</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">Site ID</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">Volt Level</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">Substation</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">Circuit</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">Area</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">Location</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">SS400</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">SS132</th>
-                <th className="text-left py-2 px-2 text-sm font-semibold text-slate-700">SS011</th>
-                <th className="text-center py-2 px-2 text-sm font-semibold text-slate-700">Status</th>
-                <th className="text-center py-2 px-2 text-sm font-semibold text-slate-700">Actions</th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by meter_id, current:', sortField, sortDirection);
+                      handleSort('meter_id');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Meter ID
+                    {sortField === 'meter_id' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by site_id, current:', sortField, sortDirection);
+                      handleSort('site_id');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Site ID
+                    {sortField === 'site_id' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by voltage_level, current:', sortField, sortDirection);
+                      handleSort('voltage_level');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Volt Level
+                    {sortField === 'voltage_level' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by substation, current:', sortField, sortDirection);
+                      handleSort('substation');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Substation
+                    {sortField === 'substation' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by circuit_id, current:', sortField, sortDirection);
+                      handleSort('circuit_id');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Circuit
+                    {sortField === 'circuit_id' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by area, current:', sortField, sortDirection);
+                      handleSort('area');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Area
+                    {sortField === 'area' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by location, current:', sortField, sortDirection);
+                      handleSort('location');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Location
+                    {sortField === 'location' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by ss400, current:', sortField, sortDirection);
+                      handleSort('ss400');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    SS400
+                    {sortField === 'ss400' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by ss132, current:', sortField, sortDirection);
+                      handleSort('ss132');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    SS132
+                    {sortField === 'ss132' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by ss011, current:', sortField, sortDirection);
+                      handleSort('ss011');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    SS011
+                    {sortField === 'ss011' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  <button 
+                    onClick={() => {
+                      console.log('Sorting by status, current:', sortField, sortDirection);
+                      handleSort('status');
+                    }} 
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors mx-auto"
+                  >
+                    Status
+                    {sortField === 'status' ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-30" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-2 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -482,7 +706,7 @@ export default function AssetManagement() {
                 </button>
               </div>
               <p className="text-slate-300 text-sm">
-                {filteredMeters.length} of {meters.length} meters match
+                {sortedMeters.length} of {meters.length} meters match
               </p>
             </div>
 

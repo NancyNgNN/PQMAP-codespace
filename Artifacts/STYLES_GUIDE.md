@@ -1221,6 +1221,133 @@ return (
 
 ---
 
+## Table Sorting Pattern
+
+### Standard Implementation
+
+**IMPORTANT RULE**: All data tables should include column sorting functionality for improved user experience.
+
+#### 1. Required State Variables
+
+```typescript
+// Sort states
+const [sortField, setSortField] = useState<string>('id'); // Default sort field
+const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+```
+
+#### 2. Sort Handler Function
+
+```typescript
+const handleSort = (field: string) => {
+  if (sortField === field) {
+    // Toggle direction if clicking same field
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+  } else {
+    // Set new field and default to ascending
+    setSortField(field);
+    setSortDirection('asc');
+  }
+  setCurrentPage(1); // Reset pagination to first page
+};
+```
+
+#### 3. Apply Sorting Logic
+
+```typescript
+// Apply sorting before pagination
+const sortedData = [...filteredData].sort((a, b) => {
+  let aVal: any;
+  let bVal: any;
+
+  // Handle special fields (joins, computed values)
+  switch (sortField) {
+    case 'substation':
+      aVal = substationMap[a.substation_id]?.name || '';
+      bVal = substationMap[b.substation_id]?.name || '';
+      break;
+    case 'date':
+      aVal = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      bVal = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      break;
+    default:
+      aVal = (a as any)[sortField] || '';
+      bVal = (b as any)[sortField] || '';
+  }
+
+  // Handle different types
+  if (typeof aVal === 'string' && typeof bVal === 'string') {
+    aVal = aVal.toLowerCase();
+    bVal = bVal.toLowerCase();
+  }
+
+  if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+  if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+  return 0;
+});
+```
+
+#### 4. Sortable Table Headers
+
+```tsx
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+
+<thead>
+  <tr className="border-b border-slate-200">
+    <th className="py-3 px-2 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+      <button 
+        onClick={() => handleSort('field_name')} 
+        className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+      >
+        Column Name
+        {sortField === 'field_name' 
+          ? (sortDirection === 'asc' 
+              ? <ArrowUp className="w-3 h-3" /> 
+              : <ArrowDown className="w-3 h-3" />
+            )
+          : <ArrowUpDown className="w-3 h-3 opacity-30" />
+        }
+      </button>
+    </th>
+    {/* Repeat for other sortable columns */}
+  </tr>
+</thead>
+```
+
+#### 5. Non-Sortable Headers (Actions, etc.)
+
+```tsx
+<th className="py-3 px-2 text-right text-xs font-semibold text-slate-700 uppercase tracking-wider">
+  Actions
+</th>
+```
+
+### Sorting Best Practices
+
+1. **Default Sort**: Choose a sensible default sort field (e.g., 'id', 'name', 'timestamp')
+2. **Visual Indicators**: Always show sort direction with icons
+   - `ArrowUp`: Ascending sort on this column
+   - `ArrowDown`: Descending sort on this column
+   - `ArrowUpDown` (opacity-30): Column is sortable but not currently sorted
+3. **Reset Pagination**: Always reset to page 1 when sort changes
+4. **Case Insensitive**: Convert strings to lowercase for consistent sorting
+5. **Handle Nulls**: Provide fallback values for null/undefined fields
+6. **Special Cases**: Handle dates, joins, and computed values with switch statement
+7. **Icon Size**: Use `w-3 h-3` for sort icons in table headers
+8. **Hover Effect**: Add `hover:text-blue-600` to sortable header buttons
+9. **Button Styling**: Use `flex items-center gap-1` for proper icon alignment
+10. **Non-Sortable Columns**: Don't add sort buttons to action columns or non-data columns
+
+### Complete Example
+
+**AssetManagement.tsx** provides a complete implementation of table sorting:
+- 12 sortable columns (Meter ID, Site ID, Voltage Level, Substation, Circuit, Area, Location, SS400, SS132, SS011, Status)
+- 1 non-sortable column (Actions)
+- Handles joined data (Substation name lookup)
+- Integrates with filtering and pagination
+- Proper icon indicators for all states
+
+---
+
 ## Best Practices
 
 ### Export Implementation

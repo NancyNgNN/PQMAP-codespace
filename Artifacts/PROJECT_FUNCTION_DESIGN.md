@@ -423,6 +423,7 @@ interface PQMeter {
 - **12-Column Table Display**: Name, Site ID, Volt Level, Substation, Circuit, Location, OC, Brand, Model, Nominal, Active, Other
 - **Compact Layout**: py-2 px-2 padding for efficient space usage
 - **Active Status Icons**: ✓ (active) / ✗ (inactive) visual indicators
+- **Column Sorting**: Click column headers to sort ascending/descending with visual indicators (ArrowUp/ArrowDown/ArrowUpDown icons)
 - **Detail Modal**: "Other" column button opens modal with 4 grouped sections displaying all 23 meter fields
 - **Modal Sections**: Basic Info, Location & Network, Equipment Specs, Asset Tracking
 - **Export Functionality**: Excel/CSV export with all fields included
