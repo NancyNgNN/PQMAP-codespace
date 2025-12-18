@@ -15,6 +15,7 @@ import CustomerTransformerMatching from './components/CustomerTransformerMatchin
 function AppContent() {
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   if (loading) {
     return (
@@ -33,7 +34,12 @@ function AppContent() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Navigation currentView={currentView} onViewChange={setCurrentView} />
+      <Navigation 
+        currentView={currentView} 
+        onViewChange={setCurrentView}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
       <main className="flex-1 overflow-y-auto">
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'events' && <EventManagement />}
