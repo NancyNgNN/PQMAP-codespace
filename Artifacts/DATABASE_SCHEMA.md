@@ -1,6 +1,6 @@
 # PQMAP Database Schema Documentation
 
-**Last Updated:** December 15, 2025
+**Last Updated:** December 19, 2025
 
 ## Overview
 Complete database schema for the Power Quality Monitoring and Analysis Platform (PQMAP).
@@ -85,15 +85,15 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 ### 1. `profiles`
 **Purpose:** User profile information linked to auth.users
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | uuid | PRIMARY KEY | Links to auth.users |
-| `email` | text | NOT NULL | User email address |
-| `full_name` | text | NOT NULL | User's full name |
-| `role` | user_role | NOT NULL | admin, operator, viewer |
-| `department` | text | | Department name |
-| `created_at` | timestamptz | DEFAULT now() | Profile creation time |
-| `updated_at` | timestamptz | DEFAULT now() | Last update time |
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Links to auth.users | `550e8400-e29b-41d4-a716-446655440000` |
+| `email` | text | NOT NULL | User email address | `john.doe@clp.com.hk` |
+| `full_name` | text | NOT NULL | User's full name | `John Doe` |
+| `role` | user_role | NOT NULL | admin, operator, viewer | `operator` |
+| `department` | text | | Department name | `Power Quality` |
+| `created_at` | timestamptz | DEFAULT now() | Profile creation time | `2025-01-15 08:30:00+00` |
+| `updated_at` | timestamptz | DEFAULT now() | Last update time | `2025-12-19 10:45:00+00` |
 
 **TypeScript Interface:** `Profile`  
 **Status:** ✅ Matches database
@@ -103,17 +103,17 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 ### 2. `substations`
 **Purpose:** Physical substation locations and details
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | uuid | PRIMARY KEY | Unique identifier |
-| `name` | text | NOT NULL | Substation name |
-| `code` | text | UNIQUE | Substation code (e.g., APA, APB, CHS) |
-| `voltage_level` | text | | e.g., "132kV", "11kV", "400kV", "380V" |
-| `latitude` | decimal(10,6) | | GPS latitude |
-| `longitude` | decimal(10,6) | | GPS longitude |
-| `region` | text | CHECK IN ('WE','NR','CN') | WE=West, NR=North, CN=Central |
-| `status` | substation_status | DEFAULT 'operational' | operational, maintenance, offline |
-| `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Unique identifier | `7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3` |
+| `name` | text | NOT NULL | Substation name | `Ap Lei Chau Substation A` |
+| `code` | text | UNIQUE | Substation code (e.g., APA, APB, CHS) | `APA` |
+| `voltage_level` | text | | e.g., "132kV", "11kV", "400kV", "380V" | `132kV` |
+| `latitude` | decimal(10,6) | | GPS latitude | `22.240000` |
+| `longitude` | decimal(10,6) | | GPS longitude | `114.150000` |
+| `region` | text | CHECK IN ('WE','NR','CN') | WE=West, NR=North, CN=Central | `WE` |
+| `status` | substation_status | DEFAULT 'operational' | operational, maintenance, offline | `operational` |
+| `created_at` | timestamptz | DEFAULT now() | Creation timestamp | `2024-11-03 12:00:00+00` |
 
 **TypeScript Interface:** `Substation`  
 **Status:** ✅ Matches database
@@ -130,26 +130,39 @@ Production substations with official codes and coordinates:
 **Purpose:** Power quality monitoring meters/devices
 
 #### Current Schema (Base)
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | uuid | PRIMARY KEY | Unique identifier |
-| `meter_id` | text | UNIQUE NOT NULL | Meter serial number |
-| `substation_id` | uuid | FK → substations | Associated substation |
-| `location` | text | | Location within substation |
-| `status` | meter_status | DEFAULT 'active' | active, abnormal, inactive |
-| `last_communication` | timestamptz | | Last successful comm |
-| `firmware_version` | text | | Firmware version |
-| `installed_date` | timestamptz | | Installation date |
-| `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Unique identifier | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
+| `meter_id` | text | UNIQUE NOT NULL | Meter serial number | `PQM-APA-001` |
+| `substation_id` | uuid | FK → substations | Associated substation | `7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3` |
+| `location` | text | | Location within substation | `11kV Switchboard Room` |
+| `status` | meter_status | DEFAULT 'active' | active, abnormal, inactive | `active` |
+| `last_communication` | timestamptz | | Last successful comm | `2025-12-19 03:00:00+00` |
+| `firmware_version` | text | | Firmware version | `v2.5.3` |
+| `installed_date` | timestamptz | | Installation date | `2023-06-15 09:00:00+00` |
+| `created_at` | timestamptz | DEFAULT now() | Creation timestamp | `2024-11-03 12:00:00+00` |
 
 #### ✅ Columns Added by Migration (APPLIED)
-| Column | Type | Default | Description |
-|--------|------|---------|-------------|
-| `meter_type` | text | 'PQ Monitor' | Type of meter |
-| `voltage_level` | text | | Operating voltage level |
+| Column | Type | Default | Description | Example |
+|--------|------|---------|-------------|--------|
+| `meter_type` | text | 'PQ Monitor' | Type of meter | `Fluke 1760` |
+| `voltage_level` | text | | Operating voltage level | `132kV` |
 
 **TypeScript Interface:** `PQMeter`  
 **Status:** ✅ **Matches database schema**
+
+**Meter Availability Monitoring** (Dec 19, 2025):
+- Current implementation uses mock data (hourly communication records for past 30 days)
+- Future integration with PQMS/CPDIS will provide actual communication timestamps
+- Potential table: `meter_communications` with columns:
+  - `id` (uuid, PRIMARY KEY)
+  - `meter_id` (uuid, FK → pq_meters)
+  - `communication_timestamp` (timestamptz, NOT NULL)
+  - `data_quality` (decimal, percentage of valid data)
+  - `response_time_ms` (integer, communication latency)
+  - `created_at` (timestamptz, DEFAULT now())
+- Index on (meter_id, communication_timestamp) for fast availability queries
+- RLS policies matching pq_meters access control
 
 ---
 
@@ -157,23 +170,23 @@ Production substations with official codes and coordinates:
 **Purpose:** Power quality events (dips, swells, harmonics, etc.)
 
 #### Current Schema (Base)
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | uuid | PRIMARY KEY | Unique identifier |
-| `event_type` | event_type | NOT NULL | voltage_dip, voltage_swell, harmonic, etc. |
-| `substation_id` | uuid | FK → substations | Affected substation |
-| `meter_id` | uuid | FK → pq_meters | Recording meter |
-| `timestamp` | timestamptz | NOT NULL | Event occurrence time |
-| `duration_ms` | integer | | Event duration in milliseconds |
-| `magnitude` | decimal(10,3) | | Event magnitude (voltage %, THD%) |
-| `severity` | severity_level | DEFAULT 'low' | critical, high, medium, low |
-| `status` | event_status | DEFAULT 'new' | new, acknowledged, investigating, resolved, false |
-| `is_mother_event` | boolean | DEFAULT false | Is this a mother event? |
-| `parent_event_id` | uuid | FK → pq_events | Links to mother event |
-| `affected_phases` | text[] | DEFAULT ['A','B','C'] | Affected phases |
-| `waveform_data` | jsonb | | Waveform data for visualization |
-| `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
-| `resolved_at` | timestamptz | | Resolution timestamp |
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Unique identifier | `e1f2a3b4-c5d6-7890-efab-cd1234567890` |
+| `event_type` | event_type | NOT NULL | voltage_dip, voltage_swell, harmonic, etc. | `voltage_dip` |
+| `substation_id` | uuid | FK → substations | Affected substation | `7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3` |
+| `meter_id` | uuid | FK → pq_meters | Recording meter | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
+| `timestamp` | timestamptz | NOT NULL | Event occurrence time | `2025-12-18 14:32:15+00` |
+| `duration_ms` | integer | | Event duration in milliseconds | `350` |
+| `magnitude` | decimal(10,3) | | Event magnitude (voltage %, THD%) | `72.5` |
+| `severity` | severity_level | DEFAULT 'low' | critical, high, medium, low | `high` |
+| `status` | event_status | DEFAULT 'new' | new, acknowledged, investigating, resolved, false | `acknowledged` |
+| `is_mother_event` | boolean | DEFAULT false | Is this a mother event? | `true` |
+| `parent_event_id` | uuid | FK → pq_events | Links to mother event | `null` (for mother) / `e1f2a3b4-...` (for child) |
+| `affected_phases` | text[] | DEFAULT ['A','B','C'] | Affected phases | `{A,B,C}` |
+| `waveform_data` | jsonb | | Waveform data for visualization | `{"voltage": [...], "current": [...]}` |
+| `created_at` | timestamptz | DEFAULT now() | Creation timestamp | `2025-12-18 14:32:20+00` |
+| `resolved_at` | timestamptz | | Resolution timestamp | `2025-12-18 16:45:00+00` |
 
 #### ✅ Columns Added by Migration (APPLIED)
 | Column | Type | Default | Description |
@@ -270,17 +283,17 @@ Production substations with official codes and coordinates:
 ### 5. `customers`
 **Purpose:** Customer accounts and service points
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | uuid | PRIMARY KEY | Unique identifier |
-| `account_number` | text | UNIQUE NOT NULL | Customer account number |
-| `name` | text | NOT NULL | Customer name |
-| `address` | text | | Service address |
-| `substation_id` | uuid | FK → substations | Serving substation |
-| `contract_demand_kva` | decimal(10,2) | | Contract demand |
-| `customer_type` | customer_type | DEFAULT 'residential' | residential, commercial, industrial |
-| `critical_customer` | boolean | DEFAULT false | Is critical customer? |
-| `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Unique identifier | `c1d2e3f4-a5b6-7890-cdef-ab1234567890` |
+| `account_number` | text | UNIQUE NOT NULL | Customer account number | `ACC-2025-001234` |
+| `name` | text | NOT NULL | Customer name | `ABC Manufacturing Ltd` |
+| `address` | text | | Service address | `123 Industrial Road, Kowloon` |
+| `substation_id` | uuid | FK → substations | Serving substation | `7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3` |
+| `contract_demand_kva` | decimal(10,2) | | Contract demand | `500.00` |
+| `customer_type` | customer_type | DEFAULT 'residential' | residential, commercial, industrial | `industrial` |
+| `critical_customer` | boolean | DEFAULT false | Is critical customer? | `true` |
+| `created_at` | timestamptz | DEFAULT now() | Creation timestamp | `2024-01-10 08:00:00+00` |
 
 **Note:** `transformer_id` column was removed in migration `20251215000002` and replaced with `customer_transformer_matching` table for more flexible circuit relationships.
 
@@ -292,16 +305,16 @@ Production substations with official codes and coordinates:
 ### 6. `customer_transformer_matching`
 **Purpose:** Maps customers to substations and circuits for automatic impact generation
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | uuid | PRIMARY KEY | Unique identifier |
-| `customer_id` | uuid | FK → customers ON DELETE CASCADE | Customer account |
-| `substation_id` | uuid | FK → substations ON DELETE RESTRICT | Substation |
-| `circuit_id` | text | NOT NULL | Transformer ID (H1, H2, or H3) |
-| `active` | boolean | DEFAULT true | Is mapping active? |
-| `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | DEFAULT now() | Last update timestamp |
-| `updated_by` | uuid | FK → profiles | Last updated by user |
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Unique identifier | `d1e2f3a4-b5c6-7890-defg-bc1234567890` |
+| `customer_id` | uuid | FK → customers ON DELETE CASCADE | Customer account | `c1d2e3f4-a5b6-7890-cdef-ab1234567890` |
+| `substation_id` | uuid | FK → substations ON DELETE RESTRICT | Substation | `7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3` |
+| `circuit_id` | text | NOT NULL | Transformer ID (H1, H2, or H3) | `H2` |
+| `active` | boolean | DEFAULT true | Is mapping active? | `true` |
+| `created_at` | timestamptz | DEFAULT now() | Creation timestamp | `2025-12-15 10:00:00+00` |
+| `updated_at` | timestamptz | DEFAULT now() | Last update timestamp | `2025-12-15 10:00:00+00` |
+| `updated_by` | uuid | FK → profiles | Last updated by user | `550e8400-e29b-41d4-a716-446655440000` |
 
 **Circuit ID Format:**
 - Uses real CLP transformer numbers: `H1`, `H2`, or `H3`
@@ -330,14 +343,14 @@ Production substations with official codes and coordinates:
 ### 7. `event_customer_impact`
 **Purpose:** Links events to affected customers (auto-generated via trigger)
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | uuid | PRIMARY KEY | Unique identifier |
-| `event_id` | uuid | FK → pq_events ON DELETE CASCADE | PQ event |
-| `customer_id` | uuid | FK → customers ON DELETE CASCADE | Affected customer |
-| `impact_level` | text | DEFAULT 'minor' | severe, moderate, minor |
-| `estimated_downtime_min` | numeric(10,2) | | Estimated downtime (from duration_ms) |
-| `created_at` | timestamptz | DEFAULT now() | Creation timestamp |
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Unique identifier | `f1a2b3c4-d5e6-7890-fghi-de1234567890` |
+| `event_id` | uuid | FK → pq_events ON DELETE CASCADE | PQ event | `e1f2a3b4-c5d6-7890-efab-cd1234567890` |
+| `customer_id` | uuid | FK → customers ON DELETE CASCADE | Affected customer | `c1d2e3f4-a5b6-7890-cdef-ab1234567890` |
+| `impact_level` | text | DEFAULT 'minor' | severe, moderate, minor | `moderate` |
+| `estimated_downtime_min` | numeric(10,2) | | Estimated downtime (from duration_ms) | `5.83` |
+| `created_at` | timestamptz | DEFAULT now() | Creation timestamp | `2025-12-18 14:32:20+00` |
 
 **Auto-Generation:**
 - Trigger `trigger_auto_generate_customer_impacts` fires AFTER INSERT on `pq_events`

@@ -1,7 +1,7 @@
 # PQMAP Styles Guide
 
-**Version:** 1.2  
-**Last Updated:** December 16, 2025  
+**Version:** 1.3  
+**Last Updated:** December 19, 2025  
 **Purpose:** Document reusable UI patterns, export/import utilities, and design standards for PQMAP application
 
 ---
@@ -16,6 +16,7 @@
 6. [Color Scheme](#color-scheme)
 7. [Spacing & Layout](#spacing--layout)
 8. [Animation Standards](#animation-standards)
+9. [Modal Patterns](#modal-patterns)
 
 ---
 
@@ -1563,6 +1564,192 @@ const getFilteredEvents = (): PQEvent[] => {
 localStorage.setItem('rootCauseFilters', JSON.stringify(filters));
 localStorage.setItem('rootCauseProfiles', JSON.stringify(profiles));
 ```
+
+---
+
+## Modal Patterns
+
+### Report Modal with Configuration and Data Table
+
+**Use Case**: Large overlay modal combining configuration controls, summary statistics, filters, and paginated data table
+
+**Example**: Meter Availability Report (AssetManagement.tsx, Dec 19, 2025)
+
+#### Modal Structure
+
+```tsx
+{showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+      {/* Sticky Header */}
+      <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex items-center justify-between z-10">
+        <div className="flex items-center gap-3">
+          <BarChart3 className="w-6 h-6" />
+          <div>
+            <h3 className="text-xl font-bold">Modal Title</h3>
+            <p className="text-blue-100 text-sm">Subtitle description</p>
+          </div>
+        </div>
+        <button onClick={closeModal} className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all">
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Configuration Section */}
+      <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
+        {/* Time range selectors, presets, custom inputs */}
+      </div>
+
+      {/* Summary Statistics */}
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Stat cards with color-coded backgrounds */}
+        </div>
+      </div>
+
+      {/* Filter Section */}
+      <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          {/* Search input, dropdown filters, clear button */}
+        </div>
+      </div>
+
+      {/* Scrollable Table Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        <table className="w-full">
+          <thead className="sticky top-0 bg-white border-b-2 border-slate-300 z-10">
+            {/* Sortable headers with ArrowUp/ArrowDown/ArrowUpDown */}
+          </thead>
+          <tbody>
+            {/* Data rows with hover effects */}
+          </tbody>
+        </table>
+
+        {/* Pagination controls */}
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+          {/* Page info and navigation buttons */}
+        </div>
+      </div>
+
+      {/* Sticky Footer */}
+      <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div className="text-sm text-slate-600">
+          <span className="font-semibold">{count}</span> items displayed
+        </div>
+        <button onClick={closeModal} className="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold transition-all">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+```
+
+#### Key Design Elements
+
+**1. Full-Width Layout**:
+- `max-w-7xl` for wide screens (accommodates 7+ columns)
+- `max-h-[95vh]` prevents exceeding viewport
+- `overflow-hidden` on container, `overflow-y-auto` on content
+
+**2. Sticky Header & Footer**:
+- Header: `sticky top-0` with gradient background and z-10
+- Footer: `sticky bottom-0` with solid background
+- Both prevent scrolling out of view
+
+**3. Configuration Section**:
+- Visual preset buttons (active state highlighting)
+- Conditional custom inputs (show/hide based on selection)
+- Color scheme: Blue for active, white for inactive
+- Examples: Time range (24h, 7d, 30d, custom)
+
+**4. Summary Statistics Grid**:
+- `grid grid-cols-1 md:grid-cols-4` for responsive layout
+- Color-coded background cards (slate-50, green-50, blue-50)
+- Large font size (text-2xl) for emphasis
+- Clear labels with small text (text-xs)
+
+**5. Filter Controls**:
+- `flex items-center justify-between` layout
+- Search input with Search icon positioned absolutely
+- Multi-select dropdowns for categories
+- Clear Filters button with active count badge
+
+**6. Sortable Table**:
+- Sticky header: `thead` with `sticky top-0 bg-white z-10`
+- Sort buttons: `flex items-center gap-1` with icons
+- Color-coded badges for status/severity columns
+- Hover row effect: `hover:bg-slate-50`
+- Empty state: Centered message with helpful actions
+
+**7. Pagination**:
+- Range display: "Showing X to Y of Z items"
+- Previous/Next buttons with disabled states
+- Page counter: "Page X / Y"
+- Chevron icons (ChevronLeft, ChevronRight)
+
+#### Color Coding Patterns
+
+**Time Range Buttons**:
+```tsx
+className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+  selected
+    ? 'bg-blue-600 text-white shadow-md'
+    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
+}`}
+```
+
+**Availability/Status Badges**:
+```tsx
+// High availability (≥90%)
+<span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
+  95.50%
+</span>
+
+// Medium availability (50-89%)
+<span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold">
+  72.33%
+</span>
+
+// Low availability (<50%)
+<span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-bold">
+  15.00%
+</span>
+```
+
+**Summary Stat Cards**:
+```tsx
+// Default card
+<div className="bg-slate-50 p-4 rounded-lg">...</div>
+
+// Success card
+<div className="bg-green-50 p-4 rounded-lg">...</div>
+
+// Info card
+<div className="bg-blue-50 p-4 rounded-lg">...</div>
+```
+
+#### Responsive Considerations
+
+1. **Grid Breakpoints**: Use `md:grid-cols-4` to stack on mobile
+2. **Flex Wrapping**: `flex-wrap` on filter controls
+3. **Table Overflow**: `overflow-x-auto` wrapper for wide tables
+4. **Modal Padding**: `p-4` on outer container for mobile spacing
+
+#### Accessibility
+
+- Close button with hover effect and title attribute
+- Keyboard navigation (future: Escape key to close)
+- Color contrast meets WCAG AA standards
+- Screen reader labels on icon-only buttons
+- Disabled state styling on pagination buttons
+
+#### Performance Optimization
+
+- Pagination reduces DOM size (20 items per page)
+- Sticky positioning for header/footer (better than fixed)
+- Efficient filtering with early returns
+- Memoization opportunities for expensive calculations
 
 ---
 

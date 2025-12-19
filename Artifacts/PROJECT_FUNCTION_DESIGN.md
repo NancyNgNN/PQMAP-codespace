@@ -1,6 +1,6 @@
 # PQMAP - Project Function Design Document
 
-**Document Version:** 1.2  
+**Document Version:** 1.3  
 **Last Updated:** December 19, 2025  
 **Purpose:** Comprehensive functional design reference for continuous development
 
@@ -441,6 +441,78 @@ interface PQMeter {
 - **Data Quality**: Completeness and accuracy metrics
 - **Abnormality Detection**: Missing data, unusual patterns
 - **Alert Generation**: Notifications for meter issues
+
+##### Meter Availability Report ✨ NEW (Dec 19, 2025)
+
+**Purpose**: Monitor meter communication performance and uptime trends
+
+**Access**: "Availability Report" button above KPI cards (Active/Abnormal/Inactive meters)
+
+**Mock Data Generation** (Placeholder for PQMS/CPDIS Integration):
+- Generates hourly communication records for past 30 days
+- Simulates realistic availability patterns:
+  - **Active meters**: 95-100% availability (miss ~2-5% randomly)
+  - **Abnormal meters**: 50-90% availability  
+  - **Inactive meters**: 0-30% availability
+- Data stored in component state during session
+- Ready for replacement with actual PQMS/CPDIS data
+
+**Time Range Configuration**:
+- **Preset Options**: Last 24 Hours (default), Last 7 Days, Last 30 Days
+- **Custom Range**: DateTime picker for specific start/end times
+- Visual button selector with active state highlighting
+- Only affects report modal (main KPI cards show current status)
+
+**Availability Calculation**:
+```typescript
+// Count communications within time range
+count = communications.filter(date => date >= startDate && date <= endDate).length
+
+// Calculate expected count (1 per hour)
+expectedCount = Math.floor((endDate - startDate) / (1000 * 60 * 60))
+
+// Calculate availability percentage
+availability = (count / expectedCount) * 100
+```
+
+**Report Modal Features**:
+
+1. **Summary Statistics**:
+   - Time Range display (formatted: DD/MM/YYYY HH:MM)
+   - Total Meters count
+   - Active Meters count (availability ≥90%)
+   - Total Availability percentage (average across all meters)
+
+2. **Filter Controls**:
+   - Text search (Site ID, Meter ID)
+   - Substation multi-select dropdown
+   - Status filter (All/Active/Abnormal/Inactive)
+   - Clear Filters button with active count badge
+
+3. **Data Table** (7 columns, all sortable):
+   - Site ID
+   - Meter ID (primary identifier)
+   - Substation (resolved from substation_id)
+   - Status (color-coded badge: green/orange/red)
+   - Count (communication records received)
+   - Expected (calculated from time range)
+   - Availability % (color-coded: ≥90% green, 50-89% orange, <50% red)
+
+4. **Pagination**: 20 items per page with Previous/Next controls
+
+5. **Empty State**: Helpful message when no data matches filters
+
+**UI Design**:
+- Full-width modal (max-w-7xl) with sticky header/footer
+- Gradient header (blue-600 to indigo-600)
+- Responsive layout with proper overflow handling
+- Follows STYLES_GUIDE.md patterns for sorting and badges
+
+**Integration Notes**:
+- Replace `communicationData` state with API calls to PQMS/CPDIS
+- Expected API: GET /meter-communications?meterId={id}&startDate={}&endDate={}
+- Response format: Array of timestamp strings
+- Maintain same calculation logic for consistency
 
 ---
 
