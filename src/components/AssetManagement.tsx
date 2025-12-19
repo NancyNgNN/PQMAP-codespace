@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { PQMeter, Substation } from '../types/database';
-import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, BarChart3, Clock, Calendar, Settings2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface FilterState {
@@ -44,9 +44,34 @@ export default function AssetManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
+  // Availability Report states
+  const [showAvailabilityReport, setShowAvailabilityReport] = useState(false);
+  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | 'custom'>('24h');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [reportFilters, setReportFilters] = useState({
+    substations: [] as string[],
+    status: 'all',
+    searchText: ''
+  });
+  const [reportSortField, setReportSortField] = useState<string>('site_id');
+  const [reportSortDirection, setReportSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [reportCurrentPage, setReportCurrentPage] = useState(1);
+  const reportItemsPerPage = 20;
+
+  // Mock communication data (placeholder for demonstration)
+  const [communicationData, setCommunicationData] = useState<Record<string, Date[]>>({});
+
   useEffect(() => {
     loadData();
   }, []);
+
+  // Generate mock communication data for past 30 days (placeholder)
+  useEffect(() => {
+    if (meters.length > 0 && Object.keys(communicationData).length === 0) {
+      generateMockCommunicationData();
+    }
+  }, [meters]);
 
   // Debug: Log sort state changes
   useEffect(() => {
@@ -67,6 +92,48 @@ export default function AssetManagement() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Generate mock hourly communication records for past 30 days
+  const generateMockCommunicationData = () => {
+    const now = new Date();
+    const mockData: Record<string, Date[]> = {};
+
+    meters.forEach(meter => {
+      const communications: Date[] = [];
+      
+      // Generate hourly records for past 30 days
+      for (let day = 0; day < 30; day++) {
+        for (let hour = 0; hour < 24; hour++) {
+          const timestamp = new Date(now);
+          timestamp.setDate(timestamp.getDate() - day);
+          timestamp.setHours(timestamp.getHours() - hour, 0, 0, 0);
+
+          // Simulate different availability patterns based on meter status
+          let shouldAdd = false;
+          
+          if (meter.status === 'active') {
+            // Active meters: 95-100% availability (miss ~2-5% randomly)
+            shouldAdd = Math.random() > 0.02;
+          } else if (meter.status === 'abnormal') {
+            // Abnormal meters: 50-90% availability
+            shouldAdd = Math.random() > 0.3;
+          } else {
+            // Inactive meters: 0-30% availability
+            shouldAdd = Math.random() > 0.85;
+          }
+
+          if (shouldAdd) {
+            communications.push(timestamp);
+          }
+        }
+      }
+
+      mockData[meter.id] = communications;
+    });
+
+    setCommunicationData(mockData);
+    console.log('Generated mock communication data for', meters.length, 'meters');
   };
 
   const substationMap = substations.reduce((acc, s) => {
@@ -137,6 +204,153 @@ export default function AssetManagement() {
     (filters.brand ? 1 : 0) +
     (filters.model ? 1 : 0) +
     (filters.searchText ? 1 : 0);
+
+  // Availability Report Functions
+  const getTimeRangeDates = (): { startDate: Date; endDate: Date } => {
+    const now = new Date();
+    let endDate = new Date(now);
+    let startDate = new Date(now);
+
+    switch (timeRange) {
+      case '24h':
+        startDate.setHours(startDate.getHours() - 24);
+        break;
+      case '7d':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case '30d':
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          startDate = new Date(customStartDate);
+          endDate = new Date(customEndDate);
+        }
+        break;
+    }
+
+    return { startDate, endDate };
+  };
+
+  const calculateAvailability = (meterId: string): { count: number; expectedCount: number; availability: number } => {
+    const { startDate, endDate } = getTimeRangeDates();
+    const communications = communicationData[meterId] || [];
+    
+    // Count communications within time range
+    const count = communications.filter(date => 
+      date >= startDate && date <= endDate
+    ).length;
+
+    // Calculate expected count (1 per hour)
+    const hoursDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
+    const expectedCount = Math.max(1, hoursDiff);
+
+    // Calculate availability percentage
+    const availability = expectedCount > 0 ? (count / expectedCount) * 100 : 0;
+
+    return { count, expectedCount, availability };
+  };
+
+  const getAvailabilityData = () => {
+    return meters.map(meter => {
+      const { count, expectedCount, availability } = calculateAvailability(meter.id);
+      return {
+        ...meter,
+        communicationCount: count,
+        expectedCount,
+        availability: Math.round(availability * 100) / 100 // Round to 2 decimal places
+      };
+    });
+  };
+
+  // Filter availability data based on report filters
+  const filteredAvailabilityData = getAvailabilityData().filter(meter => {
+    // Substation filter
+    if (reportFilters.substations.length > 0 && !reportFilters.substations.includes(meter.substation_id)) return false;
+    
+    // Status filter
+    if (reportFilters.status !== 'all' && meter.status !== reportFilters.status) return false;
+    
+    // Text search (site_id, meter_id)
+    if (reportFilters.searchText) {
+      const searchLower = reportFilters.searchText.toLowerCase();
+      const matchesSiteId = meter.site_id?.toLowerCase().includes(searchLower);
+      const matchesMeterId = meter.meter_id?.toLowerCase().includes(searchLower);
+      if (!matchesSiteId && !matchesMeterId) return false;
+    }
+    
+    return true;
+  });
+
+  // Sort availability data
+  const sortedAvailabilityData = [...filteredAvailabilityData].sort((a, b) => {
+    let aVal: any;
+    let bVal: any;
+
+    switch (reportSortField) {
+      case 'substation':
+        aVal = substationMap[a.substation_id]?.name || '';
+        bVal = substationMap[b.substation_id]?.name || '';
+        break;
+      case 'availability':
+        aVal = a.availability;
+        bVal = b.availability;
+        break;
+      case 'count':
+        aVal = a.communicationCount;
+        bVal = b.communicationCount;
+        break;
+      default:
+        aVal = (a as any)[reportSortField] || '';
+        bVal = (b as any)[reportSortField] || '';
+    }
+
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      aVal = aVal.toLowerCase();
+      bVal = bVal.toLowerCase();
+    }
+
+    if (aVal < bVal) return reportSortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return reportSortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Pagination for availability report
+  const availabilityTotalPages = Math.ceil(sortedAvailabilityData.length / reportItemsPerPage);
+  const paginatedAvailabilityData = sortedAvailabilityData.slice(
+    (reportCurrentPage - 1) * reportItemsPerPage,
+    reportCurrentPage * reportItemsPerPage
+  );
+
+  // Calculate summary stats
+  const totalActiveMeters = filteredAvailabilityData.filter(m => m.availability >= 90).length;
+  const totalAvailability = filteredAvailabilityData.length > 0
+    ? Math.round((filteredAvailabilityData.reduce((sum, m) => sum + m.availability, 0) / filteredAvailabilityData.length) * 100) / 100
+    : 0;
+
+  const handleReportSort = (field: string) => {
+    if (reportSortField === field) {
+      setReportSortDirection(reportSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setReportSortField(field);
+      setReportSortDirection('asc');
+    }
+    setReportCurrentPage(1);
+  };
+
+  const handleClearReportFilters = () => {
+    setReportFilters({
+      substations: [],
+      status: 'all',
+      searchText: ''
+    });
+    setReportCurrentPage(1);
+  };
+
+  const reportActiveFilterCount = 
+    reportFilters.substations.length +
+    (reportFilters.status !== 'all' ? 1 : 0) +
+    (reportFilters.searchText ? 1 : 0);
 
   // Apply sorting
   const sortedMeters = [...filteredMeters].sort((a, b) => {
@@ -316,39 +530,54 @@ export default function AssetManagement() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600 mb-2">Active Meters</p>
-              <p className="text-3xl font-bold text-green-600">{statusStats.active}</p>
-            </div>
-            <div className="bg-green-50 p-3 rounded-xl">
-              <Activity className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
+      {/* KPI Cards with Availability Report Button */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-slate-900">Meter Status Overview</h2>
+          <button
+            onClick={() => setShowAvailabilityReport(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg"
+            title="View Availability Report"
+          >
+            <BarChart3 className="w-5 h-5" />
+            <span className="font-semibold">Availability Report</span>
+          </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600 mb-2">Abnormal Meters</p>
-              <p className="text-3xl font-bold text-orange-600">{statusStats.abnormal}</p>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <Activity className="w-6 h-6 text-orange-600" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 mb-2">Active Meters</p>
+                <p className="text-3xl font-bold text-green-600">{statusStats.active}</p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-xl">
+                <Activity className="w-6 h-6 text-green-600" />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600 mb-2">Inactive Meters</p>
-              <p className="text-3xl font-bold text-red-600">{statusStats.inactive}</p>
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 mb-2">Abnormal Meters</p>
+                <p className="text-3xl font-bold text-orange-600">{statusStats.abnormal}</p>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-xl">
+                <Activity className="w-6 h-6 text-orange-600" />
+              </div>
             </div>
-            <div className="bg-red-50 p-3 rounded-xl">
-              <Activity className="w-6 h-6 text-red-600" />
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 mb-2">Inactive Meters</p>
+                <p className="text-3xl font-bold text-red-600">{statusStats.inactive}</p>
+              </div>
+              <div className="bg-red-50 p-3 rounded-xl">
+                <Activity className="w-6 h-6 text-red-600" />
+              </div>
             </div>
           </div>
         </div>
@@ -1081,6 +1310,410 @@ export default function AssetManagement() {
               <button
                 onClick={() => setSelectedMeter(null)}
                 className="w-full bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Availability Report Modal */}
+      {showAvailabilityReport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex items-center justify-between z-10">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="w-6 h-6" />
+                <div>
+                  <h3 className="text-xl font-bold">Meter Availability Report</h3>
+                  <p className="text-blue-100 text-sm">Communication performance monitoring</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAvailabilityReport(false)}
+                className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all"
+                title="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Time Range Configuration */}
+            <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-slate-600" />
+                  <span className="text-sm font-semibold text-slate-700">Time Range:</span>
+                </div>
+                
+                {/* Preset Buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setTimeRange('24h')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                      timeRange === '24h'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
+                    }`}
+                  >
+                    Last 24 Hours
+                  </button>
+                  <button
+                    onClick={() => setTimeRange('7d')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                      timeRange === '7d'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
+                    }`}
+                  >
+                    Last 7 Days
+                  </button>
+                  <button
+                    onClick={() => setTimeRange('30d')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                      timeRange === '30d'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
+                    }`}
+                  >
+                    Last 30 Days
+                  </button>
+                  <button
+                    onClick={() => setTimeRange('custom')}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                      timeRange === 'custom'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
+                    }`}
+                  >
+                    Custom Range
+                  </button>
+                </div>
+
+                {/* Custom Date Inputs */}
+                {timeRange === 'custom' && (
+                  <div className="flex items-center gap-2 ml-4">
+                    <input
+                      type="datetime-local"
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="text-slate-600">to</span>
+                    <input
+                      type="datetime-local"
+                      value={customEndDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Summary Section */}
+            <div className="bg-white border-b border-slate-200 px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-slate-600 mb-1">Time Range</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {(() => {
+                      const { startDate, endDate } = getTimeRangeDates();
+                      return `${startDate.toLocaleString('en-GB', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })} to ${endDate.toLocaleString('en-GB', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}`;
+                    })()}
+                  </p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-slate-600 mb-1">Total Meters</p>
+                  <p className="text-2xl font-bold text-slate-900">{filteredAvailabilityData.length}</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-green-700 mb-1">Active Meters (≥90%)</p>
+                  <p className="text-2xl font-bold text-green-700">{totalActiveMeters}</p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-blue-700 mb-1">Total Availability</p>
+                  <p className="text-2xl font-bold text-blue-700">{totalAvailability}%</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter Section */}
+            <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-4 flex-1">
+                  {/* Search */}
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search Site ID or Meter ID..."
+                      value={reportFilters.searchText}
+                      onChange={(e) => setReportFilters({ ...reportFilters, searchText: e.target.value })}
+                      className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+
+                  {/* Substation Filter */}
+                  <select
+                    multiple
+                    value={reportFilters.substations}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                      setReportFilters({ ...reportFilters, substations: selected });
+                    }}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 min-w-[150px]"
+                    size={1}
+                  >
+                    <option value="">All Substations</option>
+                    {substations.map(sub => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Status Filter */}
+                  <select
+                    value={reportFilters.status}
+                    onChange={(e) => setReportFilters({ ...reportFilters, status: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="abnormal">Abnormal</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+
+                {/* Clear Filters Button */}
+                {reportActiveFilterCount > 0 && (
+                  <button
+                    onClick={handleClearReportFilters}
+                    className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all"
+                  >
+                    Clear Filters ({reportActiveFilterCount})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Table Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-white border-b-2 border-slate-300 z-10">
+                    <tr>
+                      {/* Site ID */}
+                      <th className="py-3 px-4 text-left">
+                        <button
+                          onClick={() => handleReportSort('site_id')}
+                          className="flex items-center gap-1 text-xs font-semibold text-slate-700 uppercase tracking-wider hover:text-blue-600"
+                        >
+                          Site ID
+                          {reportSortField === 'site_id' ? (
+                            reportSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-30" />
+                          )}
+                        </button>
+                      </th>
+
+                      {/* Meter ID */}
+                      <th className="py-3 px-4 text-left">
+                        <button
+                          onClick={() => handleReportSort('meter_id')}
+                          className="flex items-center gap-1 text-xs font-semibold text-slate-700 uppercase tracking-wider hover:text-blue-600"
+                        >
+                          Meter ID
+                          {reportSortField === 'meter_id' ? (
+                            reportSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-30" />
+                          )}
+                        </button>
+                      </th>
+
+                      {/* Substation */}
+                      <th className="py-3 px-4 text-left">
+                        <button
+                          onClick={() => handleReportSort('substation')}
+                          className="flex items-center gap-1 text-xs font-semibold text-slate-700 uppercase tracking-wider hover:text-blue-600"
+                        >
+                          Substation
+                          {reportSortField === 'substation' ? (
+                            reportSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-30" />
+                          )}
+                        </button>
+                      </th>
+
+                      {/* Status */}
+                      <th className="py-3 px-4 text-left">
+                        <button
+                          onClick={() => handleReportSort('status')}
+                          className="flex items-center gap-1 text-xs font-semibold text-slate-700 uppercase tracking-wider hover:text-blue-600"
+                        >
+                          Status
+                          {reportSortField === 'status' ? (
+                            reportSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-30" />
+                          )}
+                        </button>
+                      </th>
+
+                      {/* Count */}
+                      <th className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => handleReportSort('count')}
+                          className="flex items-center justify-end gap-1 text-xs font-semibold text-slate-700 uppercase tracking-wider hover:text-blue-600 ml-auto"
+                        >
+                          Count
+                          {reportSortField === 'count' ? (
+                            reportSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-30" />
+                          )}
+                        </button>
+                      </th>
+
+                      {/* Expected */}
+                      <th className="py-3 px-4 text-right text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Expected
+                      </th>
+
+                      {/* Availability */}
+                      <th className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => handleReportSort('availability')}
+                          className="flex items-center justify-end gap-1 text-xs font-semibold text-slate-700 uppercase tracking-wider hover:text-blue-600 ml-auto"
+                        >
+                          Availability
+                          {reportSortField === 'availability' ? (
+                            reportSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-30" />
+                          )}
+                        </button>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedAvailabilityData.length > 0 ? (
+                      paginatedAvailabilityData.map((meter) => (
+                        <tr key={meter.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                          <td className="py-3 px-4 text-sm text-slate-900">
+                            {meter.site_id || '-'}
+                          </td>
+                          <td className="py-3 px-4 text-sm font-medium text-slate-900">
+                            {meter.meter_id}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-700">
+                            {substationMap[meter.substation_id]?.name || 'Unknown'}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                              meter.status === 'active' 
+                                ? 'bg-green-100 text-green-700' 
+                                : meter.status === 'abnormal'
+                                ? 'bg-orange-100 text-orange-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                              {meter.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-900 text-right font-semibold">
+                            {meter.communicationCount}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-600 text-right">
+                            {meter.expectedCount}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${
+                              meter.availability >= 90 
+                                ? 'bg-green-100 text-green-700' 
+                                : meter.availability >= 50
+                                ? 'bg-orange-100 text-orange-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                              {meter.availability.toFixed(2)}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="py-12 text-center">
+                          <div className="flex flex-col items-center gap-3">
+                            <Database className="w-12 h-12 text-slate-300" />
+                            <p className="text-slate-500 font-medium">No meters match the current filters</p>
+                            <button
+                              onClick={handleClearReportFilters}
+                              className="text-blue-600 hover:text-blue-700 text-sm font-semibold"
+                            >
+                              Clear all filters
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {availabilityTotalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+                  <div className="text-sm text-slate-600">
+                    Showing {((reportCurrentPage - 1) * reportItemsPerPage) + 1} to {Math.min(reportCurrentPage * reportItemsPerPage, sortedAvailabilityData.length)} of {sortedAvailabilityData.length} meters
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setReportCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={reportCurrentPage === 1}
+                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <span className="px-4 py-2 bg-slate-100 rounded-lg font-semibold text-slate-900">
+                      {reportCurrentPage} / {availabilityTotalPages}
+                    </span>
+                    <button
+                      onClick={() => setReportCurrentPage(prev => Math.min(availabilityTotalPages, prev + 1))}
+                      disabled={reportCurrentPage === availabilityTotalPages}
+                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">{filteredAvailabilityData.length}</span> meters displayed
+              </div>
+              <button
+                onClick={() => setShowAvailabilityReport(false)}
+                className="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold transition-all"
               >
                 Close
               </button>
