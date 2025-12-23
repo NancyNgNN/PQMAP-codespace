@@ -60,6 +60,7 @@ export default function EventManagement() {
   const [meterSearchQuery, setMeterSearchQuery] = useState('');
   const [selectedVoltageLevelsForMeters, setSelectedVoltageLevelsForMeters] = useState<string[]>([]);
   const [showVoltageLevelDropdown, setShowVoltageLevelDropdown] = useState(false);
+  const [showEventTypeDropdown, setShowEventTypeDropdown] = useState(false);
   
   // Export states
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -119,6 +120,9 @@ export default function EventManagement() {
       if (showVoltageLevelDropdown && !target.closest('.voltage-dropdown-container')) {
         setShowVoltageLevelDropdown(false);
       }
+      if (showEventTypeDropdown && !target.closest('.event-type-dropdown-container')) {
+        setShowEventTypeDropdown(false);
+      }
       if (showExportDropdown && !target.closest('.export-dropdown-container')) {
         setShowExportDropdown(false);
       }
@@ -129,7 +133,7 @@ export default function EventManagement() {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMeterDropdown, showProfileDropdown, showVoltageLevelDropdown, showExportDropdown, showImportDropdown]);
+  }, [showMeterDropdown, showProfileDropdown, showVoltageLevelDropdown, showEventTypeDropdown, showExportDropdown, showImportDropdown]);
 
   const loadData = async () => {
     try {
@@ -1592,8 +1596,79 @@ export default function EventManagement() {
                   </div>
                 </div>
 
+                {/* Event Type Filter */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Event Type {filters.eventTypes.length > 0 && `(${filters.eventTypes.length})`}
+                  </label>
+                  <div className="relative event-type-dropdown-container">
+                    <button
+                      onClick={() => setShowEventTypeDropdown(!showEventTypeDropdown)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-left text-sm hover:bg-slate-50 transition-all flex items-center justify-between"
+                    >
+                      <span className="text-slate-700">
+                        {filters.eventTypes.length === 0 ? 'Select event types...' : `${filters.eventTypes.length} type(s) selected`}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </button>
+                    
+                    {showEventTypeDropdown && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                        {/* Select All / Clear All */}
+                        <div className="p-2 border-b border-slate-200 flex gap-2">
+                          <button
+                            onClick={() => {
+                              const allEventTypes = ['voltage_dip', 'voltage_swell', 'harmonic', 'interruption', 'transient', 'flicker'];
+                              setFilters(prev => ({ ...prev, eventTypes: allEventTypes }));
+                            }}
+                            className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-medium"
+                          >
+                            Select All
+                          </button>
+                          <button
+                            onClick={() => setFilters(prev => ({ ...prev, eventTypes: [] }))}
+                            className="flex-1 px-2 py-1 text-xs bg-slate-100 text-slate-600 rounded hover:bg-slate-200 font-medium"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+
+                        <div className="p-2">
+                          {[
+                            { value: 'voltage_dip', label: 'Voltage Dip' },
+                            { value: 'voltage_swell', label: 'Voltage Swell' },
+                            { value: 'harmonic', label: 'Harmonic' },
+                            { value: 'interruption', label: 'Interruption' },
+                            { value: 'transient', label: 'Transient' },
+                            { value: 'flicker', label: 'Flicker' }
+                          ].map(eventType => (
+                            <label
+                              key={eventType.value}
+                              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={filters.eventTypes.includes(eventType.value)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setFilters(prev => ({ ...prev, eventTypes: [...prev.eventTypes, eventType.value] }));
+                                  } else {
+                                    setFilters(prev => ({ ...prev, eventTypes: prev.eventTypes.filter(v => v !== eventType.value) }));
+                                  }
+                                }}
+                                className="rounded text-blue-600"
+                              />
+                              <span className="text-sm font-medium text-slate-700">{eventType.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Voltage Level Filter */}
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium mb-1">
                     Voltage Level (Event Filter) {filters.voltageLevels.length > 0 && `(${filters.voltageLevels.length})`}
                   </label>
@@ -1610,6 +1685,25 @@ export default function EventManagement() {
                     
                     {showVoltageLevelDropdown && (
                       <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                        {/* Select All / Clear All */}
+                        <div className="p-2 border-b border-slate-200 flex gap-2">
+                          <button
+                            onClick={() => {
+                              const allVoltageLevels = ['400kV', '132kV', '33kV', '11kV', '380V'];
+                              setFilters(prev => ({ ...prev, voltageLevels: allVoltageLevels }));
+                            }}
+                            className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-medium"
+                          >
+                            Select All
+                          </button>
+                          <button
+                            onClick={() => setFilters(prev => ({ ...prev, voltageLevels: [] }))}
+                            className="flex-1 px-2 py-1 text-xs bg-slate-100 text-slate-600 rounded hover:bg-slate-200 font-medium"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+
                         <div className="p-2">
                           {['400kV', '132kV', '33kV', '11kV', '380V'].map(voltage => (
                             <label

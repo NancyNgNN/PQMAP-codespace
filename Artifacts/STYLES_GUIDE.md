@@ -866,6 +866,74 @@ When implementing import functionality, ensure:
 
 ## Dropdown Patterns
 
+### Filter Dropdown with Checkboxes
+
+**IMPORTANT RULE**: All filter dropdowns with checkbox options should include "Select All" and "Clear All" buttons for better user experience.
+
+**Standard Pattern:**
+
+```tsx
+{showDropdown && (
+  <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+    {/* Select All / Clear All */}
+    <div className="p-2 border-b border-slate-200 flex gap-2">
+      <button
+        onClick={() => {
+          const allOptions = ['option1', 'option2', 'option3'];
+          setFilters(prev => ({ ...prev, fieldName: allOptions }));
+        }}
+        className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-medium"
+      >
+        Select All
+      </button>
+      <button
+        onClick={() => setFilters(prev => ({ ...prev, fieldName: [] }))}
+        className="flex-1 px-2 py-1 text-xs bg-slate-100 text-slate-600 rounded hover:bg-slate-200 font-medium"
+      >
+        Clear All
+      </button>
+    </div>
+
+    {/* Checkbox Options */}
+    <div className="p-2">
+      {options.map(option => (
+        <label
+          key={option.value}
+          className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+        >
+          <input
+            type="checkbox"
+            checked={filters.fieldName.includes(option.value)}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setFilters(prev => ({ ...prev, fieldName: [...prev.fieldName, option.value] }));
+              } else {
+                setFilters(prev => ({ ...prev, fieldName: prev.fieldName.filter(v => v !== option.value) }));
+              }
+            }}
+            className="rounded text-blue-600"
+          />
+          <span className="text-sm font-medium text-slate-700">{option.label}</span>
+        </label>
+      ))}
+    </div>
+  </div>
+)}
+```
+
+**Key Styling Elements:**
+- **Button Container**: `p-2 border-b border-slate-200 flex gap-2` - Creates button bar at top
+- **Select All Button**: `bg-blue-50 text-blue-600 hover:bg-blue-100` - Blue theme
+- **Clear All Button**: `bg-slate-100 text-slate-600 hover:bg-slate-200` - Gray theme
+- **Button Size**: `text-xs` for compact appearance
+- **Equal Width**: `flex-1` makes both buttons same width
+- **Font Weight**: `font-medium` for emphasis
+
+**Implementation Examples:**
+- Event Type Filter: 6 event types (Voltage Dip, Voltage Swell, Harmonic, Interruption, Transient, Flicker)
+- Voltage Level Filter: 5 voltage levels (400kV, 132kV, 33kV, 11kV, 380V)
+- Any multi-select filter with 3+ options
+
 ### Export Dropdown Menu
 
 **Standard Structure (Multi-format):**
