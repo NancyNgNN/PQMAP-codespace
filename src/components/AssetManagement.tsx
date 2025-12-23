@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { PQMeter, Substation } from '../types/database';
-import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, BarChart3, Clock, Calendar, Settings2 } from 'lucide-react';
+import { PQMeter, Substation, PQEvent, EventType, EventStatus } from '../types/database';
+import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, BarChart3, Clock, Calendar, Settings2, Zap, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface FilterState {
@@ -19,6 +19,22 @@ export default function AssetManagement() {
   const [substations, setSubstations] = useState<Substation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMeter, setSelectedMeter] = useState<PQMeter | null>(null);
+  
+  // Meter detail modal states
+  const [activeTab, setActiveTab] = useState<'info' | 'events'>('info');
+  
+  // Event history states
+  const [meterEvents, setMeterEvents] = useState<PQEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [eventFilters, setEventFilters] = useState({
+    startDate: '',
+    endDate: '',
+    eventTypes: [] as EventType[],
+    statuses: [] as EventStatus[]
+  });
+  const [eventPage, setEventPage] = useState(1);
+  const eventsPerPage = 20;
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   
   // Filter states
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -91,6 +107,33 @@ export default function AssetManagement() {
       console.error('Error loading data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load events for a specific meter
+  const loadMeterEvents = async (meter: PQMeter) => {
+    setLoadingEvents(true);
+    try {
+      let query = supabase
+        .from('pq_events')
+        .select('*')
+        .eq('meter_id', meter.meter_id)
+        .order('timestamp', { ascending: false });
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error loading meter events:', error);
+        setMeterEvents([]);
+      } else {
+        setMeterEvents(data || []);
+        console.log(`✅ Loaded ${data?.length || 0} events for meter ${meter.meter_id}`);
+      }
+    } catch (error) {
+      console.error('Error loading meter events:', error);
+      setMeterEvents([]);
+    } finally {
+      setLoadingEvents(false);
     }
   };
 
@@ -862,7 +905,14 @@ export default function AssetManagement() {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <button
-                        onClick={() => setSelectedMeter(meter)}
+                        onClick={() => {
+                          setSelectedMeter(meter);
+                          setActiveTab('info');
+                          setEventPage(1);
+                          setEventFilters({ startDate: '', endDate: '', eventTypes: [], statuses: [] });
+                          setSelectedEventId(null);
+                          loadMeterEvents(meter);
+                        }}
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                         title="View Details"
                       >
@@ -1125,18 +1175,59 @@ export default function AssetManagement() {
       {/* Meter Detail Modal */}
       {selectedMeter && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-900">Meter Details</h3>
-              <button
-                onClick={() => setSelectedMeter(null)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex-shrink-0 bg-gradient-to-r from-slate-700 to-slate-800 text-white px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold">Meter Details</h3>
+                  <p className="text-slate-300 text-sm mt-1">{selectedMeter.meter_id} - {selectedMeter.site_id || 'N/A'}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedMeter(null)}
+                  className="text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
 
-            <div className="p-6 space-y-6">
+            {/* Tabs */}
+            <div className="flex-shrink-0 bg-white border-b border-slate-200 px-6">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveTab('info')}
+                  className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors ${
+                    activeTab === 'info'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4" />
+                    Meter Information
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab('events')}
+                  className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors ${
+                    activeTab === 'events'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Event History ({meterEvents.length})
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 overflow-y-auto">
+              {activeTab === 'info' && (
+                <div className="p-6 space-y-6">
               {/* Basic Information */}
               <div>
                 <h4 className="text-lg font-semibold text-slate-900 mb-4">Basic Information</h4>
@@ -1304,9 +1395,351 @@ export default function AssetManagement() {
                   </div>
                 </div>
               </div>
+                </div>
+              )}
+
+              {activeTab === 'events' && (() => {
+                // Apply event filters
+                let filteredEvents = [...meterEvents];
+
+                // Date range filter
+                if (eventFilters.startDate) {
+                  filteredEvents = filteredEvents.filter(e => 
+                    new Date(e.timestamp) >= new Date(eventFilters.startDate)
+                  );
+                }
+                if (eventFilters.endDate) {
+                  filteredEvents = filteredEvents.filter(e => 
+                    new Date(e.timestamp) <= new Date(eventFilters.endDate + 'T23:59:59')
+                  );
+                }
+
+                // Event type filter
+                if (eventFilters.eventTypes.length > 0) {
+                  filteredEvents = filteredEvents.filter(e => 
+                    eventFilters.eventTypes.includes(e.event_type)
+                  );
+                }
+
+                // Status filter
+                if (eventFilters.statuses.length > 0) {
+                  filteredEvents = filteredEvents.filter(e => 
+                    eventFilters.statuses.includes(e.status)
+                  );
+                }
+
+                // Calculate event type breakdown
+                const eventTypeBreakdown = filteredEvents.reduce((acc, event) => {
+                  acc[event.event_type] = (acc[event.event_type] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>);
+
+                // Pagination
+                const totalEventPages = Math.ceil(filteredEvents.length / eventsPerPage);
+                const paginatedEvents = filteredEvents.slice(
+                  (eventPage - 1) * eventsPerPage,
+                  eventPage * eventsPerPage
+                );
+
+                // Quick date filters
+                const setQuickDateFilter = (type: 'today' | '7days' | '30days' | 'year') => {
+                  const end = new Date().toISOString().split('T')[0];
+                  let start = '';
+                  
+                  switch (type) {
+                    case 'today':
+                      start = end;
+                      break;
+                    case '7days':
+                      start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                      break;
+                    case '30days':
+                      start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                      break;
+                    case 'year':
+                      start = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+                      break;
+                  }
+                  
+                  setEventFilters({ ...eventFilters, startDate: start, endDate: end });
+                  setEventPage(1);
+                };
+
+                const eventTypeOptions: EventType[] = ['voltage_dip', 'voltage_swell', 'harmonic', 'interruption', 'transient', 'flicker'];
+                const statusOptions: EventStatus[] = ['new', 'acknowledged', 'investigating', 'resolved'];
+
+                return (
+                  <div className="p-6 space-y-4">
+                    {loadingEvents ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Summary Cards */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs font-medium text-blue-700 mb-1">Total Events</p>
+                                <p className="text-2xl font-bold text-blue-900">{filteredEvents.length}</p>
+                              </div>
+                              <Zap className="w-8 h-8 text-blue-600" />
+                            </div>
+                          </div>
+                          <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 rounded-lg border border-slate-200">
+                            <p className="text-xs font-medium text-slate-700 mb-2">By Type</p>
+                            <div className="space-y-1">
+                              {Object.entries(eventTypeBreakdown).slice(0, 3).map(([type, count]) => (
+                                <div key={type} className="flex justify-between text-xs">
+                                  <span className="text-slate-600 capitalize">{type.replace('_', ' ')}</span>
+                                  <span className="font-semibold text-slate-900">{count}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Compact Filters - Pattern 1 from STYLES_GUIDE.md */}
+                        <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+                          {/* Date Quick Filters */}
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-2">Quick Date Filters</label>
+                            <div className="flex gap-2 flex-wrap">
+                              <button
+                                onClick={() => setQuickDateFilter('today')}
+                                className="px-2 py-1.5 text-xs font-medium bg-white border border-slate-300 text-slate-700 rounded hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-colors"
+                              >
+                                Today
+                              </button>
+                              <button
+                                onClick={() => setQuickDateFilter('7days')}
+                                className="px-2 py-1.5 text-xs font-medium bg-white border border-slate-300 text-slate-700 rounded hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-colors"
+                              >
+                                Last 7 Days
+                              </button>
+                              <button
+                                onClick={() => setQuickDateFilter('30days')}
+                                className="px-2 py-1.5 text-xs font-medium bg-white border border-slate-300 text-slate-700 rounded hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-colors"
+                              >
+                                Last 30 Days
+                              </button>
+                              <button
+                                onClick={() => setQuickDateFilter('year')}
+                                className="px-2 py-1.5 text-xs font-medium bg-white border border-slate-300 text-slate-700 rounded hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-colors"
+                              >
+                                This Year
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEventFilters({ startDate: '', endDate: '', eventTypes: [], statuses: [] });
+                                  setEventPage(1);
+                                }}
+                                className="px-2 py-1.5 text-xs font-medium bg-white border border-slate-300 text-slate-700 rounded hover:bg-red-50 hover:border-red-500 hover:text-red-700 transition-colors"
+                              >
+                                Clear All
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Date Range Inputs */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Start Date</label>
+                              <input
+                                type="date"
+                                value={eventFilters.startDate}
+                                onChange={(e) => {
+                                  setEventFilters({ ...eventFilters, startDate: e.target.value });
+                                  setEventPage(1);
+                                }}
+                                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">End Date</label>
+                              <input
+                                type="date"
+                                value={eventFilters.endDate}
+                                onChange={(e) => {
+                                  setEventFilters({ ...eventFilters, endDate: e.target.value });
+                                  setEventPage(1);
+                                }}
+                                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Event Type Filter */}
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">Event Type</label>
+                            <div className="flex gap-2 flex-wrap">
+                              {eventTypeOptions.map(type => (
+                                <button
+                                  key={type}
+                                  onClick={() => {
+                                    setEventFilters({
+                                      ...eventFilters,
+                                      eventTypes: eventFilters.eventTypes.includes(type)
+                                        ? eventFilters.eventTypes.filter(t => t !== type)
+                                        : [...eventFilters.eventTypes, type]
+                                    });
+                                    setEventPage(1);
+                                  }}
+                                  className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                                    eventFilters.eventTypes.includes(type)
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-blue-50'
+                                  }`}
+                                >
+                                  {type.replace('_', ' ')}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Status Filter */}
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">Status</label>
+                            <div className="flex gap-2 flex-wrap">
+                              {statusOptions.map(status => (
+                                <button
+                                  key={status}
+                                  onClick={() => {
+                                    setEventFilters({
+                                      ...eventFilters,
+                                      statuses: eventFilters.statuses.includes(status)
+                                        ? eventFilters.statuses.filter(s => s !== status)
+                                        : [...eventFilters.statuses, status]
+                                    });
+                                    setEventPage(1);
+                                  }}
+                                  className={`px-2 py-1 text-xs font-medium rounded transition-colors capitalize ${
+                                    eventFilters.statuses.includes(status)
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-blue-50'
+                                  }`}
+                                >
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Events Table */}
+                        {filteredEvents.length > 0 ? (
+                          <>
+                            <div className="overflow-x-auto rounded-lg border border-slate-200">
+                              <table className="w-full text-xs">
+                                <thead className="bg-slate-50">
+                                  <tr className="border-b border-slate-200">
+                                    <th className="py-2 px-3 text-left font-semibold text-slate-700">Timestamp</th>
+                                    <th className="py-2 px-3 text-left font-semibold text-slate-700">Event Type</th>
+                                    <th className="py-2 px-3 text-center font-semibold text-slate-700">Duration (ms)</th>
+                                    <th className="py-2 px-3 text-center font-semibold text-slate-700">Voltage %</th>
+                                    <th className="py-2 px-3 text-center font-semibold text-slate-700">Customers</th>
+                                    <th className="py-2 px-3 text-center font-semibold text-slate-700">Status</th>
+                                    <th className="py-2 px-3 text-left font-semibold text-slate-700">Circuit</th>
+                                    <th className="py-2 px-3 text-left font-semibold text-slate-700">Root Cause</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {paginatedEvents.map(event => (
+                                    <tr
+                                      key={event.id}
+                                      onClick={() => setSelectedEventId(selectedEventId === event.id ? null : event.id)}
+                                      className={`border-b border-slate-100 transition-colors cursor-pointer ${
+                                        selectedEventId === event.id ? 'bg-blue-50' : 'hover:bg-slate-50'
+                                      }`}
+                                    >
+                                      <td className="py-2 px-3 text-slate-900">
+                                        {new Date(event.timestamp).toLocaleString()}
+                                      </td>
+                                      <td className="py-2 px-3">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 capitalize">
+                                          {event.event_type.replace('_', ' ')}
+                                        </span>
+                                      </td>
+                                      <td className="py-2 px-3 text-center text-slate-900">
+                                        {event.duration_ms || '-'}
+                                      </td>
+                                      <td className="py-2 px-3 text-center text-slate-900">
+                                        {event.remaining_voltage !== null ? `${event.remaining_voltage}%` : '-'}
+                                      </td>
+                                      <td className="py-2 px-3 text-center text-slate-900">
+                                        {event.customer_count || 0}
+                                      </td>
+                                      <td className="py-2 px-3 text-center">
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+                                          event.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                                          event.status === 'investigating' ? 'bg-yellow-100 text-yellow-700' :
+                                          event.status === 'acknowledged' ? 'bg-blue-100 text-blue-700' :
+                                          'bg-slate-100 text-slate-700'
+                                        }`}>
+                                          {event.status}
+                                        </span>
+                                      </td>
+                                      <td className="py-2 px-3 text-slate-900">
+                                        {event.circuit_id || '-'}
+                                      </td>
+                                      <td className="py-2 px-3 text-slate-600">
+                                        {event.cause || event.remarks || '-'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {/* Pagination */}
+                            {totalEventPages > 1 && (
+                              <div className="flex items-center justify-between">
+                                <div className="text-xs text-slate-600">
+                                  Page {eventPage} of {totalEventPages} ({filteredEvents.length} events)
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setEventPage(prev => Math.max(1, prev - 1))}
+                                    disabled={eventPage === 1}
+                                    className="p-1.5 text-slate-600 hover:bg-slate-100 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <ChevronLeft className="w-4 h-4" />
+                                  </button>
+                                  <span className="px-3 py-1 bg-slate-100 rounded text-xs font-semibold text-slate-900">
+                                    {eventPage}
+                                  </span>
+                                  <button
+                                    onClick={() => setEventPage(prev => Math.min(totalEventPages, prev + 1))}
+                                    disabled={eventPage === totalEventPages}
+                                    className="p-1.5 text-slate-600 hover:bg-slate-100 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <ChevronRight className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-center py-12">
+                            <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                            <p className="text-slate-600 font-medium">No events found</p>
+                            <p className="text-sm text-slate-500 mt-1">
+                              {meterEvents.length === 0 
+                                ? 'This meter has no recorded events'
+                                : 'Try adjusting your filters'}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
-            <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4">
+            {/* Footer */}
+            <div className="flex-shrink-0 bg-slate-50 border-t border-slate-200 px-6 py-4">
               <button
                 onClick={() => setSelectedMeter(null)}
                 className="w-full bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"

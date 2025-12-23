@@ -23,12 +23,16 @@ export class MotherEventGroupingService {
   /**
    * Automatically group events based on same substation + 10 minute time window
    * First event chronologically becomes the mother event
+   * Only voltage_dip events can be grouped
    */
   static async performAutomaticGrouping(events: PQEvent[]): Promise<GroupingResult[]> {
     const results: GroupingResult[] = [];
     
+    // Filter to only voltage_dip events
+    const voltageDipEvents = events.filter(e => e.event_type === 'voltage_dip');
+    
     // Sort events by timestamp to ensure chronological processing
-    const sortedEvents = [...events].sort((a, b) => 
+    const sortedEvents = [...voltageDipEvents].sort((a, b) => 
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
@@ -390,6 +394,12 @@ export class MotherEventGroupingService {
   static canGroupEvents(events: PQEvent[]): { canGroup: boolean; reason?: string } {
     if (events.length < 2) {
       return { canGroup: false, reason: 'At least 2 events required for grouping' };
+    }
+
+    // Check if all events are voltage_dip type
+    const allVoltageDip = events.every(e => e.event_type === 'voltage_dip');
+    if (!allVoltageDip) {
+      return { canGroup: false, reason: 'Only voltage_dip events can be grouped together' };
     }
 
     // Check if any events are already grouped

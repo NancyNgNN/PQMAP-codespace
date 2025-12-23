@@ -224,7 +224,7 @@ export default function SARFIProfileEditModal({
   const handleQuickSelectVoltage = (voltageLevel: string) => {
     const filtered = meters.filter(m => 
       m.voltage_level === voltageLevel &&
-      (!showActiveOnly || m.is_active)
+      (!showActiveOnly || m.active)
     );
     setSelectedMeterIds(filtered.map(m => m.id));
   };
@@ -243,7 +243,7 @@ export default function SARFIProfileEditModal({
 
     // Filter by active status
     if (showActiveOnly) {
-      filtered = filtered.filter(m => m.is_active);
+      filtered = filtered.filter(m => m.active);
     }
 
     // Filter by voltage level

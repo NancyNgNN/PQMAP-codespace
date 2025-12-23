@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>20251223_PQMAP - UIUX walk-through_summary.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="pqmap---uiux-walk-through-summary">PQMAP - UI/UX Walk-through Summary</h1>
+<p><strong>Date:</strong> December 23, 2025<br>
+<strong>Duration:</strong> 59 minutes 48 seconds<br>
+<strong>Attendees:</strong> Development Team (Erxi Xu, Kam Tim Fung, Simon Yu), Operations Team (Krystal, Matthew)</p>
+<hr>
+<h2 id="key-decisions">Key Decisions</h2>
+<h3 id="event-management-ui-layout">Event Management UI Layout</h3>
+<ul>
+<li><strong>Card View vs. List View</strong>: Current prototype shows card-based layout; team prefers traditional table format for higher information density</li>
+<li><strong>Data Display Priority</strong>: Compact row-based list view preferred to show more events per screen (18+ events vs. current 6)</li>
+<li><strong>Event Grouping by Type</strong>: Voltage dip and harmonic events should remain separate; group filtering by event category supported</li>
+<li><strong>Event Detail Consolidation</strong>: Tab-based detail view with Overview, Customer Impact, Waveform, IDR, and Logging tabs approved</li>
+</ul>
+<h3 id="filter--profile-system">Filter &amp; Profile System</h3>
+<ul>
+<li><strong>Filter Profile Feature</strong>: Approved to implement user-specific saved filter configurations to avoid re-selecting criteria after page refresh</li>
+<li><strong>Default Profile</strong>: System will support default profile per user; auto-load on page open</li>
+<li><strong>Profile Priority</strong>: Defer to Phase 2 - focus on core functionality first; nice-to-have feature</li>
+</ul>
+<h3 id="dashboard-vs-report-philosophy">Dashboard vs. Report Philosophy</h3>
+<ul>
+<li><strong>Dashboard Definition</strong>: Frequently-viewed KPIs with no filter selection required; always visible metrics</li>
+<li><strong>Report Definition</strong>: Criteria-based data retrieval with table/chart output and export capability</li>
+<li><strong>Custom Reporting Flexibility</strong>: Cannot match Power BI flexibility; provide fixed report templates with export to Excel/CSV for advanced analysis in Power BI</li>
+</ul>
+<h3 id="meter-management">Meter Management</h3>
+<ul>
+<li><strong>Meter States</strong>: Three states confirmed - Active (normal), Active-Abnormal (receiving data but out of expected range), Inactive (no communication)</li>
+<li><strong>Volume</strong>: ~600 PQMS meters + ~200 CPDS meters currently; will grow over time but manageable volume</li>
+<li><strong>IP Address Tracking</strong>: Confirmed as required field; manual entry acceptable if PQMS vendor cannot provide via interface</li>
+</ul>
+<hr>
+<h2 id="pain-points-identified">Pain Points Identified</h2>
+<table>
+<thead>
+<tr>
+<th>Pain Point</th>
+<th>Current Impact</th>
+<th>PQMAP Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Event correlation visibility</strong></td>
+<td>Cannot see relationships between voltage dip and harmonic events in PQMS</td>
+<td>Same timestamp allows manual investigation; AI-driven prediction deferred to future phase</td>
+</tr>
+<tr>
+<td><strong>Meter health monitoring</strong></td>
+<td>Rely on email alerts for inactive/abnormal meters</td>
+<td>Dashboard widget showing active/abnormal/inactive meter counts with drill-down</td>
+</tr>
+<tr>
+<td><strong>Report customization limits</strong></td>
+<td>Power BI used for ad-hoc analysis; PQMAP cannot match flexibility</td>
+<td>Provide data export to Power BI; implement common report templates in PQMAP</td>
+</tr>
+<tr>
+<td><strong>IP address maintenance</strong></td>
+<td>Manual entry in multiple systems; time-consuming and error-prone</td>
+<td>Centralized meter management with IP address field</td>
+</tr>
+<tr>
+<td><strong>PQ Service integration</strong></td>
+<td>Separate PQSIS system; data not visible in PQ context</td>
+<td>View-only dashboard in PQMAP; maintenance remains in PQSIS with data interface</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="priority-action-items">Priority Action Items</h2>
+<h3 id="immediate-this-week">Immediate (This Week)</h3>
+<ul>
+<li>Team to review prototype and provide detailed UI feedback via email/comments</li>
+<li>Krystal/Matthew to provide list of frequently-viewed columns from PQDA reports for card design optimization</li>
+<li>Matthew to provide Power BI dashboard samples to assess custom reporting requirements</li>
+<li>Team to confirm PQMS abnormal meter email format for dashboard logic design</li>
+<li>Team to provide CPDS customer and event data exports for data model validation</li>
+</ul>
+<h3 id="design-refinements-before-next-workshop">Design Refinements (Before Next Workshop)</h3>
+<ul>
+<li>Compress card layout to show more events per screen</li>
+<li>Customize card fields per event category (voltage dip vs. harmonic different columns)</li>
+<li>Evaluate filter panel display options: inline expansion vs. slide-out panel</li>
+<li>Research feasibility: Power BI direct integration vs. scheduled data export</li>
+</ul>
+<h3 id="next-workshop-week-of-dec-30">Next Workshop (Week of Dec 30)</h3>
+<ul>
+<li>Detailed logic discussion with Woody (event grouping, false event detection, report calculations)</li>
+<li>Review common report requirements and prioritize implementation sequence</li>
+<li>Clarify PQ Service integration scope and user workflow</li>
+</ul>
+<h3 id="user-research-needs">User Research Needs</h3>
+<ul>
+<li>Identify representative end users (district staff, SO staff) for feedback sessions</li>
+<li>Understand district staff device usage patterns (desktop vs. mobile/tablet)</li>
+<li>Confirm if district staff use waveform analysis (impacts UI complexity requirements)</li>
+</ul>
+<hr>
+<h2 id="technical-requirements-discussion">Technical Requirements Discussion</h2>
+<h3 id="filter-profile-implementation">Filter Profile Implementation</h3>
+<ul>
+<li><strong>User-Level Profiles</strong>: Each user can create/save multiple filter configurations</li>
+<li><strong>Profile Components</strong>: Time range, event category, feeder/substation, meter selection, date range</li>
+<li><strong>Default Profile</strong>: Auto-load designated default profile on page open</li>
+<li><strong>Profile Management</strong>: Create, update, delete, set as default operations</li>
+</ul>
+<h3 id="event-display-optimization">Event Display Optimization</h3>
+<ul>
+<li><strong>List View Priority</strong>: Focus on compact table layout showing 15-18 events per viewport</li>
+<li><strong>Customizable Columns</strong>: Allow users to select which columns to display (similar to metering system approach)</li>
+<li><strong>Event Category Filtering</strong>: Quick filters for voltage dip, harmonic, interruption, etc.</li>
+<li><strong>Sorting/Search</strong>: Standard table sorting and search functionality across all visible columns</li>
+</ul>
+<h3 id="dashboard-requirements">Dashboard Requirements</h3>
+<ul>
+<li>
+<p><strong>Meter Health Dashboard</strong>:</p>
+<ul>
+<li>Active meter count</li>
+<li>Abnormal meter list (receiving data but out of range)</li>
+<li>Inactive meter list (no communication)</li>
+<li>Replace email-based monitoring with visual dashboard</li>
+</ul>
+</li>
+<li>
+<p><strong>Event Summary Dashboard</strong>:</p>
+<ul>
+<li>Event counts by category (voltage dip, harmonic, interruption)</li>
+<li>Event counts by substation/region with bubble map visualization</li>
+<li>Root cause analysis summary (based on available data)</li>
+</ul>
+</li>
+</ul>
+<h3 id="report-export-strategy">Report Export Strategy</h3>
+<ul>
+<li><strong>Excel Export</strong>: Include both chart (as image) and underlying data table</li>
+<li><strong>CSV Export</strong>: Data table only (no charts)</li>
+<li><strong>Advanced Option</strong>: Research embedding editable charts in Excel using same dataset (lower priority)</li>
+<li><strong>Power BI Integration</strong>: Provide data export format compatible with Power BI import (either scheduled export or API integration - to be determined)</li>
+</ul>
+<h3 id="meter-management-requirements">Meter Management Requirements</h3>
+<ul>
+<li><strong>Required Fields</strong>: Meter ID, location, IP address, communication protocol</li>
+<li><strong>Optional Fields</strong>: Additional metadata from PQMS if available</li>
+<li><strong>Manual Entry</strong>: Support manual IP address entry if PQMS vendor cannot provide</li>
+<li><strong>Status Monitoring</strong>: Track communication health and data quality separately</li>
+</ul>
+<h3 id="pq-service-module">PQ Service Module</h3>
+<ul>
+<li><strong>Integration Approach</strong>: PQSIS remains system of record for service case creation/maintenance</li>
+<li><strong>PQMAP Role</strong>: View-only dashboard showing service statistics and customer service history</li>
+<li><strong>Data Interface</strong>: Scheduled data sync from PQSIS to PQMAP (owned by Tim's team)</li>
+<li><strong>Dashboard Widgets</strong>:
+<ul>
+<li>Monthly service count</li>
+<li>Service type breakdown (on-site visit, education, voltage dip history provision, etc.)</li>
+<li>Customer service history list</li>
+<li>Link to PQSIS for case details (similar to PQDA approach)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="uiux-feedback-summary">UI/UX Feedback Summary</h2>
+<h3 id="whats-working-well">What's Working Well</h3>
+<ul>
+<li><strong>Modern Visual Design</strong>: Team appreciates cleaner, more modern interface compared to legacy systems</li>
+<li><strong>Consolidated Event View</strong>: Tab-based approach to show all event-related information in one place is approved</li>
+<li><strong>Filter Profile Concept</strong>: Welcomed as time-saver for repetitive filter operations</li>
+<li><strong>Export Functionality</strong>: Excel/CSV export on all reports aligns with current workflow needs</li>
+</ul>
+<h3 id="what-needs-improvement">What Needs Improvement</h3>
+<ul>
+<li><strong>Information Density</strong>: Current card layout shows too few events per screen; need more compact presentation</li>
+<li><strong>Column Visibility</strong>: Not all frequently-viewed fields are visible in default card layout</li>
+<li><strong>Filter Panel UX</strong>: Need to evaluate whether inline expansion or slide-out panel works better</li>
+<li><strong>Custom Report Flexibility</strong>: Acknowledge PQMAP cannot match Power BI; ensure good export path exists</li>
+</ul>
+<h3 id="design-considerations-for-next-iteration">Design Considerations for Next Iteration</h3>
+<ol>
+<li><strong>Compact List View</strong>: Make default view; offer card view as optional toggle</li>
+<li><strong>Customizable Columns</strong>: Allow users to select 10-30 columns from available fields</li>
+<li><strong>Event Category Differentiation</strong>: Show different column sets for voltage dip vs. harmonic events</li>
+<li><strong>Filter Position</strong>: Consider moving profile selector to more prominent position; defer advanced profile management to Phase 2</li>
+<li><strong>Mobile/Tablet Support</strong>: Clarify if district staff use mobile devices (impacts responsive design priority)</li>
+</ol>
+<hr>
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li><strong>This Week</strong>: Team to review prototype independently and provide detailed UI feedback</li>
+<li><strong>By Dec 27</strong>: Collect sample reports/dashboards from Power BI and PQDA for requirements analysis</li>
+<li><strong>Week of Dec 30</strong>: Detailed logic workshop with Woody (event grouping, false event rules, report calculations)</li>
+<li><strong>By Jan 3</strong>: Development team to update UI mockups based on feedback and present refined design</li>
+<li><strong>Ongoing</strong>: Continue CPDS data sample collection for integration testing</li>
+</ol>
+<hr>
+<h2 id="function-design-updates">Function Design Updates</h2>
+<h3 id="event-management-module---ui-refinements">Event Management Module - UI Refinements</h3>
+<h4 id="list-view-optimization">List View Optimization</h4>
+<ul>
+<li>
+<p><strong>Default Layout</strong>: Compact table view showing 15-18 events per viewport</p>
+</li>
+<li>
+<p><strong>Column Configuration</strong>:</p>
+<ul>
+<li>Event ID, Timestamp, Category, Magnitude (%), Duration (s), Location, Affected Customers, Status</li>
+<li>User-selectable columns (allow showing/hiding columns based on preference)</li>
+<li>Different default column sets for voltage dip vs. harmonic events</li>
+</ul>
+</li>
+<li>
+<p><strong>Card View (Optional Toggle)</strong>:</p>
+<ul>
+<li>Compress card height to show 3 events per row</li>
+<li>Display only most critical fields (6-8 fields max per card)</li>
+<li>Quick action buttons (View Details, Mark False, Export)</li>
+</ul>
+</li>
+</ul>
+<h4 id="event-detail-view---tab-structure">Event Detail View - Tab Structure</h4>
+<p><strong>Confirmed Tabs</strong>:</p>
+<ol>
+<li><strong>Overview Tab</strong>: Event metadata, key metrics, status, false event flag, mother-child relationship indicator</li>
+<li><strong>Customer Impact Tab</strong>: Affected customers and transformer list with export capability</li>
+<li><strong>Waveform Tab</strong>: Voltage dip waveform visualization</li>
+<li><strong>IDR Tab</strong>: Interruption Detail Records (manual upload or future ADMS interface)</li>
+<li><strong>Logging Tab</strong>: Audit trail showing all updates/status changes with user and timestamp</li>
+</ol>
+<p><strong>New Requirement</strong>: Mother-child event relationship display</p>
+<ul>
+<li>Visual indicator in list view for events with relationships</li>
+<li>Ability to manually link related events (e.g., voltage dip → harmonic correlation)</li>
+<li>Cross-reference tab showing related events by same meter or timeframe</li>
+</ul>
+<h4 id="filter-profile-system">Filter Profile System</h4>
+<p><strong>User Interface</strong>:</p>
+<ul>
+<li>Profile dropdown selector in header (persistent across all pages)</li>
+<li>Quick &quot;Save Current Filters&quot; button</li>
+<li>Profile management dialog: Create, Edit, Delete, Set as Default</li>
+<li>Default profile auto-loads on login</li>
+</ul>
+<p><strong>Profile Settings</strong>:</p>
+<ul>
+<li>Event category selection</li>
+<li>Date range (relative: last 7 days, last month, etc. OR absolute dates)</li>
+<li>Location/feeder/substation selection</li>
+<li>Meter selection</li>
+<li>Status filters (include false events, exclude false events, only false events)</li>
+</ul>
+<p><strong>Implementation Priority</strong>: Defer to Phase 2 based on development capacity</p>
+<hr>
+<h3 id="dashboard-module---new-requirements">Dashboard Module - New Requirements</h3>
+<h4 id="meter-health-dashboard">Meter Health Dashboard</h4>
+<p><strong>Widgets</strong>:</p>
+<ul>
+<li>
+<p><strong>Summary Cards</strong>: Total meters, Active count, Abnormal count, Inactive count</p>
+</li>
+<li>
+<p><strong>Abnormal Meter List</strong>: Table showing meter ID, location, issue description, duration</p>
+<ul>
+<li>Sort by issue severity</li>
+<li>Click to view meter detail page</li>
+<li>Export to Excel capability</li>
+</ul>
+</li>
+<li>
+<p><strong>Inactive Meter List</strong>: Table showing meter ID, location, last communication timestamp</p>
+<ul>
+<li>Auto-highlight meters inactive &gt; 24 hours</li>
+<li>Export to Excel capability</li>
+</ul>
+</li>
+</ul>
+<p><strong>Data Source</strong>:</p>
+<ul>
+<li>PQMS communication log (10-minute interval data availability tracking)</li>
+<li>Abnormal state detection based on voltage range thresholds (to be confirmed with Woody)</li>
+<li>Replace current email-based monitoring workflow</li>
+</ul>
+<h4 id="event-summary-dashboard">Event Summary Dashboard</h4>
+<p><strong>Widgets</strong>:</p>
+<ul>
+<li>Event count by category (bar chart): Voltage dip, Harmonic, Interruption, Swell</li>
+<li>Event count by substation/region (bubble map or bar chart)</li>
+<li>Root cause analysis summary (if data available from investigations)</li>
+<li>Recent critical events list (configurable threshold)</li>
+</ul>
+<p><strong>Filter Options</strong>: Time range selector (today, last 7 days, last 30 days, custom range)</p>
+<hr>
+<h3 id="reporting-module---export-strategy">Reporting Module - Export Strategy</h3>
+<h4 id="standard-report-features">Standard Report Features</h4>
+<p><strong>Every Report Includes</strong>:</p>
+<ul>
+<li>Filter/criteria selection panel (with profile support)</li>
+<li>Chart/visualization output</li>
+<li>Data table below chart</li>
+<li>Export buttons: Excel (chart + table), CSV (table only)</li>
+</ul>
+<p><strong>Excel Export Format</strong>:</p>
+<ul>
+<li>Sheet 1: Chart as embedded image + key parameters used</li>
+<li>Sheet 2: Raw data table</li>
+<li>Alternative (if feasible): Embedded Excel chart with data connection for user editing</li>
+</ul>
+<p><strong>CSV Export Format</strong>:</p>
+<ul>
+<li>Raw data table only</li>
+<li>UTF-8 encoding with BOM for proper Chinese character display</li>
+</ul>
+<h4 id="power-bi-integration-options">Power BI Integration Options</h4>
+<p><strong>Option 1 - Scheduled Export (Recommended for Phase 1)</strong>:</p>
+<ul>
+<li>PQMAP generates data export files on schedule (daily/weekly)</li>
+<li>Export location: shared network drive or cloud storage</li>
+<li>Power BI imports from file location</li>
+<li>Pros: Simpler implementation, lower coupling</li>
+<li>Cons: Not real-time, requires file management</li>
+</ul>
+<p><strong>Option 2 - API Integration (Future Enhancement)</strong>:</p>
+<ul>
+<li>PQMAP exposes REST API for data queries</li>
+<li>Power BI connects directly to PQMAP API</li>
+<li>Pros: Real-time data, more flexible</li>
+<li>Cons: Higher development effort, requires API authentication/security</li>
+</ul>
+<p><strong>Option 3 - Manual Export (Fallback)</strong>:</p>
+<ul>
+<li>Users export data from PQMAP to Excel/CSV</li>
+<li>Manually import to Power BI for advanced analysis</li>
+<li>Pros: Zero additional development</li>
+<li>Cons: Manual process, not scalable</li>
+</ul>
+<p><strong>Decision</strong>: Implement Option 3 immediately, evaluate Option 1 or 2 based on user demand and development capacity</p>
+<hr>
+<h3 id="meter-management-module---field-requirements">Meter Management Module - Field Requirements</h3>
+<h4 id="meter-entity---confirmed-fields">Meter Entity - Confirmed Fields</h4>
+<p><strong>Required Fields</strong>:</p>
+<ul>
+<li>Meter ID (unique identifier)</li>
+<li>Location (substation/feeder)</li>
+<li>IP Address (manual entry supported)</li>
+<li>Communication Protocol (from PQMS if available)</li>
+<li>Status (Active/Abnormal/Inactive)</li>
+</ul>
+<p><strong>Optional Fields</strong> (if available from PQMS):</p>
+<ul>
+<li>Serial Number</li>
+<li>Installation Date</li>
+<li>Manufacturer</li>
+<li>Model</li>
+<li>Firmware Version</li>
+<li>Sampling Rate</li>
+</ul>
+<h4 id="meter-status-logic">Meter Status Logic</h4>
+<p><strong>Active (Normal)</strong>:</p>
+<ul>
+<li>Receiving 10-minute interval data on schedule (144 records/day expected)</li>
+<li>Data values within expected ranges (voltage, current thresholds TBD)</li>
+</ul>
+<p><strong>Active (Abnormal)</strong>:</p>
+<ul>
+<li>Receiving data on schedule BUT values outside expected ranges</li>
+<li>Examples: Constant zero readings, voltage consistently at 300V when expecting 11kV</li>
+<li>Threshold ranges to be confirmed with Woody</li>
+</ul>
+<p><strong>Inactive</strong>:</p>
+<ul>
+<li>No communication/data received for defined period (TBD: 1 hour? 24 hours?)</li>
+<li>PQMS interface down or meter hardware failure</li>
+</ul>
+<h4 id="meter-management-operations">Meter Management Operations</h4>
+<ul>
+<li><strong>Manual Entry</strong>: Add new meter with all required fields</li>
+<li><strong>Bulk Import</strong>: Excel template upload for multiple meters</li>
+<li><strong>Edit</strong>: Update meter metadata (location, IP address, etc.)</li>
+<li><strong>Status Override</strong>: Manually mark meter as under maintenance (exclude from health monitoring)</li>
+<li><strong>Export</strong>: Download meter list with current status</li>
+</ul>
+<hr>
+<h3 id="pq-service-module---integration-approach">PQ Service Module - Integration Approach</h3>
+<h4 id="confirmed-architecture">Confirmed Architecture</h4>
+<p><strong>PQSIS (Service Investigation System)</strong>:</p>
+<ul>
+<li>Remains authoritative system for service case management</li>
+<li>Service team continues using PQSIS for case creation, updates, closure</li>
+<li>Owned and maintained by separate team (Tim's team)</li>
+</ul>
+<p><strong>PQMAP Role</strong>:</p>
+<ul>
+<li>View-only dashboard consuming data from PQSIS via interface</li>
+<li>No case creation/editing in PQMAP</li>
+<li>Purpose: Provide visibility of PQ service activities in context of PQ event data</li>
+</ul>
+<h4 id="dashboard-widgets">Dashboard Widgets</h4>
+<ol>
+<li>
+<p><strong>Service Statistics Card</strong>:</p>
+<ul>
+<li>Total services this month/year</li>
+<li>Service type breakdown (pie chart or bar chart)</li>
+<li>Top customers by service count</li>
+</ul>
+</li>
+<li>
+<p><strong>Customer Service History</strong>:</p>
+<ul>
+<li>Left panel: Customer list with service count</li>
+<li>Right panel: Service history for selected customer (date, type, description)</li>
+<li>Link to PQSIS for full case details (opens in new tab)</li>
+</ul>
+</li>
+<li>
+<p><strong>Service Timeline</strong> (optional):</p>
+<ul>
+<li>Gantt chart showing service case duration</li>
+<li>Filter by service type, customer, date range</li>
+</ul>
+</li>
+</ol>
+<h4 id="data-interface-specification">Data Interface Specification</h4>
+<p><strong>Interface Type</strong>: Scheduled data sync (Tim's team to implement)
+<strong>Sync Frequency</strong>: Daily or near-real-time (TBD based on PQSIS capabilities)
+<strong>Data Elements</strong>:</p>
+<ul>
+<li>Service Case ID</li>
+<li>Customer ID/Name</li>
+<li>Service Type (on-site visit, education, voltage dip history, equipment testing, etc.)</li>
+<li>Service Date</li>
+<li>Service Description/Notes</li>
+<li>Status (Open/In Progress/Closed)</li>
+<li>Assigned Engineer</li>
+<li>Related PQ Event ID (if applicable)</li>
+</ul>
+<p><strong>PQMAP Database</strong>:</p>
+<ul>
+<li>Create read-only copy of PQSIS service data</li>
+<li>Support filtering, sorting, export operations</li>
+<li>No write operations back to PQSIS</li>
+</ul>
+<hr>
+<h3 id="custom-reporting---requirements-gathering">Custom Reporting - Requirements Gathering</h3>
+<h4 id="action-items-for-next-meeting">Action Items for Next Meeting</h4>
+<ol>
+<li>
+<p><strong>Krystal/Matthew to provide</strong>:</p>
+<ul>
+<li>Screenshots or export samples from current Power BI dashboards</li>
+<li>List of most frequently used reports and their purpose</li>
+<li>Examples of ad-hoc analysis scenarios that require Power BI flexibility</li>
+</ul>
+</li>
+<li>
+<p><strong>Development team to assess</strong>:</p>
+<ul>
+<li>Which Power BI reports can be replicated as fixed templates in PQMAP</li>
+<li>Which reports require Power BI flexibility (recommend export path)</li>
+<li>Feasibility of &quot;pivot table-like&quot; functionality within PQMAP (likely out of scope)</li>
+</ul>
+</li>
+</ol>
+<h4 id="common-report-templates-preliminary">Common Report Templates (Preliminary)</h4>
+<p>Based on discussion, likely candidates for fixed templates:</p>
+<ul>
+<li>Voltage dip event summary by substation/month</li>
+<li>Harmonic analysis by voltage level</li>
+<li>Meter communication availability report</li>
+<li>Event root cause analysis summary</li>
+<li>False event detection performance metrics</li>
+</ul>
+<p><strong>Approach</strong>: Implement 5-10 most common reports as fixed templates with configurable parameters; provide data export for everything else</p>
+<hr>
+<h3 id="outstanding-questions">Outstanding Questions</h3>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Owner</th>
+<th>Needed By</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Abnormal meter threshold specifications (voltage ranges, acceptable deviation)</td>
+<td>Woody</td>
+<td>Next workshop</td>
+</tr>
+<tr>
+<td>PQMS email format for abnormal/inactive meter alerts</td>
+<td>Krystal/Matthew</td>
+<td>This week</td>
+</tr>
+<tr>
+<td>CPDS customer data export (format, available fields)</td>
+<td>Matthew</td>
+<td>This week</td>
+</tr>
+<tr>
+<td>CPDS event data export (format, event types included)</td>
+<td>Matthew</td>
+<td>This week</td>
+</tr>
+<tr>
+<td>Power BI dashboard samples and common report requirements</td>
+<td>Krystal</td>
+<td>Before next workshop</td>
+</tr>
+<tr>
+<td>District staff device usage patterns (desktop vs. mobile)</td>
+<td>Krystal</td>
+<td>Next workshop</td>
+</tr>
+<tr>
+<td>Expected user count growth trajectory (affects system capacity planning)</td>
+<td>Woody</td>
+<td>Next workshop</td>
+</tr>
+<tr>
+<td>PQSIS data interface specification and sync frequency</td>
+<td>Tim</td>
+<td>Next workshop</td>
+</tr>
+<tr>
+<td>Preferred filter panel UI pattern (inline expansion vs. slide-out panel)</td>
+<td>Team feedback</td>
+<td>This week</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Workshop format: Casual prototype walk-through; not formal sign-off session</li>
+<li>Prototype is live and accessible for team review at provided URL</li>
+<li>Focus of this session: UI/UX feedback only; detailed logic discussion deferred to next workshop with Woody</li>
+<li>Team expressed appreciation for modern design aesthetic compared to legacy systems</li>
+<li>Acknowledged that Power BI cannot be fully replicated; export strategy is acceptable compromise</li>
+<li>PQ Service integration scope clarified: view-only dashboard, no case management in PQMAP</li>
+<li>Meter count (~800 total) is manageable; filter performance not a concern at this scale</li>
+<li>User base clarification: ~100+ accounts but typically 10-15 concurrent users during normal operations; increases during typhoon events</li>
+<li>Next workshop timing challenging due to holiday period; team to coordinate after December 24</li>
+</ul>
+
+</body>
+</html>
