@@ -1296,7 +1296,18 @@ return (
 
 **IMPORTANT RULE**: All data tables should include column sorting functionality for improved user experience.
 
-#### 1. Required State Variables
+### Two Sorting Patterns Based on Table Width
+
+#### Pattern 1: Inline Column Sorting (Full-Width & Half-Width Tables)
+
+**Use When:**
+- Tables with sufficient width (half-page or full-page)
+- Multiple columns with adequate space
+- Data tables like Asset Management, Customer lists, etc.
+
+**Implementation:**
+
+##### 1. Required State Variables
 
 ```typescript
 // Sort states
@@ -1304,7 +1315,7 @@ const [sortField, setSortField] = useState<string>('id'); // Default sort field
 const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 ```
 
-#### 2. Sort Handler Function
+##### 2. Sort Handler Function
 
 ```typescript
 const handleSort = (field: string) => {
@@ -1320,7 +1331,7 @@ const handleSort = (field: string) => {
 };
 ```
 
-#### 3. Apply Sorting Logic
+##### 3. Apply Sorting Logic
 
 ```typescript
 // Apply sorting before pagination
@@ -1355,7 +1366,7 @@ const sortedData = [...filteredData].sort((a, b) => {
 });
 ```
 
-#### 4. Sortable Table Headers
+##### 4. Sortable Table Headers
 
 ```tsx
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
@@ -1382,7 +1393,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 </thead>
 ```
 
-#### 5. Non-Sortable Headers (Actions, etc.)
+##### 5. Non-Sortable Headers
 
 ```tsx
 <th className="py-3 px-2 text-right text-xs font-semibold text-slate-700 uppercase tracking-wider">
@@ -1390,30 +1401,155 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 </th>
 ```
 
+**Example Implementation:** AssetManagement.tsx
+- 12 sortable columns with inline sort icons
+- Full-width table with adequate space
+- Sort icons appear next to each column header
+
+---
+
+#### Pattern 2: Dropdown Sort Button (Narrow Tables & Lists)
+
+**Use When:**
+- Narrow tables or tree lists with limited width
+- Side panels or compact list views
+- Event tree views, narrow data lists, etc.
+
+**Implementation:**
+
+##### 1. Required State Variables
+
+```typescript
+// Sort states
+const [showSortDropdown, setShowSortDropdown] = useState(false);
+const [sortBy, setSortBy] = useState<'timestamp' | 'event_type' | 'meter_id' | 'voltage_level' | 'duration'>('timestamp');
+```
+
+##### 2. Click Outside Handler
+
+```typescript
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (showSortDropdown && !target.closest('.sort-dropdown-container')) {
+      setShowSortDropdown(false);
+    }
+  };
+
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, [showSortDropdown]);
+```
+
+##### 3. Sort Button UI
+
+```tsx
+import { ArrowUpDown } from 'lucide-react';
+
+<div className="flex items-center gap-2">
+  {/* Sort Button */}
+  <div className="relative sort-dropdown-container">
+    <button
+      onClick={() => setShowSortDropdown(!showSortDropdown)}
+      className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all"
+      title="Sort Events"
+    >
+      <ArrowUpDown className="w-5 h-5" />
+    </button>
+    
+    {showSortDropdown && (
+      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-50">
+        <button
+          onClick={() => {
+            setSortBy('timestamp');
+            setShowSortDropdown(false);
+          }}
+          className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+            sortBy === 'timestamp' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
+          }`}
+        >
+          <ArrowUpDown className="w-4 h-4" />
+          Sort by Timestamp
+        </button>
+        <button
+          onClick={() => {
+            setSortBy('event_type');
+            setShowSortDropdown(false);
+          }}
+          className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+            sortBy === 'event_type' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
+          }`}
+        >
+          <ArrowUpDown className="w-4 h-4" />
+          Sort by Event Type
+        </button>
+        {/* Add more sort options */}
+      </div>
+    )}
+  </div>
+</div>
+```
+
+##### 4. Apply Sorting Logic
+
+```typescript
+const sortedData = [...filteredData].sort((a, b) => {
+  switch (sortBy) {
+    case 'timestamp':
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    case 'event_type':
+      return (a.event_type || '').localeCompare(b.event_type || '');
+    case 'meter_id':
+      return (a.meter_id || '').localeCompare(b.meter_id || '');
+    case 'voltage_level':
+      const voltageOrder = { '400kV': 1, '132kV': 2, '33kV': 3, '11kV': 4, '380V': 5 };
+      const aVolt = voltageOrder[a.voltage_level as keyof typeof voltageOrder] || 999;
+      const bVolt = voltageOrder[b.voltage_level as keyof typeof voltageOrder] || 999;
+      return aVolt - bVolt;
+    case 'duration':
+      return (b.duration_ms || 0) - (a.duration_ms || 0);
+    default:
+      return 0;
+  }
+});
+```
+
+**Example Implementation:** EventManagement.tsx (Event Tree)
+- Single sort button with dropdown menu
+- Narrow event tree list
+- Sort button positioned next to export button in header
+
+---
+
 ### Sorting Best Practices
 
 1. **Default Sort**: Choose a sensible default sort field (e.g., 'id', 'name', 'timestamp')
 2. **Visual Indicators**: Always show sort direction with icons
-   - `ArrowUp`: Ascending sort on this column
-   - `ArrowDown`: Descending sort on this column
-   - `ArrowUpDown` (opacity-30): Column is sortable but not currently sorted
+   - **Pattern 1 (Inline)**: Show `ArrowUp`/`ArrowDown`/`ArrowUpDown` next to column headers
+   - **Pattern 2 (Dropdown)**: Highlight active sort option with blue background
 3. **Reset Pagination**: Always reset to page 1 when sort changes
 4. **Case Insensitive**: Convert strings to lowercase for consistent sorting
 5. **Handle Nulls**: Provide fallback values for null/undefined fields
 6. **Special Cases**: Handle dates, joins, and computed values with switch statement
-7. **Icon Size**: Use `w-3 h-3` for sort icons in table headers
-8. **Hover Effect**: Add `hover:text-blue-600` to sortable header buttons
-9. **Button Styling**: Use `flex items-center gap-1` for proper icon alignment
+7. **Icon Size**: 
+   - Inline sort icons: `w-3 h-3`
+   - Dropdown button icon: `w-5 h-5`
+   - Dropdown menu icons: `w-4 h-4`
+8. **Hover Effect**: 
+   - Inline: `hover:text-blue-600` on column headers
+   - Dropdown: `hover:bg-slate-50` on button and menu items
+9. **Button Styling**: Use `flex items-center gap-1` or `gap-2` for proper icon alignment
 10. **Non-Sortable Columns**: Don't add sort buttons to action columns or non-data columns
 
-### Complete Example
+### Pattern Selection Guide
 
-**AssetManagement.tsx** provides a complete implementation of table sorting:
-- 12 sortable columns (Meter ID, Site ID, Voltage Level, Substation, Circuit, Area, Location, SS400, SS132, SS011, Status)
-- 1 non-sortable column (Actions)
-- Handles joined data (Substation name lookup)
-- Integrates with filtering and pagination
-- Proper icon indicators for all states
+| Table Type | Width | Pattern | Example |
+|------------|-------|---------|---------|
+| Asset/Customer Lists | Full Width | Inline Column Sorting | AssetManagement.tsx |
+| Data Tables | Half Width+ | Inline Column Sorting | Meter Inventory |
+| Event Tree | Narrow | Dropdown Sort Button | EventManagement.tsx |
+| Side Panels | Narrow | Dropdown Sort Button | Compact Lists |
+| Modal Lists | Variable | Use Inline if >50% width, else Dropdown | Context-dependent |
 
 ---
 

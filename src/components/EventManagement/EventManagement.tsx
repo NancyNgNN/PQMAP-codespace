@@ -8,7 +8,7 @@ import FalseEventAnalytics from './FalseEventAnalytics';
 import { falseEventDetector } from '../../utils/falseEventDetection';
 import { MotherEventGroupingService } from '../../services/mother-event-grouping';
 import { ExportService } from '../../services/exportService';
-import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Shield, BarChart3, Group, Check, X, Save, Edit2, Trash2, RotateCcw, ChevronDown, Download, Upload, FileDown } from 'lucide-react';
+import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Shield, BarChart3, Group, Check, X, Save, Edit2, Trash2, RotateCcw, ChevronDown, Download, Upload, FileDown, ArrowUpDown } from 'lucide-react';
 
 export default function EventManagement() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -65,6 +65,10 @@ export default function EventManagement() {
   // Export states
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Sort states
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState<'timestamp' | 'event_type' | 'meter_id' | 'voltage_level' | 'duration'>('timestamp');
 
   // Import states
   const [showImportDropdown, setShowImportDropdown] = useState(false);
@@ -129,11 +133,14 @@ export default function EventManagement() {
       if (showImportDropdown && !target.closest('.import-dropdown-container')) {
         setShowImportDropdown(false);
       }
+      if (showSortDropdown && !target.closest('.sort-dropdown-container')) {
+        setShowSortDropdown(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMeterDropdown, showProfileDropdown, showVoltageLevelDropdown, showEventTypeDropdown, showExportDropdown, showImportDropdown]);
+  }, [showMeterDropdown, showProfileDropdown, showVoltageLevelDropdown, showEventTypeDropdown, showExportDropdown, showImportDropdown, showSortDropdown]);
 
   const loadData = async () => {
     try {
@@ -897,7 +904,28 @@ export default function EventManagement() {
     ? filteredEvents.filter(e => e.false_event === true)
     : filteredEvents;
   
-  const eventTree = buildEventTree(finalEvents);
+  // Apply sorting
+  const sortedEvents = [...finalEvents].sort((a, b) => {
+    switch (sortBy) {
+      case 'timestamp':
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      case 'event_type':
+        return (a.event_type || '').localeCompare(b.event_type || '');
+      case 'meter_id':
+        return (a.meter_id || '').localeCompare(b.meter_id || '');
+      case 'voltage_level':
+        const voltageOrder = { '400kV': 1, '132kV': 2, '33kV': 3, '11kV': 4, '380V': 5 };
+        const aVolt = voltageOrder[a.voltage_level as keyof typeof voltageOrder] || 999;
+        const bVolt = voltageOrder[b.voltage_level as keyof typeof voltageOrder] || 999;
+        return aVolt - bVolt;
+      case 'duration':
+        return (b.duration_ms || 0) - (a.duration_ms || 0);
+      default:
+        return 0;
+    }
+  });
+  
+  const eventTree = buildEventTree(sortedEvents);
 
   // False event detection handlers
   const handleFalseEventRulesChange = (rules: any[]) => {
@@ -1906,8 +1934,85 @@ export default function EventManagement() {
                   </span>
                 </h2>
                 
-                {/* Export Button */}
-                <div className="relative export-dropdown-container">
+                <div className="flex items-center gap-2">
+                  {/* Sort Button */}
+                  <div className="relative sort-dropdown-container">
+                    <button
+                      onClick={() => setShowSortDropdown(!showSortDropdown)}
+                      className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all"
+                      title="Sort Events"
+                    >
+                      <ArrowUpDown className="w-5 h-5" />
+                    </button>
+                    
+                    {showSortDropdown && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-50">
+                        <button
+                          onClick={() => {
+                            setSortBy('timestamp');
+                            setShowSortDropdown(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                            sortBy === 'timestamp' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
+                          }`}
+                        >
+                          <ArrowUpDown className="w-4 h-4" />
+                          Sort by Timestamp
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy('event_type');
+                            setShowSortDropdown(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                            sortBy === 'event_type' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
+                          }`}
+                        >
+                          <ArrowUpDown className="w-4 h-4" />
+                          Sort by Event Type
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy('meter_id');
+                            setShowSortDropdown(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                            sortBy === 'meter_id' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
+                          }`}
+                        >
+                          <ArrowUpDown className="w-4 h-4" />
+                          Sort by PQ Meter ID
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy('voltage_level');
+                            setShowSortDropdown(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                            sortBy === 'voltage_level' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
+                          }`}
+                        >
+                          <ArrowUpDown className="w-4 h-4" />
+                          Sort by Voltage Level
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy('duration');
+                            setShowSortDropdown(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                            sortBy === 'duration' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
+                          }`}
+                        >
+                          <ArrowUpDown className="w-4 h-4" />
+                          Sort by Duration
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Export Button */}
+                  <div className="relative export-dropdown-container">
                     <button
                       onClick={() => setShowExportDropdown(!showExportDropdown)}
                       disabled={isExporting || finalEvents.length === 0}
@@ -1945,6 +2050,7 @@ export default function EventManagement() {
                       </button>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
               
