@@ -114,10 +114,12 @@ export default function AssetManagement() {
   const loadMeterEvents = async (meter: PQMeter) => {
     setLoadingEvents(true);
     try {
+      // Note: pq_events.meter_id is UUID (FK to pq_meters.id), not TEXT
+      // So we match with meter.id, not meter.meter_id
       let query = supabase
         .from('pq_events')
         .select('*')
-        .eq('meter_id', meter.meter_id)
+        .eq('meter_id', meter.id)  // ✅ Use meter.id (UUID) instead of meter.meter_id (TEXT)
         .order('timestamp', { ascending: false });
 
       const { data, error } = await query;
@@ -127,7 +129,7 @@ export default function AssetManagement() {
         setMeterEvents([]);
       } else {
         setMeterEvents(data || []);
-        console.log(`✅ Loaded ${data?.length || 0} events for meter ${meter.meter_id}`);
+        console.log(`✅ Loaded ${data?.length || 0} events for meter ${meter.meter_id} (ID: ${meter.id})`);
       }
     } catch (error) {
       console.error('Error loading meter events:', error);
