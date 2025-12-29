@@ -40,7 +40,9 @@ export default function DashboardLayoutManager({
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('[DashboardLayoutManager] Drag over index:', index, 'dragging:', draggedWidget);
+    if (dragOverIndex !== index) {
+      console.log('[DashboardLayoutManager] Drag over index changed from', dragOverIndex, 'to', index, 'dragging:', draggedWidget);
+    }
     setDragOverIndex(index);
   };
 
@@ -324,37 +326,57 @@ export default function DashboardLayoutManager({
               const isDropTarget = dragOverIndex === index;
 
               return (
-                <div key={widget.id}>
+                <div key={widget.id} className="relative">
                   {/* Drop zone before widget */}
                   <div
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDragEnter={handleDragEnter}
-                    onDrop={(e) => handleDrop(e, index)}
-                    className={`h-16 border-2 border-dashed rounded-lg mb-4 flex items-center justify-center text-sm font-medium transition-all ${
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('[DashboardLayoutManager] Drag over DROP ZONE before widget:', widget.id, 'index:', index);
+                      handleDragOver(e, index);
+                    }}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('[DashboardLayoutManager] Drag enter DROP ZONE before widget:', widget.id, 'index:', index);
+                    }}
+                    onDrop={(e) => {
+                      console.log('[DashboardLayoutManager] DROP on zone before widget:', widget.id, 'index:', index);
+                      handleDrop(e, index);
+                    }}
+                    className={`h-20 border-2 border-dashed rounded-lg mb-4 flex items-center justify-center text-sm font-medium transition-all cursor-pointer ${
                       isDropTarget && draggedWidget !== widget.id
                         ? 'bg-blue-100 border-blue-400 text-blue-600'
-                        : 'border-transparent hover:border-slate-300 hover:bg-slate-50 text-slate-400'
+                        : draggedWidget ? 'border-slate-300 hover:border-blue-300 hover:bg-blue-50 text-slate-500' : 'border-slate-200 bg-slate-50 text-slate-400'
                     }`}
                   >
-                    {isDropTarget && draggedWidget !== widget.id ? 'Drop here' : 'Drop zone'}
+                    {isDropTarget && draggedWidget !== widget.id ? (
+                      <span className="font-semibold">⬇ Drop here ⬇</span>
+                    ) : draggedWidget ? (
+                      <span>Drop before {config.title}</span>
+                    ) : (
+                      <span className="text-xs">Drop zone</span>
+                    )}
                   </div>
 
                   <div
                     draggable
                     onDragStart={(e) => {
-                      console.log('[DashboardLayoutManager] Widget drag start:', widget.id);
+                      console.log('[DashboardLayoutManager] Widget drag start:', widget.id, 'index:', index);
                       handleDragStart(widget.id, 'dashboard');
                     }}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('[DashboardLayoutManager] Drag over widget:', widget.id);
                     }}
-                    onDragEnter={handleDragEnter}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
                     onDrop={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('[DashboardLayoutManager] Attempted drop on widget (redirecting to zone):', widget.id);
+                      console.log('[DashboardLayoutManager] Drop on widget body ignored:', widget.id);
                     }}
                     onDragEnd={handleDragEnd}
                     className={`bg-white rounded-lg border-2 transition-all ${
@@ -433,17 +455,29 @@ export default function DashboardLayoutManager({
 
             {/* Final drop zone */}
             <div
-              onDragOver={(e) => handleDragOver(e, visibleWidgets.length)}
-              onDragEnter={handleDragEnter}
-              onDrop={(e) => handleDrop(e, visibleWidgets.length)}
-              className={`h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-slate-400 transition-all ${
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[DashboardLayoutManager] Drag over FINAL DROP ZONE, index:', visibleWidgets.length);
+                handleDragOver(e, visibleWidgets.length);
+              }}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[DashboardLayoutManager] Drag enter FINAL DROP ZONE');
+              }}
+              onDrop={(e) => {
+                console.log('[DashboardLayoutManager] DROP on FINAL zone, index:', visibleWidgets.length);
+                handleDrop(e, visibleWidgets.length);
+              }}
+              className={`h-24 border-2 border-dashed rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                 dragOverIndex === visibleWidgets.length
                   ? 'bg-blue-100 border-blue-400 text-blue-600'
-                  : 'border-slate-300 hover:border-slate-400'
+                  : draggedWidget ? 'border-slate-300 hover:border-blue-400 hover:bg-blue-50 text-slate-500' : 'border-slate-300 bg-slate-50 text-slate-400'
               }`}
             >
               <p className="text-sm font-medium">
-                {dragOverIndex === visibleWidgets.length ? 'Drop here' : 'Drag widgets here'}
+                {dragOverIndex === visibleWidgets.length ? '⬇ Drop here ⬇' : draggedWidget ? 'Drop at end' : 'Drag widgets here'}
               </p>
             </div>
           </div>
