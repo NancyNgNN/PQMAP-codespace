@@ -13,6 +13,7 @@ import RootCauseChart from './RootCauseChart';
 import InsightChart from './InsightChart';
 import SARFI70Monitor from './SARFI70Monitor';
 import AffectedCustomerChart from './AffectedCustomerChart';
+import ReportBuilder from './ReportBuilder/ReportBuilder';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -153,6 +154,8 @@ export default function Dashboard() {
         return <EventList events={events} substations={substations} />;
       case 'sarfi-70-monitor':
         return <SARFI70Monitor events={events} substations={substations} />;
+      case 'report-builder':
+        return <ReportBuilder events={events} substations={substations} />;
       default:
         return null;
     }

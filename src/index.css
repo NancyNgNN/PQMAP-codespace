@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* React Pivot Table styles */
+@import 'react-pivottable/pivottable.css';
+
 /* Custom scrollbar styles for SARFI table */
 @layer utilities {
   .scrollbar-thin::-webkit-scrollbar {
