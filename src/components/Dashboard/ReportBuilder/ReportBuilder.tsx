@@ -8,7 +8,9 @@ import {
   Plus,
   Filter,
   Calculator,
-  X
+  X,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { PQEvent, Substation } from '../../../types/database';
 import { 
@@ -60,6 +62,17 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
   const [includeFalseEvents, setIncludeFalseEvents] = useState(true);
   const [eventTypeFilter, setEventTypeFilter] = useState<string[]>([]);
   const [severityFilter, setSeverityFilter] = useState<string[]>([]);
+  
+  // Dropdown states
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const [showEventTypeDropdown, setShowEventTypeDropdown] = useState(false);
+  const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
+  
+  // Collapse state
+  const [criteriaCollapsed, setCriteriaCollapsed] = useState(false);
+  
+  // Manual refresh - separate display data from table data
+  const [displayData, setDisplayData] = useState<any[]>([]);
   
   // Calculated fields
   const [calculatedFields, setCalculatedFields] = useState<CalculatedField[]>([]);
@@ -233,6 +246,26 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
   useEffect(() => {
     loadSavedReports();
   }, [user]);
+  
+  // Initialize display data on first load
+  useEffect(() => {
+    handleRefresh();
+  }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setShowDateDropdown(false);
+        setShowEventTypeDropdown(false);
+        setShowSeverityDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -250,7 +283,7 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
     const { data, error } = await supabase
       .from('saved_reports')
       .select('*')
-      .or(`user_id.eq.${user.id},shared_with.cs.{${user.id}}`)
+      .or(`created_by.eq.${user.id},shared_with.cs.{${user.id}}`)
       .order('updated_at', { ascending: false });
 
     if (!error && data) {
@@ -291,7 +324,7 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
       .from('saved_reports')
       .upsert({
         id: reportConfig.id,
-        user_id: user.id,
+        created_by: user.id,
         name: reportName,
         description,
         config: reportConfig,
@@ -342,13 +375,55 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
   const handleRefresh = async () => {
     setIsRefreshing(true);
     console.log('[ReportBuilder] Refreshing data...');
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Update display data from current filtered events
+    setDisplayData(filteredEvents.map(event => {
+      const substation = substations.find(s => s.id === event.substation_id);
+      const baseData: any = {
+        'Event ID': event.id,
+        'Timestamp': new Date(event.timestamp).toLocaleString(),
+        'Date': new Date(event.timestamp).toLocaleDateString(),
+        'Time': new Date(event.timestamp).toLocaleTimeString(),
+        'Year': new Date(event.timestamp).getFullYear(),
+        'Month': new Date(event.timestamp).toLocaleString('default', { month: 'long' }),
+        'Day': new Date(event.timestamp).getDate(),
+        'Weekday': new Date(event.timestamp).toLocaleString('default', { weekday: 'long' }),
+        'Hour': new Date(event.timestamp).getHours(),
+        'Quarter': `Q${Math.floor(new Date(event.timestamp).getMonth() / 3) + 1}`,
+        'Substation': substation?.name || 'Unknown',
+        'Region': substation?.region || 'Unknown',
+        'Feeder': event.feeder_id || 'N/A',
+        'Event Type': event.event_type,
+        'Severity': event.severity,
+        'Duration (ms)': event.duration_ms || 0,
+        'Duration (s)': (event.duration_ms || 0) / 1000,
+        'Voltage Dip (%)': event.voltage_dip_percent || 0,
+        'Affected Customers': event.affected_customers || 0,
+        'Root Cause': event.root_cause || 'Unknown',
+        'Status': event.status,
+        'Weather': event.weather_condition || 'Unknown',
+        'Is Valid': event.is_valid ? 'Yes' : 'No',
+      };
+
+      // Add calculated fields
+      calculatedFields.forEach(field => {
+        try {
+          const value = evaluateExpression(field.expression, baseData);
+          baseData[field.name] = value;
+        } catch (error) {
+          console.error(`Error calculating field ${field.name}:`, error);
+          baseData[field.name] = null;
+        }
+      });
+
+      return baseData;
+    }));
+    await new Promise(resolve => setTimeout(resolve, 500));
     setLastRefresh(new Date());
     setIsRefreshing(false);
   };
 
   const handleExportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(pivotData);
+    const ws = XLSX.utils.json_to_sheet(displayData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Report');
     XLSX.writeFile(wb, `${reportName}_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -373,10 +448,10 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
 
     const startY = description ? 60 : 50;
     
-    if (pivotData.length > 0) {
+    if (displayData.length > 0) {
       autoTable(doc, {
-        head: [Object.keys(pivotData[0])],
-        body: pivotData.slice(0, 100).map(row => Object.values(row)),
+        head: [Object.keys(displayData[0])],
+        body: displayData.slice(0, 100).map(row => Object.values(row)),
         startY,
         styles: { fontSize: 8 },
         headStyles: { fillColor: [59, 130, 246] },
@@ -493,36 +568,75 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
               <Save className="w-4 h-4" />
               Save
             </button>
+            
+            {/* Collapse/Expand Button */}
+            <button
+              onClick={() => setCriteriaCollapsed(!criteriaCollapsed)}
+              className="p-2 hover:bg-slate-100 rounded-lg"
+              title={criteriaCollapsed ? "Expand Criteria" : "Collapse Criteria"}
+            >
+              {criteriaCollapsed ? (
+                <ChevronDown className="w-5 h-5 text-slate-600" />
+              ) : (
+                <ChevronUp className="w-5 h-5 text-slate-600" />
+              )}
+            </button>
           </div>
         </div>
 
+        {/* Collapsible Criteria Section */}
+        {!criteriaCollapsed && (
+          <>
         {/* Filters Row */}
         <div className="grid grid-cols-12 gap-4 mb-4">
-          {/* Date Filter */}
-          <div className="col-span-3">
+          {/* Date Filter - Dropdown with single select (not checkboxes since only one can be selected) */}
+          <div className="col-span-3 relative">
             <label className="block text-sm font-medium text-slate-700 mb-1">
               <Filter className="w-4 h-4 inline mr-1" />
               Date Range
             </label>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as DateFilterPreset)}
-              className="w-full text-sm border-slate-300 rounded px-3 py-2"
+            <button
+              onClick={() => setShowDateDropdown(!showDateDropdown)}
+              className="w-full text-sm border border-slate-300 rounded px-3 py-2 bg-white hover:bg-slate-50 flex items-center justify-between"
             >
-              <option value="all">All Time</option>
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="last_7_days">Last 7 Days</option>
-              <option value="last_30_days">Last 30 Days</option>
-              <option value="this_month">This Month</option>
-              <option value="last_month">Last Month</option>
-              <option value="this_quarter">This Quarter</option>
-              <option value="last_quarter">Last Quarter</option>
-              <option value="this_year">This Year</option>
-              <option value="last_year">Last Year</option>
-              <option value="last_3_years">Last 3 Years</option>
-              <option value="custom">Custom Range...</option>
-            </select>
+              <span className="text-slate-700">{dateFilter.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+              <ChevronDown className="w-4 h-4 text-slate-400" />
+            </button>
+            
+            {showDateDropdown && (
+              <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                <div className="p-2">
+                  {[
+                    { value: 'all', label: 'All Time' },
+                    { value: 'today', label: 'Today' },
+                    { value: 'yesterday', label: 'Yesterday' },
+                    { value: 'last_7_days', label: 'Last 7 Days' },
+                    { value: 'last_30_days', label: 'Last 30 Days' },
+                    { value: 'this_month', label: 'This Month' },
+                    { value: 'last_month', label: 'Last Month' },
+                    { value: 'this_quarter', label: 'This Quarter' },
+                    { value: 'last_quarter', label: 'Last Quarter' },
+                    { value: 'this_year', label: 'This Year' },
+                    { value: 'last_year', label: 'Last Year' },
+                    { value: 'last_3_years', label: 'Last 3 Years' },
+                    { value: 'custom', label: 'Custom Range...' },
+                  ].map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setDateFilter(option.value as DateFilterPreset);
+                        setShowDateDropdown(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded ${
+                        dateFilter === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-700'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Custom Date Range */}
@@ -549,40 +663,128 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
             </>
           )}
 
-          {/* Event Type Filter */}
-          <div className="col-span-3">
+          {/* Event Type Filter - Dropdown with Checkboxes */}
+          <div className={`${dateFilter === 'custom' ? 'col-span-3' : 'col-span-3'} relative`}>
             <label className="block text-sm font-medium text-slate-700 mb-1">Event Types</label>
-            <select
-              multiple
-              value={eventTypeFilter}
-              onChange={(e) => setEventTypeFilter(Array.from(e.target.selectedOptions, option => option.value))}
-              className="w-full text-sm border-slate-300 rounded px-3 py-2"
-              size={3}
+            <button
+              onClick={() => setShowEventTypeDropdown(!showEventTypeDropdown)}
+              className="w-full text-sm border border-slate-300 rounded px-3 py-2 bg-white hover:bg-slate-50 flex items-center justify-between"
             >
-              {eventTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+              <span className="text-slate-700 truncate">
+                {eventTypeFilter.length === 0 ? 'All Event Types' : 
+                 eventTypeFilter.length === eventTypes.length ? 'All Selected' :
+                 `${eventTypeFilter.length} selected`}
+              </span>
+              <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            </button>
+            
+            {showEventTypeDropdown && (
+              <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                {/* Select All / Clear All */}
+                <div className="p-2 border-b border-slate-200 flex gap-2">
+                  <button
+                    onClick={() => setEventTypeFilter(eventTypes)}
+                    className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-medium"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => setEventTypeFilter([])}
+                    className="flex-1 px-2 py-1 text-xs bg-slate-100 text-slate-600 rounded hover:bg-slate-200 font-medium"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                
+                {/* Checkbox Options */}
+                <div className="p-2">
+                  {eventTypes.map(type => (
+                    <label
+                      key={type}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={eventTypeFilter.includes(type)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEventTypeFilter(prev => [...prev, type]);
+                          } else {
+                            setEventTypeFilter(prev => prev.filter(v => v !== type));
+                          }
+                        }}
+                        className="rounded text-blue-600"
+                      />
+                      <span className="text-sm font-medium text-slate-700">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Severity Filter */}
-          <div className="col-span-2">
+          {/* Severity Filter - Dropdown with Checkboxes */}
+          <div className={`${dateFilter === 'custom' ? 'col-span-2' : 'col-span-2'} relative`}>
             <label className="block text-sm font-medium text-slate-700 mb-1">Severity</label>
-            <select
-              multiple
-              value={severityFilter}
-              onChange={(e) => setSeverityFilter(Array.from(e.target.selectedOptions, option => option.value))}
-              className="w-full text-sm border-slate-300 rounded px-3 py-2"
-              size={3}
+            <button
+              onClick={() => setShowSeverityDropdown(!showSeverityDropdown)}
+              className="w-full text-sm border border-slate-300 rounded px-3 py-2 bg-white hover:bg-slate-50 flex items-center justify-between"
             >
-              {severityLevels.map(level => (
-                <option key={level} value={level}>{level}</option>
-              ))}
-            </select>
+              <span className="text-slate-700 truncate">
+                {severityFilter.length === 0 ? 'All Severities' : 
+                 severityFilter.length === severityLevels.length ? 'All Selected' :
+                 `${severityFilter.length} selected`}
+              </span>
+              <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            </button>
+            
+            {showSeverityDropdown && (
+              <div className="absolute z-20 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                {/* Select All / Clear All */}
+                <div className="p-2 border-b border-slate-200 flex gap-2">
+                  <button
+                    onClick={() => setSeverityFilter(severityLevels)}
+                    className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 font-medium"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => setSeverityFilter([])}
+                    className="flex-1 px-2 py-1 text-xs bg-slate-100 text-slate-600 rounded hover:bg-slate-200 font-medium"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                
+                {/* Checkbox Options */}
+                <div className="p-2">
+                  {severityLevels.map(level => (
+                    <label
+                      key={level}
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={severityFilter.includes(level)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSeverityFilter(prev => [...prev, level]);
+                          } else {
+                            setSeverityFilter(prev => prev.filter(v => v !== level));
+                          }
+                        }}
+                        className="rounded text-blue-600"
+                      />
+                      <span className="text-sm font-medium text-slate-700">{level}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Include False Events */}
-          <div className="col-span-2">
+          <div className={`${dateFilter === 'custom' ? 'col-span-2' : 'col-span-2'}`}>
             <label className="block text-sm font-medium text-slate-700 mb-1">Options</label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -639,7 +841,7 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
                 <option value="">Select a report...</option>
                 {savedReports.map(report => (
                   <option key={report.id} value={report.id}>
-                    {report.name} {report.user_id !== user?.id && '(Shared)'} - {new Date(report.updated_at).toLocaleDateString()}
+                    {report.name} {report.created_by !== user?.id && '(Shared)'} - {new Date(report.updated_at).toLocaleDateString()}
                   </option>
                 ))}
               </select>
@@ -651,12 +853,14 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
         <div className="mt-2 text-sm text-slate-600">
           Showing <strong>{filteredEvents.length.toLocaleString()}</strong> events of <strong>{events.length.toLocaleString()}</strong> total
         </div>
+        </>
+        )}
       </div>
 
       {/* Pivot Table */}
       <div className="overflow-auto">
         <PivotTableUI
-          data={pivotData}
+          data={displayData}
           onChange={s => setPivotState(s)}
           renderers={Object.assign({}, TableRenderers, PlotlyRenderers)}
           {...pivotState}
@@ -667,7 +871,8 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
         <h4 className="font-semibold text-blue-900 mb-2">How to use:</h4>
         <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-          <li>Use date range and filters to narrow down your data</li>
+          <li>Use date range and filters to narrow down your data (updates count only)</li>
+          <li>Click the refresh button (double-arrow icon) to update the table with filtered data</li>
           <li>Drag fields from the top into Rows, Columns, or Values</li>
           <li>Select chart type from the dropdown (Table, Bar Chart, Line Chart, etc.)</li>
           <li>Click aggregation functions to change (Count, Sum, Average, etc.)</li>
@@ -687,7 +892,7 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
             setShowCalculatedFieldEditor(false);
           }}
           onClose={() => setShowCalculatedFieldEditor(false)}
-          availableFields={Object.keys(pivotData[0] || {})}
+          availableFields={Object.keys(displayData[0] || {})}
         />
       )}
 
