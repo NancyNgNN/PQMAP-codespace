@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   FileSpreadsheet, 
   Download, 
@@ -70,6 +70,7 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
   
   // Collapse state
   const [criteriaCollapsed, setCriteriaCollapsed] = useState(false);
+  const [fieldsCollapsed, setFieldsCollapsed] = useState(false);
   
   // Manual refresh - separate display data from table data
   const [displayData, setDisplayData] = useState<any[]>([]);
@@ -372,11 +373,14 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    console.log('[ReportBuilder] Refreshing data...');
+    console.log('[ReportBuilder] Refreshing data...', {
+      filteredCount: filteredEvents.length,
+      calculatedFieldsCount: calculatedFields.length
+    });
     // Update display data from current filtered events
-    setDisplayData(filteredEvents.map(event => {
+    const newDisplayData = filteredEvents.map(event => {
       const substation = substations.find(s => s.id === event.substation_id);
       const baseData: any = {
         'Event ID': event.id,
@@ -416,11 +420,14 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
       });
 
       return baseData;
-    }));
+    });
+    
+    setDisplayData(newDisplayData);
+    console.log('[ReportBuilder] Display data updated:', newDisplayData.length);
     await new Promise(resolve => setTimeout(resolve, 500));
     setLastRefresh(new Date());
     setIsRefreshing(false);
-  };
+  }, [filteredEvents, substations, calculatedFields]);
 
   const handleExportExcel = () => {
     const ws = XLSX.utils.json_to_sheet(displayData);
@@ -569,16 +576,32 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
               Save
             </button>
             
-            {/* Collapse/Expand Button */}
+            {/* Separator */}
+            <div className="h-8 w-px bg-slate-300"></div>
+            
+            {/* Collapse/Expand Criteria Button */}
             <button
               onClick={() => setCriteriaCollapsed(!criteriaCollapsed)}
-              className="p-2 hover:bg-slate-100 rounded-lg"
-              title={criteriaCollapsed ? "Expand Criteria" : "Collapse Criteria"}
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              title={criteriaCollapsed ? "Expand Filters & Criteria" : "Collapse Filters & Criteria"}
             >
               {criteriaCollapsed ? (
                 <ChevronDown className="w-5 h-5 text-slate-600" />
               ) : (
                 <ChevronUp className="w-5 h-5 text-slate-600" />
+              )}
+            </button>
+            
+            {/* Collapse/Expand Fields Button */}
+            <button
+              onClick={() => setFieldsCollapsed(!fieldsCollapsed)}
+              className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+              title={fieldsCollapsed ? "Show Field Selector (Rows/Columns)" : "Hide Field Selector (Rows/Columns)"}
+            >
+              {fieldsCollapsed ? (
+                <ChevronDown className="w-5 h-5 text-purple-600" />
+              ) : (
+                <ChevronUp className="w-5 h-5 text-purple-600" />
               )}
             </button>
           </div>
@@ -859,6 +882,22 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
 
       {/* Pivot Table */}
       <div className="overflow-auto">
+        <style>{`
+          ${fieldsCollapsed ? `
+            .pvtUi .pvtUnused,
+            .pvtUi .pvtAxisContainer,
+            .pvtUi .pvtVals {
+              display: none !important;
+            }
+            .pvtUi {
+              display: flex;
+              flex-direction: column;
+            }
+            .pvtUi > table {
+              width: 100% !important;
+            }
+          ` : ''}
+        `}</style>
         <PivotTableUI
           data={displayData}
           onChange={s => setPivotState(s)}
