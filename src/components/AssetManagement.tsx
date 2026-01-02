@@ -14,7 +14,12 @@ interface FilterState {
   searchText: string;
 }
 
-export default function AssetManagement() {
+interface AssetManagementProps {
+  selectedMeterId?: string | null;
+  onClearSelectedMeter?: () => void;
+}
+
+export default function AssetManagement({ selectedMeterId, onClearSelectedMeter }: AssetManagementProps = {}) {
   const [meters, setMeters] = useState<PQMeter[]>([]);
   const [substations, setSubstations] = useState<Substation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +98,21 @@ export default function AssetManagement() {
   useEffect(() => {
     console.log('Sort state changed - Field:', sortField, 'Direction:', sortDirection);
   }, [sortField, sortDirection]);
+
+  // Handle selectedMeterId from Dashboard navigation
+  useEffect(() => {
+    if (selectedMeterId && meters.length > 0) {
+      const meter = meters.find(m => m.id === selectedMeterId);
+      if (meter) {
+        setSelectedMeter(meter);
+        loadMeterEvents(meter);
+        // Clear the selectedMeterId after opening modal
+        if (onClearSelectedMeter) {
+          onClearSelectedMeter();
+        }
+      }
+    }
+  }, [selectedMeterId, meters]);
 
   const loadData = async () => {
     try {
@@ -481,7 +501,7 @@ export default function AssetManagement() {
         'Active': meter.active !== undefined ? (meter.active ? 'Yes' : 'No') : '-',
         'Region': meter.region || '-',
         'IP Address': meter.ip_address || '-',
-        'Meter Type': meter.meter_type || '-',
+        'Load Type': meter.load_type || '-',
         'CT Type': meter.ct_type || '-',
         'Asset Number': meter.asset_number || '-',
         'Serial Number': meter.serial_number || '-',
@@ -1339,8 +1359,8 @@ export default function AssetManagement() {
                     <p className="text-sm font-semibold text-slate-900">{selectedMeter.model || '-'}</p>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-lg">
-                    <p className="text-xs font-medium text-slate-600 mb-1">Meter Type</p>
-                    <p className="text-sm font-semibold text-slate-900">{selectedMeter.meter_type || '-'}</p>
+                    <p className="text-xs font-medium text-slate-600 mb-1">Load Type</p>
+                    <p className="text-sm font-semibold text-slate-900">{selectedMeter.load_type || '-'}</p>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-lg">
                     <p className="text-xs font-medium text-slate-600 mb-1">Voltage Level</p>

@@ -16,6 +16,13 @@ function AppContent() {
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [selectedMeterId, setSelectedMeterId] = useState<string | null>(null);
+
+  // Handle navigation to Asset Management with selected meter
+  const handleNavigateToMeter = (meterId: string) => {
+    setSelectedMeterId(meterId);
+    setCurrentView('assets');
+  };
 
   if (loading) {
     return (
@@ -41,10 +48,10 @@ function AppContent() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <main className="flex-1 overflow-y-auto">
-        {currentView === 'dashboard' && <Dashboard />}
+        {currentView === 'dashboard' && <Dashboard onNavigateToMeter={handleNavigateToMeter} />}
         {currentView === 'events' && <EventManagement />}
         {currentView === 'analytics' && <ImpactAnalysis />}
-        {currentView === 'assets' && <AssetManagement />}
+        {currentView === 'assets' && <AssetManagement selectedMeterId={selectedMeterId} onClearSelectedMeter={() => setSelectedMeterId(null)} />}
         {currentView === 'reports' && <Reports />}
         {currentView === 'notifications' && <Notifications />}
         {currentView === 'services' && <PQServices />}

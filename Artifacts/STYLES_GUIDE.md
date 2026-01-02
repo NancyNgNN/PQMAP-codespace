@@ -867,6 +867,303 @@ When implementing import functionality, ensure:
 
 ## Dropdown Patterns
 
+### Dashboard Config Modal Pattern
+
+**IMPORTANT RULE**: For dashboard widgets with complex filtering needs (3+ filter types), use a comprehensive config modal instead of inline filter dropdowns. This provides better UX for profile management and multiple filter categories.
+
+**Standard Implementation:**
+
+Reference: `SubstationMap.tsx`, `MeterMap.tsx`
+
+```tsx
+// 1. Main Component Structure
+const [isConfigOpen, setIsConfigOpen] = useState(false);
+const [filters, setFilters] = useState<FilterInterface>(() => {
+  const saved = localStorage.getItem('componentFilters');
+  return saved ? JSON.parse(saved) : defaultFilters;
+});
+
+// 2. Header with Settings Button
+<div className="flex items-center gap-2">
+  {/* Export button, other controls */}
+  <button
+    onClick={() => setIsConfigOpen(true)}
+    className="p-2 hover:bg-slate-100 rounded-lg"
+    title="Configure Filters"
+  >
+    <Settings2 className="w-5 h-5 text-slate-600" />
+  </button>
+</div>
+
+// 3. Config Modal Component
+{isConfigOpen && (
+  <ComponentConfigModal
+    filters={filters}
+    onApply={(newFilters) => {
+      setFilters(newFilters);
+      setIsConfigOpen(false);
+    }}
+    onClose={() => setIsConfigOpen(false)}
+    uniqueOptions={uniqueOptions}  // Pass computed unique values
+    otherData={otherData}
+  />
+)}
+```
+
+**Config Modal Structure (ComponentConfigModal.tsx):**
+
+```tsx
+interface Props {
+  filters: FilterInterface;
+  onApply: (filters: FilterInterface) => void;
+  onClose: () => void;
+  // Pass unique values computed from data
+  uniqueLoadTypes: string[];
+  uniqueVoltageLevels: string[];
+  substations: Substation[];
+}
+
+const ComponentConfigModal: React.FC<Props> = ({
+  filters: initialFilters,
+  onApply,
+  onClose,
+  uniqueLoadTypes,
+  uniqueVoltageLevels,
+  substations
+}) => {
+  const [filters, setFilters] = useState(initialFilters);
+  const [profiles, setProfiles] = useState<FilterProfile[]>(() => {
+    const saved = localStorage.getItem('componentProfiles');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Profile management state
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-bold text-slate-900">Configure Filters</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Profile Management Section */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Filter Profile
+            </label>
+            <div className="flex gap-2">
+              <select
+                value={filters.profileId}
+                onChange={(e) => handleLoadProfile(e.target.value)}
+                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg"
+              >
+                <option value="">Select a profile...</option>
+                {profiles.map(profile => (
+                  <option key={profile.id} value={profile.id}>{profile.name}</option>
+                ))}
+              </select>
+              <button
+                onClick={() => setShowProfileModal(true)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              >
+                Save
+              </button>
+            </div>
+            {/* Edit/Delete buttons if profile selected */}
+          </div>
+
+          {/* Search Input */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Search
+            </label>
+            <input
+              type="text"
+              value={filters.searchText}
+              onChange={(e) => setFilters({ ...filters, searchText: e.target.value })}
+              placeholder="Search by ID..."
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            />
+          </div>
+
+          {/* Grid Layout for Checkboxes */}
+          <div className="grid grid-cols-2 gap-6">
+            {/* Load Types */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Load Type
+              </label>
+              <div className="space-y-2">
+                {uniqueLoadTypes.map(type => (
+                  <label key={type} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filters.loadTypes.includes(type)}
+                      onChange={(e) => {/* toggle logic */}}
+                      className="w-4 h-4 text-blue-600 rounded"
+                    />
+                    <span className="text-sm">{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Voltage Levels */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Voltage Level
+              </label>
+              <div className="space-y-2">
+                {uniqueVoltageLevels.map(level => (
+                  <label key={level} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filters.voltageLevels.includes(level)}
+                      onChange={(e) => {/* toggle logic */}}
+                      className="w-4 h-4 text-blue-600 rounded"
+                    />
+                    <span className="text-sm">{level}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Scrollable List (Substations) */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Substations
+            </label>
+            <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3 space-y-2">
+              {substations.map(sub => (
+                <label key={sub.id} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.substations.includes(sub.id)}
+                    onChange={(e) => {/* toggle logic */}}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <span className="text-sm">{sub.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t flex gap-2">
+          <button
+            onClick={handleClearAll}
+            className="flex-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg"
+          >
+            Clear All
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onApply(filters)}
+            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+          >
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      {/* Nested Profile Save Modal (z-index 60) */}
+      {showProfileModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold mb-4">Save Filter Profile</h3>
+            <input
+              type="text"
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              placeholder="Profile name..."
+              className="w-full px-3 py-2 border rounded-lg mb-4"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="flex-1 px-4 py-2 bg-slate-200 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+**Key Features:**
+
+1. **Profile Management**
+   - Save current filters as named profile
+   - Load saved profiles from dropdown
+   - Edit existing profile (updates name and filters)
+   - Delete profiles with confirmation
+   - Stored in localStorage with key `componentProfiles`
+
+2. **Layout Structure**
+   - Fixed header with title and close button
+   - Scrollable content area (`flex-1 overflow-y-auto`)
+   - Fixed footer with action buttons
+   - Maximum height: `max-h-[90vh]`
+
+3. **Filter Organization**
+   - Profile selector at top
+   - Text search input
+   - Grid layout for checkboxes (2 columns: `grid grid-cols-2 gap-6`)
+   - Scrollable list for long items (max-h-48)
+
+4. **Z-Index Hierarchy**
+   - Main modal: `z-50`
+   - Nested profile modal: `z-60`
+   - Backdrop: `bg-black/50`
+
+5. **Filter Persistence**
+   - Main filters: localStorage key `componentFilters`
+   - Profiles: localStorage key `componentProfiles`
+   - Profile ID tracked in filters interface
+
+6. **Button Layout**
+   - Three-button footer: Clear All | Cancel | Apply
+   - Equal widths with `flex-1`
+   - Clear All and Cancel: gray theme
+   - Apply: blue theme (primary action)
+
+**When to Use:**
+- Dashboard widgets with 3+ filter categories
+- Components with profile/preset functionality
+- Complex filtering with search + multiple checkboxes
+- Need for save/load filter configurations
+
+**When NOT to Use:**
+- Simple single-filter scenarios
+- Inline filter bars with 1-2 options
+- Non-dashboard components
+
 ### Filter Dropdown with Checkboxes
 
 **IMPORTANT RULE**: All filter dropdowns with checkbox options should include "Select All" and "Clear All" buttons for better user experience.

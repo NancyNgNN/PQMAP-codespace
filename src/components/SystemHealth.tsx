@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { SystemHealth as SystemHealthType } from '../types/database';
 import { Settings, CheckCircle, AlertTriangle, Server, Wifi, Database, Link } from 'lucide-react';
 import DatabaseControls from './DatabaseControls';
+import LoadTypeManagement from './Settings/LoadTypeManagement';
 
 export default function SystemHealth() {
   const [healthData, setHealthData] = useState<SystemHealthType[]>([]);
@@ -197,6 +198,11 @@ export default function SystemHealth() {
         <h2 className="text-xl font-bold text-slate-900 mb-4">Database Management</h2>
         <p className="text-slate-600 mb-4">Manage and populate the database with demo data for testing and development.</p>
         <DatabaseControls onUpdate={loadHealthData} />
+      </div>
+
+      {/* Load Type Management Section */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
+        <LoadTypeManagement />
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">

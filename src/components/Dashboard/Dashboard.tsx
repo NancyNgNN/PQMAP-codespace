@@ -6,6 +6,7 @@ import { PQEvent, Substation, SARFIMetrics, UserRole } from '../../types/databas
 import { DashboardLayout, DEFAULT_LAYOUTS, WidgetId } from '../../types/dashboard';
 import DashboardLayoutManager from './DashboardLayoutManager';
 import SubstationMap from './SubstationMap';
+import MeterMap from './MeterMap';
 import EventList from './EventList';
 import SARFIChart from './SARFIChart';
 import StatsCards from './StatsCards';
@@ -15,7 +16,11 @@ import SARFI70Monitor from './SARFI70Monitor';
 import AffectedCustomerChart from './AffectedCustomerChart';
 import ReportBuilder from './ReportBuilder/ReportBuilder';
 
-export default function Dashboard() {
+interface DashboardProps {
+  onNavigateToMeter?: (meterId: string) => void;
+}
+
+export default function Dashboard({ onNavigateToMeter }: DashboardProps) {
   const { user } = useAuth();
   const [events, setEvents] = useState<PQEvent[]>([]);
   const [substations, setSubstations] = useState<Substation[]>([]);
@@ -142,6 +147,8 @@ export default function Dashboard() {
         return <StatsCards events={events} substations={substations} />;
       case 'substation-map':
         return <SubstationMap substations={substations} events={events} />;
+      case 'meter-map':
+        return <MeterMap substations={substations} onNavigateToMeter={onNavigateToMeter} />;
       case 'sarfi-chart':
         return <SARFIChart metrics={sarfiMetrics} />;
       case 'root-cause-chart':

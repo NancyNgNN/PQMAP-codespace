@@ -4,6 +4,7 @@ import { ComponentType } from 'react';
 export type WidgetId = 
   | 'stats-cards'
   | 'substation-map'
+  | 'meter-map'
   | 'sarfi-chart'
   | 'root-cause-chart'
   | 'insight-chart'
@@ -56,6 +57,13 @@ export const WIDGET_CATALOG: Record<WidgetId, WidgetConfig> = {
     id: 'substation-map',
     title: 'Substation Map',
     description: 'Geographic visualization of substations with incident counts',
+    defaultSize: 'full',
+    locked: true,
+  },
+  'meter-map': {
+    id: 'meter-map',
+    title: 'Meter Map',
+    description: 'Geographic visualization of PQ meters by load type',
     defaultSize: 'full',
     locked: true,
   },
@@ -117,12 +125,13 @@ export const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
     widgets: [
       { id: 'stats-cards', col: 0, row: 0, width: 12, visible: true },
       { id: 'substation-map', col: 0, row: 1, width: 12, visible: true },
-      { id: 'sarfi-chart', col: 0, row: 2, width: 12, visible: true },
-      { id: 'root-cause-chart', col: 0, row: 3, width: 6, visible: true },
-      { id: 'insight-chart', col: 6, row: 3, width: 6, visible: true },
-      { id: 'affected-customer-chart', col: 0, row: 4, width: 12, visible: true },
-      { id: 'event-list', col: 0, row: 5, width: 12, visible: true },
-      { id: 'sarfi-70-monitor', col: 0, row: 6, width: 12, visible: true },
+      { id: 'meter-map', col: 0, row: 2, width: 12, visible: true },
+      { id: 'sarfi-chart', col: 0, row: 3, width: 12, visible: true },
+      { id: 'root-cause-chart', col: 0, row: 4, width: 6, visible: true },
+      { id: 'insight-chart', col: 6, row: 4, width: 6, visible: true },
+      { id: 'affected-customer-chart', col: 0, row: 5, width: 12, visible: true },
+      { id: 'event-list', col: 0, row: 6, width: 12, visible: true },
+      { id: 'sarfi-70-monitor', col: 0, row: 7, width: 12, visible: true },
     ],
   },
   operator: {
@@ -130,12 +139,13 @@ export const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
     widgets: [
       { id: 'stats-cards', col: 0, row: 0, width: 12, visible: true },
       { id: 'substation-map', col: 0, row: 1, width: 12, visible: true },
-      { id: 'sarfi-chart', col: 0, row: 2, width: 12, visible: true },
-      { id: 'root-cause-chart', col: 0, row: 3, width: 6, visible: true },
-      { id: 'insight-chart', col: 6, row: 3, width: 6, visible: true },
-      { id: 'affected-customer-chart', col: 0, row: 4, width: 12, visible: true },
-      { id: 'event-list', col: 0, row: 5, width: 12, visible: true },
-      { id: 'sarfi-70-monitor', col: 0, row: 6, width: 12, visible: false },
+      { id: 'meter-map', col: 0, row: 2, width: 12, visible: true },
+      { id: 'sarfi-chart', col: 0, row: 3, width: 12, visible: true },
+      { id: 'root-cause-chart', col: 0, row: 4, width: 6, visible: true },
+      { id: 'insight-chart', col: 6, row: 4, width: 6, visible: true },
+      { id: 'affected-customer-chart', col: 0, row: 5, width: 12, visible: true },
+      { id: 'event-list', col: 0, row: 6, width: 12, visible: true },
+      { id: 'sarfi-70-monitor', col: 0, row: 7, width: 12, visible: false },
     ],
   },
   viewer: {
@@ -143,12 +153,13 @@ export const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
     widgets: [
       { id: 'stats-cards', col: 0, row: 0, width: 12, visible: false },
       { id: 'substation-map', col: 0, row: 1, width: 12, visible: false },
-      { id: 'sarfi-chart', col: 0, row: 2, width: 12, visible: false },
-      { id: 'root-cause-chart', col: 0, row: 3, width: 6, visible: false },
-      { id: 'insight-chart', col: 6, row: 3, width: 6, visible: false },
-      { id: 'affected-customer-chart', col: 0, row: 4, width: 12, visible: true },
-      { id: 'event-list', col: 0, row: 5, width: 12, visible: true },
-      { id: 'sarfi-70-monitor', col: 0, row: 6, width: 12, visible: false },
+      { id: 'meter-map', col: 0, row: 2, width: 12, visible: true },
+      { id: 'sarfi-chart', col: 0, row: 3, width: 12, visible: false },
+      { id: 'root-cause-chart', col: 0, row: 4, width: 6, visible: false },
+      { id: 'insight-chart', col: 6, row: 4, width: 6, visible: false },
+      { id: 'affected-customer-chart', col: 0, row: 5, width: 12, visible: true },
+      { id: 'event-list', col: 0, row: 6, width: 12, visible: true },
+      { id: 'sarfi-70-monitor', col: 0, row: 7, width: 12, visible: false },
     ],
   },
 };

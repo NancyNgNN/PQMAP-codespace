@@ -11,6 +11,7 @@ export type NotificationType = 'email' | 'sms' | 'both';
 export type NotificationStatus = 'pending' | 'sent' | 'failed';
 export type ReportStatus = 'generating' | 'completed' | 'failed';
 export type SystemStatus = 'healthy' | 'degraded' | 'down';
+export type LoadType = 'DC' | 'EV' | 'others' | 'RE-PV' | 'RES' | 'RES-HRB' | 'RES-NOC';
 
 export interface Profile {
   id: string;
@@ -56,7 +57,6 @@ export interface PQMeter {
   firmware_version: string | null;
   framework_version?: string;
   // Meter status
-  meter_type?: string;
   status: MeterStatus;
   active?: boolean;
   last_communication: string | null;
@@ -67,6 +67,8 @@ export interface PQMeter {
   ss400?: string | null;
   ss132?: string | null;
   ss011?: string | null;
+  // Load Type (Migration 20260102000000)
+  load_type?: LoadType;
   substation?: Substation;
 }
 

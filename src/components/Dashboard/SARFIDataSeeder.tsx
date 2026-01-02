@@ -86,7 +86,6 @@ export default function SARFIDataSeeder() {
               substation_id: substationId,
               location: meterData.location,
               voltage_level: meterData.voltage_level,
-              meter_type: 'PQ Monitor',
               installation_date: '2024-01-01',
             }])
             .select()
