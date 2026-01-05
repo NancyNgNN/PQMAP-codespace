@@ -12,6 +12,7 @@ import PQServices from './components/PQServices';
 import SystemHealth from './components/SystemHealth';
 import CustomerTransformerMatching from './components/CustomerTransformerMatching';
 import UserManagement from './components/UserManagement';
+import SCADA from './components/SCADA';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -58,6 +59,7 @@ function AppContent() {
         {currentView === 'services' && <PQServices />}
         {currentView === 'health' && <SystemHealth />}
         {currentView === 'userManagement' && <UserManagement />}
+        {currentView === 'scada' && <SCADA />}
         {currentView === 'customerTransformerMatching' && <CustomerTransformerMatching />}
       </main>
     </div>

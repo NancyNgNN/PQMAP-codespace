@@ -1177,7 +1177,255 @@ const restrictedModules = ['userManagement', 'systemSettings', 'dataImport'];
 
 ---
 
-### 10. System Health Module
+### 10. SCADA Substation Management Module ✨ NEW (Jan 5, 2026)
+
+**Purpose**: Manage SCADA substation master data with full CRUD operations and geographic validation
+
+**Location**: Data Maintenance → SCADA (between User Management and Customer Transformer)
+
+**Database**: `substations` table with Row Level Security (RLS) policies
+
+#### Features
+
+##### 1. Substation Master Data Table
+**Columns Displayed**:
+- **S/S Code**: Unique substation identifier (uppercase alphanumeric)
+- **Substation Name**: Full descriptive name
+- **Voltage Level**: Operating voltage (400kV, 132kV, 11kV, 380V, Others)
+- **Latitude**: Geographic coordinate (22.15° to 22.58°N)
+- **Longitude**: Geographic coordinate (113.83° to 114.41°E)
+- **Region**: Service region (Hong Kong Island, Kowloon, New Territories East, New Territories West, Outlying Islands)
+- **Status**: Operational / Maintenance / Offline (color-coded badges)
+- **Last Updated By**: User who last modified the record
+- **Last Updated**: Timestamp of last modification
+
+**Actions**:
+- **Edit**: Modify existing substation details (except code)
+- **Delete**: Remove substation (with dependency checking)
+
+##### 2. Multi-Dimensional Filtering
+**Filter Options**:
+- **Text Search**: Search by S/S Code or Substation Name (real-time)
+- **Voltage Level**: Multi-select checkbox filter (400kV, 132kV, 11kV, 380V, Others)
+- **Region**: Multi-select checkbox filter (all 5 regions)
+- **Status**: Multi-select checkbox filter (Operational, Maintenance, Offline)
+
+**Filter UI**:
+- Active filter count badge on filter buttons
+- "Select All" / "Clear All" quick actions for multi-select filters
+- "Clear Filters" button to reset all filters at once
+- Result count display: "Showing X of Y substations"
+
+##### 3. Create/Edit Substation Form
+**Modal-Based Form** with validation:
+
+**Required Fields**:
+- **S/S Code**: 
+  - Must be uppercase alphanumeric with hyphens/underscores
+  - Cannot be changed after creation (disabled in edit mode)
+  - Duplicate code detection
+  
+- **Substation Name**: 
+  - Free text, required
+  - Descriptive name for easy identification
+
+**Optional Fields with Validation**:
+- **Voltage Level**: Dropdown selection (required)
+- **Region**: Dropdown selection (required)
+- **Latitude**: Number input with 6 decimal precision
+  - Validation: Must be within Hong Kong bounds (22.15° to 22.58°N)
+  - Error message for out-of-bounds coordinates
+  
+- **Longitude**: Number input with 6 decimal precision
+  - Validation: Must be within Hong Kong bounds (113.83° to 114.41°E)
+  - Error message for out-of-bounds coordinates
+
+- **Status**: Radio button selection (Operational, Maintenance, Offline)
+  - Default: Operational
+
+**Validation Features**:
+- Real-time field validation with error messages
+- Geographic bounds checking for Hong Kong territory
+- Duplicate code prevention
+- Required field indicators
+- Disabled save button while loading
+
+**Info Box**: Geographic validation notice explaining HK boundary requirements
+
+##### 4. Delete with Dependency Checking
+**Smart Deletion**:
+- Checks for linked PQ meters and events before deletion
+- Shows dependency warning if relationships exist:
+  ```
+  Cannot delete substation "Central Substation":
+  - Linked Meters: 15
+  - Linked Events: 234
+  
+  Please remove these dependencies first.
+  ```
+- Only allows deletion when no dependencies exist
+- Requires confirmation before final deletion
+
+##### 5. Export Functionality
+**Export Formats**:
+- **Excel (.xlsx)**: Formatted spreadsheet with proper column widths
+- **CSV (.csv)**: Comma-separated values with quoted fields
+- **PDF (.pdf)**: Professional landscape report with header
+
+**Export Content**:
+- All 9 columns from the table
+- Filtered data only (respects current filters)
+- Filename format: `SCADA_Substations_YYYY-MM-DD.{ext}`
+- PDF includes generation timestamp and record count
+
+**PDF Features**:
+- Landscape orientation for better table fit
+- Blue gradient header styling
+- Auto-sized columns for optimal spacing
+- Page breaks handled automatically
+
+#### Service Layer Functions
+
+**`scadaService.ts`** provides:
+
+```typescript
+// Data fetching
+fetchSubstations(filters?: SubstationFilters): Promise<Substation[]>
+getVoltageLevels(): Promise<string[]>
+getRegions(): Promise<string[]>
+
+// CRUD operations
+createSubstation(input: CreateSubstationInput, userId: string): Promise<Substation>
+updateSubstation(input: UpdateSubstationInput, userId: string): Promise<Substation>
+deleteSubstation(substationId: string): Promise<void>
+
+// Validation & Dependencies
+validateHKCoordinates(lat: number, lng: number): { valid: boolean; message?: string }
+checkSubstationDependencies(substationId: string): Promise<{
+  hasMeters: boolean;
+  haEvents: boolean;
+  meterCount: number;
+  eventCount: number;
+}>
+getSubstationStatistics(): Promise<{
+  total: number;
+  operational: number;
+  maintenance: number;
+  offline: number;
+}>
+```
+
+**Key Features**:
+- **Geographic Validation**: `HK_BOUNDS` constant enforces Hong Kong territory limits
+- **Duplicate Prevention**: Checks for existing codes before creation/update
+- **Audit Tracking**: Automatically records `updated_by` and `updated_at`
+- **Dependency Safety**: Prevents orphaned relationships with meters and events
+- **Error Handling**: Descriptive error messages for all failure scenarios
+
+#### Database Schema
+
+**Table**: `substations`
+
+```sql
+CREATE TABLE substations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  voltage_level TEXT NOT NULL,
+  latitude NUMERIC(10, 6) NOT NULL,
+  longitude NUMERIC(10, 6) NOT NULL,
+  region TEXT NOT NULL,
+  status TEXT DEFAULT 'operational',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_by UUID REFERENCES profiles(id)
+);
+```
+
+**Constraints**:
+- `code` must be unique (enforced at database level)
+- `latitude` and `longitude` numeric precision: 6 decimal places
+- `updated_at` automatically updated via trigger
+- `updated_by` foreign key to `profiles` table
+
+**Indexes**:
+- Primary key on `id`
+- Unique index on `code`
+- Index on `voltage_level` for filter performance
+- Index on `region` for filter performance
+
+#### Migration Scripts
+
+**Migration**: `20260105000000_add_substation_audit_fields.sql`
+- Adds `updated_at` (TIMESTAMPTZ) column
+- Adds `updated_by` (UUID FK) column
+- Creates trigger for automatic `updated_at` updates
+
+**Backfill**: `backfill-substation-audit-fields.sql`
+- Populates `updated_at` from `created_at` or NOW()
+- Randomly assigns `updated_by` from existing users
+- Includes verification query
+
+#### Permission Configuration
+
+**Module Name**: `scada`
+
+**Permissions by Role**:
+- **System Admin**: Full CRUD (Create, Read, Update, Delete)
+- **System Owner**: Full CRUD
+- **Manual Implementator**: CRU only (no Delete)
+- **Watcher**: Read-only
+
+**Configuration** in `userManagementService.ts`:
+```typescript
+systemModules.push({
+  id: 'scada',
+  name: 'SCADA',
+  category: 'data-maintenance',
+  description: 'Substation master data management'
+});
+
+noDeleteModules.push('scada'); // Manual Implementator cannot delete
+```
+
+#### UI Components
+
+**Component Structure**:
+```
+/src/components/
+├── SCADA.tsx                    # Main component with table and filters
+└── SCADA/
+    └── SubstationFormModal.tsx  # Create/Edit form modal
+```
+
+**Styling**:
+- Gradient header with blue theme
+- Color-coded status badges (green/yellow/red)
+- Hover effects on table rows
+- Loading spinners during async operations
+- Modal overlay with backdrop blur
+
+#### Best Practices Followed
+
+1. **Type Safety**: Full TypeScript types for all data structures
+2. **Error Handling**: Try-catch blocks with user-friendly messages
+3. **Loading States**: Spinners during data fetching/saving
+4. **Validation**: Client-side + server-side validation
+5. **Accessibility**: Proper labels, titles, and keyboard navigation
+6. **Performance**: Filtered data computed only when needed
+7. **Consistency**: Follows existing PQMAP design patterns
+
+#### Future Enhancements
+
+- **Map View**: Interactive map showing substation locations
+- **Import CSV**: Bulk upload substation data from CSV files
+- **Change History**: Audit log showing all modifications over time
+- **Advanced Search**: Search by coordinate ranges, multiple codes
+- **Integration**: Link to GIS systems for real-time location updates
+
+---
+
+### 11. System Health Module
 
 **Purpose**: Monitor system components and integrations
 

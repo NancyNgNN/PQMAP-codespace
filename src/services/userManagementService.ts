@@ -135,6 +135,7 @@ export const systemModules: SystemModule[] = [
   { id: 'services', name: 'PQ Services', description: 'Power quality services management', category: 'Services' },
   { id: 'health', name: 'System Health', description: 'System monitoring and health checks', category: 'Administration' },
   { id: 'customerTransformer', name: 'Customer Transformer', description: 'Customer-transformer matching', category: 'Data Maintenance' },
+  { id: 'scada', name: 'SCADA', description: 'Substation master data management', category: 'Data Maintenance' },
   { id: 'userManagement', name: 'User Management', description: 'User and role management', category: 'Administration' },
   { id: 'systemSettings', name: 'System Settings', description: 'System configuration and settings', category: 'Administration' }
 ];
@@ -162,7 +163,7 @@ export const defaultRolePermissions: Record<SystemRole, RolePermission[]> = {
   manual_implementator: systemModules.map((module, index) => {
     // Manual Implementator has all permissions except deletion and management functions
     const restrictedModules = ['userManagement', 'systemSettings'];
-    const noDeleteModules = ['events', 'assets', 'customerTransformer', 'services'];
+    const noDeleteModules = ['events', 'assets', 'customerTransformer', 'services', 'scada'];
     
     let permissions: PermissionAction[] = ['read'];
     

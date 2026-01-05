@@ -66,6 +66,9 @@ export interface Substation {
   region: string;
   status: SubstationStatus;
   created_at: string;
+  updated_at: string;
+  updated_by: string | null;
+  updated_by_profile?: Profile;
 }
 
 export interface PQMeter {
