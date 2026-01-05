@@ -1,7 +1,7 @@
 # PQMAP Styles Guide
 
-**Version:** 1.4  
-**Last Updated:** December 29, 2025  
+**Version:** 1.5  
+**Last Updated:** January 5, 2026  
 **Purpose:** Document reusable UI patterns, export/import utilities, and design standards for PQMAP application
 
 ---
@@ -18,6 +18,7 @@
 8. [Animation Standards](#animation-standards)
 9. [Modal Patterns](#modal-patterns)
 10. [Profile Edit Modal Patterns](#profile-edit-modal-patterns)
+11. [Adding New Features](#adding-new-features) ⭐ NEW
 
 ---
 
@@ -2913,5 +2914,301 @@ const datePresets = [
 
 ---
 
-**End of Styles Guide**
+## Adding New Features
 
+### ⚠️ Critical Checklist for New Features
+
+When adding any new functional module, component, or major feature to PQMAP, follow this comprehensive checklist to ensure proper integration with all systems.
+
+---
+
+### 1. **User Management & Permissions** ⭐ MUST DO
+
+**Why**: Every new feature needs proper access control to maintain security and user experience.
+
+**Steps**:
+
+1. **Add Module to Permission System**  
+   📁 File: `src/services/userManagementService.ts`
+   
+   ```typescript
+   // Add to systemModules array
+   export const systemModules: SystemModule[] = [
+     // ... existing modules
+     { 
+       id: 'yourNewModule',              // Unique ID (camelCase)
+       name: 'Your New Module',          // Display name
+       description: 'Brief description', // What it does
+       category: 'Core'                  // See categories below
+     }
+   ];
+   ```
+
+2. **Choose Appropriate Category**:
+   - `Core` - Essential system functions (dashboards, events, assets)
+   - `Analytics` - Analysis and reporting features
+   - `Reporting` - Report generation
+   - `Services` - External integrations
+   - `Administration` - System management
+   - `Data Maintenance` - Data configuration tools
+
+3. **Set Default Permissions** (Optional - auto-generated if not specified):
+   ```typescript
+   // Manual Implementator example - restrict certain actions
+   manual_implementator: systemModules.map((module, index) => {
+     // Add your module to restriction lists if needed
+     const restrictedModules = ['userManagement', 'systemSettings', 'yourNewModule'];
+     const noDeleteModules = ['events', 'assets', 'yourNewModule'];
+     
+     let permissions: PermissionAction[] = ['read'];
+     
+     if (restrictedModules.includes(module.id)) {
+       permissions = ['read'];  // Read-only
+     } else if (noDeleteModules.includes(module.id)) {
+       permissions = ['create', 'read', 'update'];  // No delete
+     } else {
+       permissions = ['create', 'read', 'update', 'delete'];  // Full access
+     }
+     
+     return { ...permission_object, permissions };
+   })
+   ```
+
+4. **Default Permissions by Role** (if not customized):
+   - `system_admin`: Create, Read, Update, Delete
+   - `system_owner`: Create, Read, Update, Delete
+   - `manual_implementator`: Create, Read, Update (no Delete)
+   - `watcher`: Read only
+
+---
+
+### 2. Navigation Integration
+
+**Add to Sidebar**:  
+📁 File: `src/components/Navigation.tsx`
+
+```typescript
+// For main navigation
+const menuItems = [
+  // ... existing items
+  { id: 'yourNewModule', icon: YourIcon, label: 'Your Module' }
+];
+
+// OR for Data Maintenance section
+const dataMaintenanceItems = [
+  { id: 'userManagement', icon: Users, label: 'User Management' },
+  { id: 'yourNewModule', icon: YourIcon, label: 'Your Module' },
+  // ... other items
+];
+```
+
+**Add Route**:  
+📁 File: `src/App.tsx`
+
+```typescript
+import YourNewModule from './components/YourNewModule';
+
+// In AppContent component
+{currentView === 'yourNewModule' && <YourNewModule />}
+```
+
+---
+
+### 3. Database Schema (if needed)
+
+**Create Migration**:  
+📁 Location: `supabase/migrations/`
+
+```sql
+-- Example: 20260105000000_create_your_table.sql
+CREATE TABLE your_table (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  -- your fields
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Row Level Security
+ALTER TABLE your_table ENABLE ROW LEVEL SECURITY;
+
+-- Policies (example)
+CREATE POLICY "Users can view their own data"
+  ON your_table FOR SELECT
+  USING (auth.uid() = user_id);
+```
+
+**Update Types**:  
+📁 File: `src/types/database.ts`
+
+```typescript
+export interface YourNewInterface {
+  id: string;
+  // your fields
+  created_at: string;
+  updated_at: string;
+}
+```
+
+---
+
+### 4. Service Layer (Recommended)
+
+**Create Service File**:  
+📁 File: `src/services/yourModuleService.ts`
+
+```typescript
+import { supabase } from '../lib/supabase';
+import type { YourNewInterface } from '../types/database';
+
+export async function fetchYourData(): Promise<YourNewInterface[]> {
+  const { data, error } = await supabase
+    .from('your_table')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createYourData(input: Partial<YourNewInterface>): Promise<YourNewInterface> {
+  const { data, error } = await supabase
+    .from('your_table')
+    .insert(input)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// ... more CRUD functions
+```
+
+---
+
+### 5. Export/Import (if applicable)
+
+**Follow Standard Patterns**:
+
+- **Export**: Add Excel/CSV/PDF export using `exportService.ts`
+- **Import**: Implement 4-component import pattern (see [Import Functionality](#import-functionality))
+  - Import button with dropdown
+  - Template download function
+  - CSV validation
+  - Results modal
+
+---
+
+### 6. Documentation Updates
+
+**Required Files**:
+
+1. **PROJECT_FUNCTION_DESIGN.md**  
+   📁 `Artifacts/PROJECT_FUNCTION_DESIGN.md`
+   
+   Add new section under "Core Functional Modules":
+   ```markdown
+   ### X. Your New Module ✨ NEW (Date)
+   
+   **Purpose**: Brief description
+   
+   **Location**: Navigation path
+   
+   #### Sub-Modules (if any)
+   
+   #### Key Features
+   
+   #### Data Structure
+   
+   #### Component Files
+   ```
+
+2. **STYLES_GUIDE.md** (if new UI patterns)  
+   📁 `Artifacts/STYLES_GUIDE.md`
+   
+   Document any new:
+   - Button patterns
+   - Modal designs
+   - Custom components
+   - Export/import implementations
+
+---
+
+### 7. Testing Checklist
+
+Before considering feature complete:
+
+- [ ] All TypeScript errors resolved
+- [ ] Component renders without errors
+- [ ] Navigation works from sidebar
+- [ ] Permissions enforced (test with different roles)
+- [ ] Export functions work (if applicable)
+- [ ] Import validation catches errors (if applicable)
+- [ ] Mobile responsive design verified
+- [ ] Loading states display properly
+- [ ] Error handling tested
+- [ ] Database queries optimized
+- [ ] RLS policies correct
+- [ ] Documentation updated
+
+---
+
+### Quick Reference: Files to Update
+
+| Task | Files to Modify |
+|------|----------------|
+| **Permissions** | `src/services/userManagementService.ts` |
+| **Navigation** | `src/components/Navigation.tsx`, `src/App.tsx` |
+| **Database** | `supabase/migrations/*.sql`, `src/types/database.ts` |
+| **Service** | `src/services/yourModuleService.ts` |
+| **Component** | `src/components/YourModule.tsx` |
+| **Documentation** | `Artifacts/PROJECT_FUNCTION_DESIGN.md`, `Artifacts/STYLES_GUIDE.md` |
+
+---
+
+### Common Pitfalls to Avoid
+
+1. ❌ **Forgetting permissions** - Every module needs permission configuration
+2. ❌ **Inconsistent naming** - Use camelCase for IDs, proper case for display names
+3. ❌ **Missing error handling** - Always handle API errors gracefully
+4. ❌ **No loading states** - Users need feedback during async operations
+5. ❌ **Skipping documentation** - Future developers (including you) need context
+6. ❌ **Not testing with different roles** - Permissions must work correctly
+7. ❌ **Breaking existing patterns** - Follow established UI/UX conventions
+8. ❌ **Ignoring mobile** - All features should be responsive
+
+---
+
+### Example: Complete Feature Addition
+
+**Scenario**: Adding a "Data Quality" module to monitor data integrity
+
+```typescript
+// 1. Add to userManagementService.ts
+{ 
+  id: 'dataQuality',
+  name: 'Data Quality',
+  description: 'Monitor data integrity and completeness',
+  category: 'Administration'
+}
+
+// 2. Add to Navigation.tsx
+{ id: 'dataQuality', icon: CheckCircle, label: 'Data Quality' }
+
+// 3. Add to App.tsx
+import DataQuality from './components/DataQuality';
+{currentView === 'dataQuality' && <DataQuality />}
+
+// 4. Create component: src/components/DataQuality.tsx
+// 5. Create service: src/services/dataQualityService.ts
+// 6. Update database.ts types
+// 7. Document in PROJECT_FUNCTION_DESIGN.md
+```
+
+---
+
+**Remember**: This checklist ensures consistency, maintainability, and proper integration with PQMAP's permission system. Following these steps prevents technical debt and makes the codebase easier to understand and extend.
+
+---
+
+**End of Styles Guide**

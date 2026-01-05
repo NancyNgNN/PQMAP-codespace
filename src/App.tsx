@@ -11,6 +11,7 @@ import Notifications from './components/Notifications';
 import PQServices from './components/PQServices';
 import SystemHealth from './components/SystemHealth';
 import CustomerTransformerMatching from './components/CustomerTransformerMatching';
+import UserManagement from './components/UserManagement';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -56,6 +57,7 @@ function AppContent() {
         {currentView === 'notifications' && <Notifications />}
         {currentView === 'services' && <PQServices />}
         {currentView === 'health' && <SystemHealth />}
+        {currentView === 'userManagement' && <UserManagement />}
         {currentView === 'customerTransformerMatching' && <CustomerTransformerMatching />}
       </main>
     </div>

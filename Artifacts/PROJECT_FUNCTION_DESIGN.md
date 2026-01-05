@@ -896,7 +896,288 @@ scripts/backfill_customer_impacts.sql
 
 ---
 
-### 9. System Health Module
+### 9. User Management Module ✨ NEW (Jan 5, 2026)
+
+**Purpose**: Manage user access and role-based permissions for PQMAP system
+
+**Location**: Data Maintenance → User Management (above Customer Transformer)
+
+**UAM Integration**: User data is synchronized from organization's UAM (User Access Management) system. User accounts and role assignments are managed externally; PQMAP manages permissions for each role.
+
+#### Sub-Modules
+
+##### 1. Users Tab (Read-Only)
+**Purpose**: View user list synchronized from UAM system
+
+**Features**:
+- **UAM Integration Badge**: Visual indicator showing data source is external
+- **Search & Filter**: 
+  - Text search: Name, User ID, Email, Description
+  - Role filter: All Roles / System Admin / System Owner / Manual Implementator / Watcher
+  - Department filter: All Departments / Digital Engineering / Power Systems / Technical Services-PSBG / Business Success
+- **Table Columns**: User ID, Name, Role (color-coded badge), Department, Description, Email, Status (Active/Inactive)
+- **Data Refresh**: Automatic synchronization with UAM system
+
+**Data Structure**:
+```typescript
+interface UAMUser {
+  id: string;
+  user_id: string;              // UAM user identifier (e.g., SA001)
+  name: string;                 // Full name
+  description: string | null;   // Role description
+  department: string;           // Department name
+  role: SystemRole;             // system_admin | system_owner | manual_implementator | watcher
+  email: string;
+  active: boolean;              // Account status
+  created_at: string;
+  updated_at: string;
+}
+```
+
+##### 2. Roles & Permissions Tab
+**Purpose**: Configure permissions for each system role
+
+**Features**:
+1. **Role Cards**: Visual display of 4 system roles with permission summaries
+2. **Permission Editor**: Interactive checkbox interface for CRUD permissions
+3. **Permission Details Modal**: Complete permission breakdown by module
+4. **Reset to Default**: Restore role permissions to system defaults
+5. **Save Workflow**: Confirmation and success feedback
+
+**System Roles**:
+```typescript
+type SystemRole = 'system_admin' | 'system_owner' | 'manual_implementator' | 'watcher';
+
+// Role Definitions:
+{
+  system_admin: {
+    name: 'System Admin',
+    description: 'Super users to access all functions',
+    color: 'text-red-600 bg-red-50 border-red-200',
+    defaultPermissions: 'All modules: Create, Read, Update, Delete'
+  },
+  system_owner: {
+    name: 'System Owner',
+    description: 'Adopt same permission as System Admin first',
+    color: 'text-purple-600 bg-purple-50 border-purple-200',
+    defaultPermissions: 'All modules: Create, Read, Update, Delete'
+  },
+  manual_implementator: {
+    name: 'Manual Implementator',
+    description: 'All functions except events deletion, managing users, and system settings',
+    color: 'text-blue-600 bg-blue-50 border-blue-200',
+    defaultPermissions: {
+      'userManagement': ['Read'],
+      'systemSettings': ['Read'],
+      'events, assets, customerTransformer, services': ['Create', 'Read', 'Update'],
+      'other modules': ['Create', 'Read', 'Update', 'Delete']
+    }
+  },
+  watcher: {
+    name: 'Watcher',
+    description: 'View only for all functions',
+    color: 'text-green-600 bg-green-50 border-green-200',
+    defaultPermissions: 'All modules: Read only'
+  }
+}
+```
+
+**Permission Structure**:
+```typescript
+interface RolePermission {
+  id: string;
+  role: SystemRole;
+  module: string;               // Module ID (e.g., 'dashboard', 'events', 'assets')
+  permissions: PermissionAction[];  // ['create', 'read', 'update', 'delete']
+  description: string | null;
+  updated_at: string;
+}
+
+type PermissionAction = 'create' | 'read' | 'update' | 'delete';
+```
+
+**System Modules** (Current - Jan 2026):
+```typescript
+interface SystemModule {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
+// Categories:
+// - Core: Dashboard, Event Management, Impact Analysis, Asset Management, Notifications
+// - Analytics: Advanced analytics and reporting
+// - Reporting: Report generation and viewing
+// - Services: PQ Services management
+// - Administration: System Health, User Management, System Settings
+// - Data Maintenance: Customer Transformer, future data management modules
+```
+
+**Current Modules List**:
+1. **Core**
+   - Dashboard - System overview and statistics
+   - Event Management - PQ events monitoring and management
+   - Impact Analysis - Event impact and analytics
+   - Asset Management - Meters, substations, and equipment
+   - Notifications - Notification rules and history
+
+2. **Reporting**
+   - Reports - Report generation and viewing
+
+3. **Services**
+   - PQ Services - Power quality services management
+
+4. **Administration**
+   - System Health - System monitoring and health checks
+   - User Management - User and role management
+   - System Settings - System configuration and settings
+
+5. **Data Maintenance**
+   - Customer Transformer - Customer-transformer matching
+
+#### Permission Management Workflow
+
+**View Permissions**:
+1. Click "View Details" button on role card
+2. Modal displays complete permission matrix
+3. Organized by category with color-coded actions:
+   - Create: Green
+   - Read: Blue
+   - Update: Amber
+   - Delete: Red
+4. Icons show allowed (✓) or not allowed (−)
+
+**Edit Permissions**:
+1. Click "Edit Permissions" button on role card
+2. Role card expands with checkbox interface
+3. Modules grouped by category (Core, Analytics, Reporting, etc.)
+4. Each module shows 4 checkboxes: Create, Read, Update, Delete
+5. Toggle permissions by clicking checkboxes
+6. "Save Changes" commits to storage
+7. "Cancel" reverts changes
+
+**Reset Permissions**:
+1. Click "Reset to Default" button
+2. Confirmation dialog prevents accidental reset
+3. Restores role permissions to system defaults
+
+#### Key Features
+
+##### Permission Storage
+- In-memory storage with mock functions (production: database table `role_permissions`)
+- Automatic initialization with default permissions
+- Modification tracking with `updated_at` timestamps
+
+##### UI/UX Patterns
+- Color-coded role badges for quick identification
+- External system indicator for UAM integration
+- Success notifications after permission changes
+- Loading states during data fetch
+- Error handling with retry functionality
+
+##### Data Services
+**Service File**: `src/services/userManagementService.ts`
+
+**Key Functions**:
+- `fetchUAMUsers()` - Get all users from UAM system
+- `fetchRolePermissions(role)` - Get permissions for specific role
+- `fetchAllRoles()` - Get all roles with permissions
+- `updateRolePermission(role, moduleId, permissions)` - Update module permissions
+- `resetRolePermissions(role)` - Reset to default permissions
+- `getRoleInfo(role)` - Get role display information
+- `getModuleById(moduleId)` - Get module details
+
+##### Component Structure
+```
+src/components/
+  ├─ UserManagement.tsx                    # Main component with tabs
+  └─ UserManagement/
+       ├─ UserListTab.tsx                  # Users table with search/filter
+       ├─ RoleManagementTab.tsx            # Role cards and permission editor
+       └─ PermissionDetailsModal.tsx       # Permission matrix modal
+```
+
+#### Adding New Modules to Permission System
+
+⚠️ **IMPORTANT**: When adding new functional modules to PQMAP, you MUST update the permission system.
+
+**Required Steps**:
+1. **Add Module Definition** in `src/services/userManagementService.ts`:
+   ```typescript
+   // Update systemModules array
+   export const systemModules: SystemModule[] = [
+     // ... existing modules
+     { 
+       id: 'newModuleName',              // Unique ID (camelCase)
+       name: 'New Module Display Name',  // User-facing name
+       description: 'Brief description of module functionality',
+       category: 'Core'                  // Core | Analytics | Reporting | Services | Administration | Data Maintenance
+     }
+   ];
+   ```
+
+2. **Default Permissions Auto-Generated**: The system automatically creates permissions for new modules when added to `systemModules` array. Default permissions are:
+   - `system_admin`: Full CRUD access
+   - `system_owner`: Full CRUD access
+   - `manual_implementator`: Create, Read, Update (no Delete) - adjust if needed
+   - `watcher`: Read only
+
+3. **Customize Permissions** (if needed):
+   Edit the `defaultRolePermissions` logic in `userManagementService.ts`:
+   ```typescript
+   manual_implementator: systemModules.map((module, index) => {
+     // Add your module to restricted lists if needed
+     const restrictedModules = ['userManagement', 'systemSettings', 'newModuleName'];
+     const noDeleteModules = ['events', 'assets', 'customerTransformer', 'services', 'newModuleName'];
+     
+     // Custom permission logic here...
+   })
+   ```
+
+4. **Update Navigation**: Add to `Navigation.tsx` if creating sidebar entry
+
+5. **Document in PROJECT_FUNCTION_DESIGN.md**: Add module section following existing pattern
+
+**Module Categories Guide**:
+- **Core**: Essential system functions (dashboards, events, assets, notifications)
+- **Analytics**: Advanced analysis and reporting features
+- **Reporting**: Report generation and viewing
+- **Services**: External services and integrations
+- **Administration**: System configuration and management
+- **Data Maintenance**: Data management and configuration tools
+
+**Example: Adding "Data Import" Module**:
+```typescript
+// 1. Add to systemModules in userManagementService.ts
+{ 
+  id: 'dataImport',
+  name: 'Data Import',
+  description: 'Bulk data import and validation',
+  category: 'Data Maintenance'
+}
+
+// 2. (Optional) Restrict for manual_implementator
+const restrictedModules = ['userManagement', 'systemSettings', 'dataImport'];
+
+// 3. Add navigation entry in Navigation.tsx
+{ id: 'dataImport', icon: Upload, label: 'Data Import' }
+
+// 4. Create component: src/components/DataImport.tsx
+
+// 5. Add route in App.tsx
+{currentView === 'dataImport' && <DataImport />}
+```
+
+#### Integration Notes
+- **UAM Synchronization**: Placeholder for production UAM API integration
+- **Mock Data**: 10 sample users with realistic departments and roles
+- **Production API**: Replace `fetchUAMUsers()` with actual UAM REST/GraphQL endpoint
+- **Permission Storage**: Currently in-memory; migrate to `role_permissions` table for production
+
+---
+
+### 10. System Health Module
 
 **Purpose**: Monitor system components and integrations
 

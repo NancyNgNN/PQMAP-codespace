@@ -13,6 +13,39 @@ export type ReportStatus = 'generating' | 'completed' | 'failed';
 export type SystemStatus = 'healthy' | 'degraded' | 'down';
 export type LoadType = 'DC' | 'EV' | 'others' | 'RE-PV' | 'RES' | 'RES-HRB' | 'RES-NOC';
 
+// UAM (User Access Management) Types
+export type SystemRole = 'system_admin' | 'system_owner' | 'manual_implementator' | 'watcher';
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete';
+
+export interface UAMUser {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  department: string;
+  role: SystemRole;
+  email: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RolePermission {
+  id: string;
+  role: SystemRole;
+  module: string;
+  permissions: PermissionAction[];
+  description: string | null;
+  updated_at: string;
+}
+
+export interface SystemModule {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
 export interface Profile {
   id: string;
   email: string;

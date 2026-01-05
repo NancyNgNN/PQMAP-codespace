@@ -1,4 +1,4 @@
-import { LayoutDashboard, Activity, Database as DatabaseIcon, FileText, Bell, Settings, LogOut, BarChart3, Wrench, Database, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Activity, Database as DatabaseIcon, FileText, Bell, Settings, LogOut, BarChart3, Wrench, Database, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface NavigationProps {
@@ -23,6 +23,7 @@ export default function Navigation({ currentView, onViewChange, collapsed, onTog
   ];
 
   const dataMaintenanceItems = [
+    { id: 'userManagement', icon: Users, label: 'User Management' },
     { id: 'customerTransformerMatching', icon: Database, label: 'Customer Transformer' },
   ];
 
