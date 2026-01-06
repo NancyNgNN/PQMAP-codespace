@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Plus, Edit2, Trash2, Download, Upload, X, Check } from 'lucide-react';
+import { Database, Plus, Edit2, Trash2, Download, Upload, X, Check, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
@@ -13,7 +13,7 @@ import {
 import type { CustomerTransformerMatching, Substation, Customer } from '../types/database';
 
 export default function CustomerTransformerMatching() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   
   // Data state
   const [mappings, setMappings] = useState<CustomerTransformerMatching[]>([]);
@@ -32,12 +32,20 @@ export default function CustomerTransformerMatching() {
   const [showModal, setShowModal] = useState(false);
   const [editingMapping, setEditingMapping] = useState<CustomerTransformerMatching | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
     customer_id: '',
     substation_id: '',
     circuit_id: ''
+  });
+
+  // Customer form state
+  const [customerFormData, setCustomerFormData] = useState({
+    name: '',
+    account_number: ''
   });
 
   // Load initial data
@@ -181,6 +189,65 @@ export default function CustomerTransformerMatching() {
     }
   }
 
+  // Permission check helper
+  function canAddCustomer() {
+    // All users except watcher can add customers
+    return profile?.role !== 'watcher';
+  }
+
+  // Handle customer modal
+  function handleOpenCustomerModal() {
+    setCustomerFormData({
+      name: '',
+      account_number: ''
+    });
+    setShowCustomerModal(true);
+  }
+
+  function handleCloseCustomerModal() {
+    setShowCustomerModal(false);
+    setCustomerFormData({
+      name: '',
+      account_number: ''
+    });
+  }
+
+  // Handle customer creation
+  async function handleCreateCustomer(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || !canAddCustomer()) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .insert({
+          name: customerFormData.name,
+          account_number: customerFormData.account_number,
+          customer_type: 'residential', // Default value
+          critical_customer: false // Default value
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Reload customers list
+      const { data: customersData } = await supabase
+        .from('customers')
+        .select('*');
+      if (customersData) setCustomers(customersData);
+
+      // Show success message
+      setSuccessMessage(`Customer "${customerFormData.name}" created successfully!`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+
+      handleCloseCustomerModal();
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      alert('Failed to create customer. Please check console for details.');
+    }
+  }
+
   function handleExportToExcel() {
     // Convert mappings to CSV format
     const headers = ['Customer Account', 'Customer Name', 'Substation Code', 'Circuit ID', 'Active', 'Updated At', 'Updated By'];
@@ -247,6 +314,15 @@ export default function CustomerTransformerMatching() {
               <Upload className="w-4 h-4" />
               Bulk Import
             </button>
+            {canAddCustomer() && (
+              <button
+                onClick={handleOpenCustomerModal}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                <UserPlus className="w-4 h-4" />
+                Add Customer
+              </button>
+            )}
             <button
               onClick={() => handleOpenModal()}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -256,6 +332,14 @@ export default function CustomerTransformerMatching() {
             </button>
           </div>
         </div>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+            <Check className="w-5 h-5 text-green-600" />
+            <span className="text-green-800">{successMessage}</span>
+          </div>
+        )}
 
         {/* Statistics */}
         {statistics && (
@@ -579,6 +663,75 @@ export default function CustomerTransformerMatching() {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Customer Modal */}
+      {showCustomerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Add New Customer</h2>
+              <button
+                onClick={handleCloseCustomerModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCustomer} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Customer Name *
+                </label>
+                <input
+                  type="text"
+                  value={customerFormData.name}
+                  onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
+                  placeholder="Enter customer name"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Account Number *
+                </label>
+                <input
+                  type="text"
+                  value={customerFormData.account_number}
+                  onChange={(e) => setCustomerFormData({ ...customerFormData, account_number: e.target.value })}
+                  placeholder="Enter account number"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> Customer type defaults to "Residential" and critical customer to "No". These can be updated later if needed.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCloseCustomerModal}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
+                  Create Customer
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
