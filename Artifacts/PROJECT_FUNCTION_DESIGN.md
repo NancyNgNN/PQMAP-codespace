@@ -1,7 +1,7 @@
 # PQMAP - Project Function Design Document
 
-**Document Version:** 1.4  
-**Last Updated:** December 29, 2025  
+**Document Version:** 1.5  
+**Last Updated:** January 5, 2026  
 **Purpose:** Comprehensive functional design reference for continuous development
 
 ---
@@ -11,6 +11,17 @@
 1. [System Overview](#system-overview)
 2. [Architecture & Tech Stack](#architecture--tech-stack)
 3. [Core Functional Modules](#core-functional-modules)
+   - [1. Dashboard Module](#1-dashboard-module)
+   - [2. Event Management Module](#2-event-management-module)
+   - [3. Data Analytics Module](#3-data-analytics-module)
+   - [4. Asset Management Module](#4-asset-management-module)
+   - [5. Reporting Module](#5-reporting-module)
+   - [6. Notification System](#6-notification-system)
+   - [7. PQ Services Module](#7-pq-services-module)
+   - [8. Data Maintenance Module](#8-data-maintenance-module)
+   - [9. User Management Module](#9-user-management-module) ✨ NEW
+   - [10. SCADA Substation Management](#10-scada-substation-management-module) ✨ NEW
+   - [11. System Health Module](#11-system-health-module)
 4. [Data Models & Database Schema](#data-models--database-schema)
 5. [Key Design Patterns](#key-design-patterns)
 6. [Integration Points](#integration-points)

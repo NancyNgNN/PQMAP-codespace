@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { PQMeter, Substation, PQEvent, EventType, EventStatus, PQServiceRecord, RealtimePQData } from '../types/database';
-import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, BarChart3, Clock, Calendar, Settings2, Zap, AlertCircle, Wrench, Radio } from 'lucide-react';
+import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, BarChart3, Clock, Calendar, Settings2, Zap, AlertCircle, Wrench, Radio, Network } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import TreeViewModal from './MeterHierarchy/TreeViewModal';
 
 interface FilterState {
   status: string;
@@ -64,6 +65,9 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
   // Export states
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Tree view state
+  const [showTreeModal, setShowTreeModal] = useState(false);
   
   // Sort states
   const [sortField, setSortField] = useState<string>('meter_id');
@@ -830,6 +834,16 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
           </div>
           
           <div className="flex items-center gap-2">
+            {/* Tree View Button */}
+            <button
+              onClick={() => setShowTreeModal(true)}
+              className="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-all flex items-center gap-2"
+              title="View Meter Hierarchy Tree"
+            >
+              <Network className="w-5 h-5" />
+              <span className="text-sm font-medium">Tree View</span>
+            </button>
+            
             {/* Export Button */}
             <div className="relative export-dropdown-container">
               <button
@@ -2259,6 +2273,14 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
         </div>
       )}
 
+      {/* Tree View Modal */}
+      {showTreeModal && (
+        <TreeViewModal
+          meters={meters}
+          onClose={() => setShowTreeModal(false)}
+        />
+      )}
+
       {/* Availability Report Modal */}
       {showAvailabilityReport && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -2661,6 +2683,14 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
             </div>
           </div>
         </div>
+      )}
+
+      {/* Tree View Modal */}
+      {showTreeModal && (
+        <TreeViewModal
+          meters={meters}
+          onClose={() => setShowTreeModal(false)}
+        />
       )}
     </div>
   );

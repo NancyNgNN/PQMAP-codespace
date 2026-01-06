@@ -13,6 +13,7 @@ import SystemHealth from './components/SystemHealth';
 import CustomerTransformerMatching from './components/CustomerTransformerMatching';
 import UserManagement from './components/UserManagement';
 import SCADA from './components/SCADA';
+import MeterHierarchy from './components/MeterHierarchy';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -60,6 +61,7 @@ function AppContent() {
         {currentView === 'health' && <SystemHealth />}
         {currentView === 'userManagement' && <UserManagement />}
         {currentView === 'scada' && <SCADA />}
+        {currentView === 'meterHierarchy' && <MeterHierarchy />}
         {currentView === 'customerTransformerMatching' && <CustomerTransformerMatching />}
       </main>
     </div>

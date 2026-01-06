@@ -103,6 +103,7 @@ export interface PQMeter {
   ss400?: string | null;
   ss132?: string | null;
   ss011?: string | null;
+  ss_misc?: string | null;
   // Load Type (Migration 20260102000000)
   load_type?: LoadType;
   substation?: Substation;
