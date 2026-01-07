@@ -14,6 +14,7 @@ import CustomerTransformerMatching from './components/CustomerTransformerMatchin
 import UserManagement from './components/UserManagement';
 import SCADA from './components/SCADA';
 import MeterHierarchy from './components/MeterHierarchy';
+import WeightingFactors from './pages/DataMaintenance/WeightingFactors';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -63,6 +64,7 @@ function AppContent() {
         {currentView === 'scada' && <SCADA />}
         {currentView === 'meterHierarchy' && <MeterHierarchy />}
         {currentView === 'customerTransformerMatching' && <CustomerTransformerMatching />}
+        {currentView === 'weightingFactors' && <WeightingFactors />}
       </main>
     </div>
   );

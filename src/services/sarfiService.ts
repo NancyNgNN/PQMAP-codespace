@@ -187,6 +187,267 @@ export async function deleteProfileWeight(weightId: string): Promise<void> {
 }
 
 /**
+ * Update customer count for a meter and recalculate all weight factors in the profile
+ */
+export async function updateCustomerCount(
+  weightId: string,
+  customerCount: number
+): Promise<void> {
+  // Update the customer count
+  const { data: updatedWeight, error: updateError } = await supabase
+    .from('sarfi_profile_weights')
+    .update({ customer_count: customerCount })
+    .eq('id', weightId)
+    .select('profile_id')
+    .single();
+
+  if (updateError) {
+    console.error('❌ Error updating customer count:', updateError);
+    throw updateError;
+  }
+
+  // Recalculate weight factors for entire profile
+  await recalculateWeightFactors(updatedWeight.profile_id);
+}
+
+/**
+ * Batch update customer counts and recalculate weight factors
+ */
+export async function batchUpdateCustomerCounts(
+  profileId: string,
+  updates: Array<{ meter_id: string; customer_count: number }>
+): Promise<{ success: number; failed: number; errors: any[] }> {
+  const errors: any[] = [];
+  let success = 0;
+  let failed = 0;
+
+  // Update each customer count
+  for (const update of updates) {
+    try {
+      const { error } = await supabase
+        .from('sarfi_profile_weights')
+        .update({ customer_count: update.customer_count })
+        .eq('profile_id', profileId)
+        .eq('meter_id', update.meter_id);
+
+      if (error) {
+        errors.push({ meter_id: update.meter_id, error: error.message });
+        failed++;
+      } else {
+        success++;
+      }
+    } catch (err: any) {
+      errors.push({ meter_id: update.meter_id, error: err.message });
+      failed++;
+    }
+  }
+
+  // Recalculate weight factors for entire profile
+  if (success > 0) {
+    await recalculateWeightFactors(profileId);
+  }
+
+  return { success, failed, errors };
+}
+
+/**
+ * Recalculate weight factors for all meters in a profile
+ * Formula: weight_factor = customer_count / SUM(all customer_counts)
+ */
+export async function recalculateWeightFactors(profileId: string): Promise<void> {
+  // Fetch all weights for the profile
+  const { data: weights, error: fetchError } = await supabase
+    .from('sarfi_profile_weights')
+    .select('id, customer_count')
+    .eq('profile_id', profileId);
+
+  if (fetchError) {
+    console.error('❌ Error fetching weights for recalculation:', fetchError);
+    throw fetchError;
+  }
+
+  if (!weights || weights.length === 0) {
+    console.warn('⚠️ No weights found for profile:', profileId);
+    return;
+  }
+
+  // Calculate total customer count
+  const totalCustomers = weights.reduce((sum, w) => sum + (w.customer_count || 0), 0);
+
+  if (totalCustomers === 0) {
+    console.warn('⚠️ Total customer count is 0, setting all weights to 0');
+    // Set all weights to 0
+    for (const weight of weights) {
+      await supabase
+        .from('sarfi_profile_weights')
+        .update({ weight_factor: 0 })
+        .eq('id', weight.id);
+    }
+    return;
+  }
+
+  // Update each weight factor
+  const updatePromises = weights.map(weight => {
+    const weightFactor = (weight.customer_count || 0) / totalCustomers;
+    return supabase
+      .from('sarfi_profile_weights')
+      .update({ weight_factor: weightFactor })
+      .eq('id', weight.id);
+  });
+
+  const results = await Promise.all(updatePromises);
+  const updateErrors = results.filter(r => r.error);
+
+  if (updateErrors.length > 0) {
+    console.error('❌ Error recalculating weight factors:', updateErrors);
+    throw new Error('Failed to recalculate some weight factors');
+  }
+
+  console.log(`✅ Recalculated weight factors for ${weights.length} meters`);
+}
+
+/**
+ * Add new meter to profile with customer count
+ */
+export async function addMeterToProfile(
+  profileId: string,
+  meterId: string,
+  customerCount: number,
+  notes?: string
+): Promise<SARFIProfileWeight> {
+  const { data, error } = await supabase
+    .from('sarfi_profile_weights')
+    .insert({
+      profile_id: profileId,
+      meter_id: meterId,
+      customer_count: customerCount,
+      weight_factor: 0, // Will be recalculated
+      notes: notes || null
+    })
+    .select(`
+      *,
+      meter:pq_meters(
+        id,
+        meter_id,
+        location
+      )
+    `)
+    .single();
+
+  if (error) {
+    console.error('❌ Error adding meter to profile:', error);
+    throw error;
+  }
+
+  // Recalculate weight factors
+  await recalculateWeightFactors(profileId);
+
+  return data;
+}
+
+/**
+ * Import weight factors from CSV data
+ */
+export async function importWeightFactorsCSV(
+  profileId: string,
+  csvData: Array<{ meter_id: string; customer_count: number }>
+): Promise<{ success: number; failed: number; errors: Array<{ row: number; meter_id: string; message: string }> }> {
+  const errors: Array<{ row: number; meter_id: string; message: string }> = [];
+  let success = 0;
+  let failed = 0;
+
+  // Validate that profile exists
+  const { data: profile, error: profileError } = await supabase
+    .from('sarfi_profiles')
+    .select('id')
+    .eq('id', profileId)
+    .single();
+
+  if (profileError || !profile) {
+    throw new Error('Profile not found');
+  }
+
+  // Fetch all PQ meters for validation
+  const { data: allMeters, error: metersError } = await supabase
+    .from('pq_meters')
+    .select('id, meter_id');
+
+  if (metersError) {
+    throw new Error('Failed to fetch meters for validation');
+  }
+
+  const meterIdToUuidMap = new Map(allMeters?.map(m => [m.meter_id, m.id]) || []);
+
+  // Process each row
+  for (let i = 0; i < csvData.length; i++) {
+    const row = csvData[i];
+    const rowNumber = i + 1;
+
+    try {
+      // Validate meter exists
+      const meterUuid = meterIdToUuidMap.get(row.meter_id);
+      if (!meterUuid) {
+        errors.push({
+          row: rowNumber,
+          meter_id: row.meter_id,
+          message: 'Meter not found in system'
+        });
+        failed++;
+        continue;
+      }
+
+      // Validate customer count
+      if (row.customer_count < 0 || !Number.isInteger(row.customer_count)) {
+        errors.push({
+          row: rowNumber,
+          meter_id: row.meter_id,
+          message: 'Customer count must be a non-negative integer'
+        });
+        failed++;
+        continue;
+      }
+
+      // Upsert the weight
+      const { error: upsertError } = await supabase
+        .from('sarfi_profile_weights')
+        .upsert({
+          profile_id: profileId,
+          meter_id: meterUuid,
+          customer_count: row.customer_count,
+          weight_factor: 0 // Will be recalculated
+        }, {
+          onConflict: 'profile_id,meter_id'
+        });
+
+      if (upsertError) {
+        errors.push({
+          row: rowNumber,
+          meter_id: row.meter_id,
+          message: upsertError.message
+        });
+        failed++;
+      } else {
+        success++;
+      }
+    } catch (err: any) {
+      errors.push({
+        row: rowNumber,
+        meter_id: row.meter_id,
+        message: err.message || 'Unknown error'
+      });
+      failed++;
+    }
+  }
+
+  // Recalculate weight factors if any succeeded
+  if (success > 0) {
+    await recalculateWeightFactors(profileId);
+  }
+
+  return { success, failed, errors };
+}
+
+/**
  * Fetch SARFI data with filters applied
  */
 export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SARFIDataPoint[]> {
@@ -279,6 +540,9 @@ export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SAR
   // Step 5: Group events by meter and calculate SARFI indices
   const meterMap = new Map<string, SARFIDataPoint>();
 
+  // Get customer count map from weights
+  const customerCountMap = new Map(weights.map(w => [w.meter_id, w.customer_count || 0]));
+
   // Initialize all meters from the profile
   meterIds.forEach(meterId => {
     const meterDetails = meterDetailsMap.get(meterId);
@@ -287,6 +551,7 @@ export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SAR
         meter_id: meterId,
         meter_no: meterDetails.meter_id,
         location: meterDetails.location,
+        customer_count: customerCountMap.get(meterId) || 0,
         sarfi_10: 0,
         sarfi_30: 0,
         sarfi_50: 0,

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Activity, Database as DatabaseIcon, FileText, Bell, Settings, LogOut, BarChart3, Wrench, Database, ChevronLeft, ChevronRight, Users, MapPin, Network } from 'lucide-react';
+import { LayoutDashboard, Activity, Database as DatabaseIcon, FileText, Bell, Settings, LogOut, BarChart3, Wrench, Database, ChevronLeft, ChevronRight, Users, MapPin, Network, Scale } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface NavigationProps {
@@ -27,6 +27,7 @@ export default function Navigation({ currentView, onViewChange, collapsed, onTog
     { id: 'scada', icon: MapPin, label: 'SCADA' },
     { id: 'meterHierarchy', icon: Network, label: 'Meter Hierarchy' },
     { id: 'customerTransformerMatching', icon: Database, label: 'Customer Transformer' },
+    { id: 'weightingFactors', icon: Scale, label: 'Weighting Factors' },
   ];
 
   return (

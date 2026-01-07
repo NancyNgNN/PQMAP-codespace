@@ -355,6 +355,7 @@ export interface SARFIProfileWeight {
   id: string;
   profile_id: string;
   meter_id: string;
+  customer_count: number;
   weight_factor: number;
   notes: string | null;
   created_at: string;
@@ -366,6 +367,7 @@ export interface SARFIDataPoint {
   meter_id: string;
   meter_no: string;
   location: string;
+  customer_count: number;
   sarfi_10: number;
   sarfi_30: number;
   sarfi_50: number;
