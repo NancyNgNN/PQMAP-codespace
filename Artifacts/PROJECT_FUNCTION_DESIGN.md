@@ -1,7 +1,7 @@
 # PQMAP - Project Function Design Document
 
 **Document Version:** 1.5  
-**Last Updated:** January 5, 2026  
+**Last Updated:** January 9, 2026  
 **Purpose:** Comprehensive functional design reference for continuous development
 
 ---
@@ -100,6 +100,47 @@ src/
 
 ### January 2026
 
+#### Harmonic Events Table (Jan 9, 2026)
+**Features Added:**
+- **Separate Table for Harmonic Measurements**
+  - Purpose: Store harmonic-specific parameters separate from main pq_events table
+  - Table: `harmonic_events` with 1:1 relationship to pq_events
+  - 12 Parameters per event:
+    - Current THD (Total Harmonic Distortion) for 3 phases (I1, I2, I3)
+    - Current TEHD (Total Even Harmonic Distortion) for 3 phases
+    - Current TOHD (Total Odd Harmonic Distortion) for 3 phases
+    - Current TDD (Total Demand Distortion) for 3 phases
+  - IEEE 519 Compliant: 10-minute averaging periods
+  - Phase Naming: I1/I2/I3 (I = current symbol)
+  
+- **Database Implementation**
+  - Migration: `20260109000000_create_harmonic_events.sql`
+  - Indexes: pqevent_id (FK), THD composite index
+  - RLS Policies: Authenticated users (view), Operators/Admins (manage)
+  - Constraints: UNIQUE(pqevent_id), CASCADE DELETE
+  
+- **Backfill Script**
+  - File: `scripts/backfill-harmonic-events.sql`
+  - Generates realistic values based on pq_events.magnitude
+  - THD distribution: Base magnitude ± variation
+  - TEHD/TOHD: 15%/85% split (even/odd harmonics)
+  - TDD: ~90% of THD
+  - Phase variations simulate real 3-phase systems
+  
+- **TypeScript Integration**
+  - Interface: `HarmonicEvent` with all 12 parameters
+  - Extended `PQEvent` with optional `harmonic_event` field
+  - Proper type casting: `number | null`
+  
+- **Documentation**
+  - Implementation Guide: `scripts/HARMONIC_EVENTS_IMPLEMENTATION.md`
+  - Database Schema updated with harmonic_events details
+  - Roadmap updated with future voltage THD enhancement
+
+**Future Enhancement (Q3-Q4 2026):**
+- Voltage Harmonic Measurements (V1/V2/V3 THD/TEHD/TOHD/TDD)
+- Pending verification of PQMS/CPDIS voltage harmonic data availability
+
 #### Data Maintenance Module (Jan 7, 2026)
 **Features Added:**
 - **Weighting Factors Management**
@@ -151,6 +192,72 @@ src/
    - Updates NULL `area` values: YUE, LME, TSE, TPE, CPK
    - Updates NULL `region` values: WE, NR, CN
    - Random assignment for existing data (real data from actual assignments)
+
+#### Meter Hierarchy Fix (Jan 9, 2026)
+**Issue Fixed:** Incorrect transformer code hierarchy causing orphan meters in tree view
+
+**Root Cause:**
+- 380V meters appearing at root level due to missing SS011 codes
+- 132kV meters incorrectly configured with SS400 (should only have SS132)
+
+**Correct Hierarchy Structure:**
+```
+400kV → SS400 only (standalone, no children)
+  
+132kV → SS132 only (root of SS132 groups)
+  ├── 11kV → SS132 + SS011 (child matched by SS132)
+  │   └── 380V → SS011 only (grandchild matched by SS011)
+```
+
+**Transformer Code Rules:**
+| Voltage Level | SS400 | SS132 | SS011 | Notes |
+|---------------|-------|-------|-------|-------|
+| 400kV | {area}400 | NULL | NULL | Standalone meters |
+| 132kV | NULL | {area}132 | NULL | Root of hierarchy groups |
+| 11kV | NULL | {area}132 | {area}011 | Grouped under 132kV by SS132 |
+| 380V | NULL | NULL | {area}011 | Nested under 11kV by SS011 |
+
+**Example:** CPK area
+- 400kV: ss400='CPK400' (standalone)
+- 132kV: ss132='CPK132' (root)
+- 11kV: ss132='CPK132', ss011='CPK011' (child of CPK132)
+- 380V: ss011='CPK011' (grandchild via CPK011)
+
+**Database Changes:**
+- Script: `scripts/backfill-meter-hierarchy.sql`
+  - Extracts area from meter_id for missing values
+  - Updates transformer codes based on voltage level
+  - Creates backup table: `pq_meters_backup_hierarchy_20260109`
+  - Verification queries included
+
+- Script: `scripts/check-meter-hierarchy.sql`
+  - Diagnostic queries for missing/incorrect codes
+  - Hierarchy violation detection
+  - Summary statistics
+
+**Code Changes:**
+- Service: `src/services/meterHierarchyService.ts`
+  - Updated `checkMeterHierarchy()` validation rules
+  - Changed tree building logic: group by SS132, not SS400
+  - Added `hasIncompleteHierarchy` flag to `MeterTreeNode`
+  - Orphan meters displayed in separate warning section
+
+**UI Improvements:**
+- Orphan section at bottom with ⚠️ warning icon
+- Shows meters needing transformer codes
+- Visual indicators for incomplete hierarchy
+- Proper voltage level ordering within SS132 groups
+
+**Validation:**
+- Prevents circular references in transformer codes
+- Enforces hierarchical requirements (e.g., SS011 requires SS132)
+- Auto-population helper: `autoPopulateFromMeterName()`
+
+**Documentation:**
+- Guide: `scripts/METER_HIERARCHY_FIX_GUIDE.md`
+- Includes 6-phase execution plan (30 minutes)
+- Rollback procedure if needed
+- Troubleshooting tips
 
 ---
 

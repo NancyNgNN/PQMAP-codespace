@@ -475,14 +475,12 @@ export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SAR
       id,
       meter_id,
       location,
-      voltage_level,
       substation_id,
       substations(voltage_level)
     `)
     .in('id', meterIds);
 
-  // Apply voltage level filter on pq_events.voltage_level column directly
-  // (We'll filter meters based on events that match the voltage level)
+  // Voltage level comes from substations table, not pq_events
   
   const { data: meters, error: meterError } = await meterQuery;
 
@@ -501,17 +499,14 @@ export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SAR
       remaining_voltage,
       duration_ms,
       meter_id,
-      voltage_level,
       is_special_event,
-      timestamp
+      timestamp,
+      substations!substation_id(voltage_level)
     `)
     .in('meter_id', meterIds)
     .eq('event_type', 'voltage_dip'); // Only voltage dips count for SARFI
 
-  // Filter by voltage level from pq_events table
-  if (filters.voltageLevel !== 'All') {
-    eventQuery = eventQuery.eq('voltage_level', filters.voltageLevel);
-  }
+  // Note: Voltage level filtering now done after fetching, using substation data
 
   // Exclude special events if requested
   if (filters.excludeSpecialEvents) {
@@ -525,6 +520,15 @@ export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SAR
     throw eventError;
   }
 
+  // Filter by voltage level if specified (done after fetch since voltage_level comes from substations join)
+  let filteredEvents = events || [];
+  if (filters.voltageLevel !== 'All') {
+    filteredEvents = filteredEvents.filter(event => {
+      const voltageLevel = (event.substations as any)?.voltage_level;
+      return voltageLevel === filters.voltageLevel;
+    });
+  }
+
   // Step 4: Create meter lookup map
   const meterDetailsMap = new Map(
     meters?.map(m => [
@@ -532,7 +536,7 @@ export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SAR
       {
         meter_id: m.meter_id,
         location: m.location,
-        voltage_level: m.voltage_level || (m.substations as any)?.voltage_level || 'Unknown'
+        voltage_level: (m.substations as any)?.voltage_level || 'Unknown'
       }
     ]) || []
   );
@@ -564,7 +568,7 @@ export async function fetchFilteredSARFIData(filters: SARFIFilters): Promise<SAR
   });
 
   // Process events and count SARFI thresholds
-  events?.forEach(event => {
+  filteredEvents.forEach(event => {
     if (!event.meter_id) return;
 
     const dataPoint = meterMap.get(event.meter_id);

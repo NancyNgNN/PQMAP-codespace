@@ -202,6 +202,7 @@ export interface PQEvent {
   substation?: Substation;
   meter?: PQMeter;
   customer_impacts?: EventCustomerImpact[];
+  harmonic_event?: HarmonicEvent; // Optional: populated for harmonic event types
 }
 
 export interface EventCustomerImpact {
@@ -213,6 +214,26 @@ export interface EventCustomerImpact {
   created_at: string;
   customer?: Customer;
   event?: PQEvent;
+}
+
+export interface HarmonicEvent {
+  id: string;
+  pqevent_id: string;
+  // Phase 1 (Current I1) Measurements
+  I1_THD_10m: number | null;
+  I1_TEHD_10m: number | null;
+  I1_TOHD_10m: number | null;
+  I1_TDD_10m: number | null;
+  // Phase 2 (Current I2) Measurements
+  I2_THD_10m: number | null;
+  I2_TEHD_10m: number | null;
+  I2_TOHD_10m: number | null;
+  I2_TDD_10m: number | null;
+  // Phase 3 (Current I3) Measurements
+  I3_THD_10m: number | null;
+  I3_TEHD_10m: number | null;
+  I3_TOHD_10m: number | null;
+  I3_TDD_10m: number | null;
 }
 
 export interface IDRRecord {

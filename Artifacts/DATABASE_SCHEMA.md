@@ -78,6 +78,25 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 - **Event Display**: Yellow card shows `customer_count` (estimate), blue card shows actual `event_customer_impact` records
 - **Data Consistency**: Customer names only appear after backfill creates detailed impact records
 
+### ✅ Applied Enhancement - Harmonic Events Table
+**Migration:** `20260109000000_create_harmonic_events.sql`  
+**Status:** ✅ **APPLIED**  
+**Date:** January 9, 2026  
+**Purpose:** Store harmonic-specific measurements separate from main pq_events table  
+**Features:**
+- New `harmonic_events` table with 1:1 relationship to pq_events
+- 12 harmonic parameters per event:
+  - Current THD (Total Harmonic Distortion) for 3 phases (I1, I2, I3)
+  - Current TEHD (Total Even Harmonic Distortion) for 3 phases
+  - Current TOHD (Total Odd Harmonic Distortion) for 3 phases
+  - Current TDD (Total Demand Distortion) for 3 phases
+- All measurements use 10-minute averaging period (IEEE 519 standard)
+- RLS policies matching pq_events access control
+- Performance indexes on pqevent_id and THD values
+- Backfill script available: `scripts/backfill-harmonic-events.sql`
+
+**Note:** Voltage harmonic measurements may be added in future based on PQMS data availability
+
 ### ✅ Applied Enhancement - Report Builder
 **Migration:** `20250101000000_create_saved_reports.sql`  
 **Status:** ✅ **APPLIED**  
@@ -442,7 +461,52 @@ Production substations with official codes and coordinates:
 
 ---
 
-### 8. `event_customer_impact`
+### 8. `harmonic_events` ✨ NEW (January 2026)
+**Purpose:** Harmonic-specific measurements for power quality events
+
+| Column | Type | Constraints | Description | Example |
+|--------|------|-------------|-------------|--------|
+| `id` | uuid | PRIMARY KEY | Unique identifier | `h1a2r3m4-o5n6-7890-icab-cd1234567890` |
+| `pqevent_id` | uuid | FK → pq_events ON DELETE CASCADE, UNIQUE | Reference to PQ event | `e1f2a3b4-c5d6-7890-efab-cd1234567890` |
+| `I1_THD_10m` | numeric | | Phase 1 Total Harmonic Distortion (%) | `5.67` |
+| `I1_TEHD_10m` | numeric | | Phase 1 Total Even Harmonic Distortion (%) | `0.85` |
+| `I1_TOHD_10m` | numeric | | Phase 1 Total Odd Harmonic Distortion (%) | `4.82` |
+| `I1_TDD_10m` | numeric | | Phase 1 Total Demand Distortion (%) | `5.10` |
+| `I2_THD_10m` | numeric | | Phase 2 Total Harmonic Distortion (%) | `5.89` |
+| `I2_TEHD_10m` | numeric | | Phase 2 Total Even Harmonic Distortion (%) | `0.94` |
+| `I2_TOHD_10m` | numeric | | Phase 2 Total Odd Harmonic Distortion (%) | `4.95` |
+| `I2_TDD_10m` | numeric | | Phase 2 Total Demand Distortion (%) | `5.18` |
+| `I3_THD_10m` | numeric | | Phase 3 Total Harmonic Distortion (%) | `5.45` |
+| `I3_TEHD_10m` | numeric | | Phase 3 Total Even Harmonic Distortion (%) | `0.76` |
+| `I3_TOHD_10m` | numeric | | Phase 3 Total Odd Harmonic Distortion (%) | `4.69` |
+| `I3_TDD_10m` | numeric | | Phase 3 Total Demand Distortion (%) | `4.96` |
+
+**Relationship:** 1:1 with `pq_events` where `event_type = 'harmonic'`
+
+**Measurement Details:**
+- **THD (Total Harmonic Distortion)**: Overall harmonic content in current waveform
+- **TEHD (Total Even Harmonic Distortion)**: Even harmonics (2nd, 4th, 6th, etc.)
+- **TOHD (Total Odd Harmonic Distortion)**: Odd harmonics (3rd, 5th, 7th, etc.)
+- **TDD (Total Demand Distortion)**: THD normalized to maximum demand current
+- **10m suffix**: 10-minute averaging period per IEEE 519 standard
+- **Phase naming**: I1, I2, I3 (I = current symbol in electrical engineering)
+
+**Indexes:**
+- idx_harmonic_events_pqevent_id (pqevent_id)
+- idx_harmonic_events_thd_values (I1_THD_10m, I2_THD_10m, I3_THD_10m)
+
+**RLS Policies:**
+- Authenticated users: Read-only (SELECT)
+- Operators & Admins: Full access (ALL)
+
+**TypeScript Interface:** `HarmonicEvent`  
+**Status:** ✅ Matches database
+
+**Note:** Voltage harmonic measurements (V1/V2/V3 THD/TEHD/TOHD/TDD) may be added in future if data becomes available from PQMS system.
+
+---
+
+### 9. `event_customer_impact`
 **Purpose:** Links events to affected customers (auto-generated via trigger)
 
 | Column | Type | Constraints | Description | Example |

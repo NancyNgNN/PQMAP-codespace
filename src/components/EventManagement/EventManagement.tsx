@@ -145,7 +145,7 @@ export default function EventManagement() {
       const [eventsRes, substationsRes, metersRes] = await Promise.all([
         supabase
           .from('pq_events')
-          .select('*, meter:pq_meters!meter_id(id, meter_id, site_id, voltage_level, circuit_id, region, oc)')
+          .select('*, meter:pq_meters!meter_id(id, meter_id, site_id, voltage_level, circuit_id, region, oc), harmonic_event:harmonic_events!pqevent_id(*)')
           .order('timestamp', { ascending: false }),
         supabase.from('substations').select('*'),
         supabase.from('pq_meters').select('*').order('meter_id', { ascending: true }),

@@ -46,7 +46,13 @@
    - 14 voltage thresholds per standard
    - CSV import/export for compliance tables
 
-3. **Customer Transformer Matching** (Dec 2025)
+3. **Harmonic Events Table** (Jan 9) - `harmonic_events`
+   - Separate table for harmonic-specific measurements
+   - 12 parameters per event: THD, TEHD, TOHD, TDD for 3 current phases (I1, I2, I3)
+   - 1:1 relationship with pq_events (event_type = 'harmonic')
+   - Backfill script for existing harmonic events
+
+4. **Customer Transformer Matching** (Dec 2025)
    - Circuit-customer relationship tracking
    - Auto customer impact via PostgreSQL trigger
    - H1/H2/H3 transformer code support
@@ -151,7 +157,19 @@
 
 ## Medium-term (Q3-Q4 2026)
 
-### 1. Predictive Analytics
+### 1. Voltage Harmonic Measurements
+- **Purpose:** Extend harmonic analysis with voltage THD measurements
+- **Status:** Under evaluation - data source availability TBD
+- **Scope:**
+  - Add voltage harmonic columns to `harmonic_events` table
+  - V1_THD_10m, V1_TEHD_10m, V1_TOHD_10m, V1_TDD_10m
+  - V2_THD_10m, V2_TEHD_10m, V2_TOHD_10m, V2_TDD_10m
+  - V3_THD_10m, V3_TEHD_10m, V3_TOHD_10m, V3_TDD_10m
+  - Requires verification that PQ meters capture voltage harmonic data
+- **Dependencies:** Data availability from PQMS/CPDIS system
+- **Estimated Effort:** 1 week (if data available)
+
+### 2. Predictive Analytics
 - **Purpose:** Forecast equipment failures and PQ trends
 - **Key Features:**
   - Predict transformer failures based on event patterns

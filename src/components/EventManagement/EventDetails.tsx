@@ -1248,14 +1248,80 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                       : `${((currentEvent.duration_ms || 0) / 1000).toFixed(2)}s`
                     }
                   </span></p>
-                  <p className="text-slate-600">Magnitude: <span className="font-semibold text-slate-900">{currentEvent.magnitude?.toFixed(2)}%</span></p>
-                  <p className="text-slate-600">V1: <span className="font-semibold text-slate-900">{currentEvent.v1 !== null ? `${currentEvent.v1.toFixed(2)}%` : 'N/A'}</span></p>
-                  <p className="text-slate-600">V2: <span className="font-semibold text-slate-900">{currentEvent.v2 !== null ? `${currentEvent.v2.toFixed(2)}%` : 'N/A'}</span></p>
-                  <p className="text-slate-600">V3: <span className="font-semibold text-slate-900">{currentEvent.v3 !== null ? `${currentEvent.v3.toFixed(2)}%` : 'N/A'}</span></p>
+                  <p className="text-slate-600">Magnitude: <span className="font-semibold text-slate-900">{currentEvent.magnitude !== null && currentEvent.magnitude !== undefined ? `${currentEvent.magnitude.toFixed(2)}%` : 'N/A'}</span></p>
+                  {currentEvent.event_type !== 'harmonic' && (
+                    <>
+                      <p className="text-slate-600">V1: <span className="font-semibold text-slate-900">{currentEvent.v1 !== null && currentEvent.v1 !== undefined ? `${currentEvent.v1.toFixed(2)}%` : 'N/A'}</span></p>
+                      <p className="text-slate-600">V2: <span className="font-semibold text-slate-900">{currentEvent.v2 !== null && currentEvent.v2 !== undefined ? `${currentEvent.v2.toFixed(2)}%` : 'N/A'}</span></p>
+                      <p className="text-slate-600">V3: <span className="font-semibold text-slate-900">{currentEvent.v3 !== null && currentEvent.v3 !== undefined ? `${currentEvent.v3.toFixed(2)}%` : 'N/A'}</span></p>
+                    </>
+                  )}
                   <p className="text-slate-600">Affected Phases: <span className="font-semibold text-slate-900">{currentEvent.affected_phases.join(', ')}</span></p>
                 </div>
               </div>
             </div>
+
+            {/* Harmonic Information Card - Only for harmonic events */}
+            {currentEvent.event_type === 'harmonic' && (
+              <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    Harmonic Information
+                  </h3>
+                </div>
+                <div className="p-4">
+                  {currentEvent.harmonic_event && typeof currentEvent.harmonic_event === 'object' ? (
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                      {/* Left Column: THD & TEHD */}
+                      <div className="space-y-3">
+                        <div className="bg-purple-50 p-3 rounded-lg">
+                          <p className="text-xs font-semibold text-purple-700 mb-2">THD (Total Harmonic Distortion)</p>
+                          <div className="space-y-1.5">
+                            <p className="text-sm text-slate-600">I1 THD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I1_THD_10m !== null && currentEvent.harmonic_event.I1_THD_10m !== undefined ? currentEvent.harmonic_event.I1_THD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I2 THD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I2_THD_10m !== null && currentEvent.harmonic_event.I2_THD_10m !== undefined ? currentEvent.harmonic_event.I2_THD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I3 THD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I3_THD_10m !== null && currentEvent.harmonic_event.I3_THD_10m !== undefined ? currentEvent.harmonic_event.I3_THD_10m.toFixed(2) : 'N/A'}</span></p>
+                          </div>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded-lg">
+                          <p className="text-xs font-semibold text-purple-700 mb-2">TEHD (Total Even Harmonic Distortion)</p>
+                          <div className="space-y-1.5">
+                            <p className="text-sm text-slate-600">I1 TEHD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I1_TEHD_10m !== null && currentEvent.harmonic_event.I1_TEHD_10m !== undefined ? currentEvent.harmonic_event.I1_TEHD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I2 TEHD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I2_TEHD_10m !== null && currentEvent.harmonic_event.I2_TEHD_10m !== undefined ? currentEvent.harmonic_event.I2_TEHD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I3 TEHD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I3_TEHD_10m !== null && currentEvent.harmonic_event.I3_TEHD_10m !== undefined ? currentEvent.harmonic_event.I3_TEHD_10m.toFixed(2) : 'N/A'}</span></p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Right Column: TOHD & TDD */}
+                      <div className="space-y-3">
+                        <div className="bg-purple-50 p-3 rounded-lg">
+                          <p className="text-xs font-semibold text-purple-700 mb-2">TOHD (Total Odd Harmonic Distortion)</p>
+                          <div className="space-y-1.5">
+                            <p className="text-sm text-slate-600">I1 TOHD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I1_TOHD_10m !== null && currentEvent.harmonic_event.I1_TOHD_10m !== undefined ? currentEvent.harmonic_event.I1_TOHD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I2 TOHD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I2_TOHD_10m !== null && currentEvent.harmonic_event.I2_TOHD_10m !== undefined ? currentEvent.harmonic_event.I2_TOHD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I3 TOHD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I3_TOHD_10m !== null && currentEvent.harmonic_event.I3_TOHD_10m !== undefined ? currentEvent.harmonic_event.I3_TOHD_10m.toFixed(2) : 'N/A'}</span></p>
+                          </div>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded-lg">
+                          <p className="text-xs font-semibold text-purple-700 mb-2">TDD (Total Demand Distortion)</p>
+                          <div className="space-y-1.5">
+                            <p className="text-sm text-slate-600">I1 TDD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I1_TDD_10m !== null && currentEvent.harmonic_event.I1_TDD_10m !== undefined ? currentEvent.harmonic_event.I1_TDD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I2 TDD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I2_TDD_10m !== null && currentEvent.harmonic_event.I2_TDD_10m !== undefined ? currentEvent.harmonic_event.I2_TDD_10m.toFixed(2) : 'N/A'}</span></p>
+                            <p className="text-sm text-slate-600">I3 TDD 10m: <span className="font-semibold text-slate-900">{currentEvent.harmonic_event.I3_TDD_10m !== null && currentEvent.harmonic_event.I3_TDD_10m !== undefined ? currentEvent.harmonic_event.I3_TDD_10m.toFixed(2) : 'N/A'}</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-slate-500">
+                      <p className="text-sm">No harmonic data available for this event.</p>
+                      <p className="text-xs mt-1">All values show N/A</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {currentEvent.cause && (
               <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg">
@@ -1397,48 +1463,50 @@ export default function EventDetails({ event: initialEvent, substation: initialS
               </dl>
             </div>
 
-            {/* SARFI Analysis */}
-            <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
-              <h4 className="font-semibold text-slate-900 mb-4">SARFI Analysis</h4>
-              <dl className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <dt className="text-slate-600">S10:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_10 !== null ? currentEvent.sarfi_10.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S20:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_20 !== null ? currentEvent.sarfi_20.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S30:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_30 !== null ? currentEvent.sarfi_30.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S40:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_40 !== null ? currentEvent.sarfi_40.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S50:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_50 !== null ? currentEvent.sarfi_50.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S60:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_60 !== null ? currentEvent.sarfi_60.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S70:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_70 !== null ? currentEvent.sarfi_70.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S80:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_80 !== null ? currentEvent.sarfi_80.toFixed(5) : 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-600">S90:</dt>
-                  <dd className="font-semibold text-slate-900">{currentEvent.sarfi_90 !== null ? currentEvent.sarfi_90.toFixed(5) : 'N/A'}</dd>
-                </div>
-              </dl>
-            </div>
+            {/* SARFI Analysis - Hidden for harmonic events */}
+            {currentEvent.event_type !== 'harmonic' && (
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                <h4 className="font-semibold text-slate-900 mb-4">SARFI Analysis</h4>
+                <dl className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <dt className="text-slate-600">S10:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_10 !== null ? currentEvent.sarfi_10.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S20:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_20 !== null ? currentEvent.sarfi_20.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S30:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_30 !== null ? currentEvent.sarfi_30.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S40:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_40 !== null ? currentEvent.sarfi_40.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S50:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_50 !== null ? currentEvent.sarfi_50.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S60:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_60 !== null ? currentEvent.sarfi_60.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S70:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_70 !== null ? currentEvent.sarfi_70.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S80:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_80 !== null ? currentEvent.sarfi_80.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-600">S90:</dt>
+                    <dd className="font-semibold text-slate-900">{currentEvent.sarfi_90 !== null ? currentEvent.sarfi_90.toFixed(5) : 'N/A'}</dd>
+                  </div>
+                </dl>
+              </div>
+            )}
 
             {/* Waveform Display */}
             <WaveformDisplay data={waveformData} />

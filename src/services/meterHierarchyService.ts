@@ -427,62 +427,117 @@ export interface MeterTreeNode {
   meter: PQMeter;
   children: MeterTreeNode[];
   level: 'ss400' | 'ss132' | 'ss011' | 'ss_misc' | 'root';
+  hasIncompleteHierarchy: boolean; // Warning flag for missing transformer codes
+}
+
+/**
+ * Check if meter has complete hierarchy based on voltage level
+ */
+export function checkMeterHierarchy(meter: PQMeter): { 
+  isComplete: boolean; 
+  message?: string;
+  expectedCodes: { ss400?: boolean; ss132?: boolean; ss011?: boolean };
+} {
+  const level = meter.voltage_level?.toLowerCase();
+  
+  switch (level) {
+    case '400kv':
+      return {
+        isComplete: !!(meter.ss400 && !meter.ss132 && !meter.ss011),
+        message: meter.ss400 ? undefined : 'Missing SS400 code',
+        expectedCodes: { ss400: true, ss132: false, ss011: false }
+      };
+    case '132kv':
+      return {
+        isComplete: !!(!meter.ss400 && meter.ss132 && !meter.ss011),
+        message: !meter.ss132 ? 'Missing SS132 code' : undefined,
+        expectedCodes: { ss400: false, ss132: true, ss011: false }
+      };
+    case '11kv':
+      return {
+        isComplete: !!(!meter.ss400 && meter.ss132 && meter.ss011),
+        message: !meter.ss132 ? 'Missing SS132 code' : !meter.ss011 ? 'Missing SS011 code' : undefined,
+        expectedCodes: { ss400: false, ss132: true, ss011: true }
+      };
+    case '380v':
+      return {
+        isComplete: !!(!meter.ss400 && !meter.ss132 && meter.ss011),
+        message: meter.ss011 ? undefined : 'Missing SS011 code',
+        expectedCodes: { ss400: false, ss132: false, ss011: true }
+      };
+    default:
+      return {
+        isComplete: false,
+        message: 'Unknown voltage level',
+        expectedCodes: {}
+      };
+  }
 }
 
 export function buildMeterHierarchyTree(meters: PQMeter[]): MeterTreeNode[] {
   // Group meters by transformer codes
-  const ss400Map = new Map<string, PQMeter[]>();
-  const ss132Map = new Map<string, PQMeter[]>();
-  const ss011Map = new Map<string, PQMeter[]>();
-  const rootMeters: PQMeter[] = [];
+  const ss400Meters: PQMeter[] = []; // 400kV standalone meters
+  const ss132Map = new Map<string, PQMeter[]>(); // 132kV root meters grouped by SS132
+  const ss011Map = new Map<string, PQMeter[]>(); // 11kV and 380V meters grouped by SS011
+  const orphanMeters: PQMeter[] = []; // Meters with incomplete hierarchy
 
   meters.forEach(meter => {
-    // Meters with SS400 are root level (400kV)
-    if (meter.ss400 && !meter.ss132 && !meter.ss011) {
-      const meters = ss400Map.get(meter.ss400) || [];
-      meters.push(meter);
-      ss400Map.set(meter.ss400, meters);
-      rootMeters.push(meter);
+    const hierarchyCheck = checkMeterHierarchy(meter);
+    
+    // If hierarchy is incomplete, mark as orphan
+    if (!hierarchyCheck.isComplete) {
+      orphanMeters.push(meter);
+      return;
     }
-    // Meters with SS132 but no SS011
-    else if (meter.ss132 && !meter.ss011) {
+
+    // 400kV meters are standalone (ss400 only)
+    if (meter.ss400 && !meter.ss132 && !meter.ss011) {
+      ss400Meters.push(meter);
+    }
+    // 132kV meters are root of SS132 groups (ss132 only)
+    else if (meter.ss132 && !meter.ss400 && !meter.ss011) {
       const meters = ss132Map.get(meter.ss132) || [];
       meters.push(meter);
       ss132Map.set(meter.ss132, meters);
     }
-    // Meters with SS011
-    else if (meter.ss011) {
+    // 11kV meters have both ss132 and ss011
+    else if (meter.ss132 && meter.ss011 && !meter.ss400) {
       const meters = ss011Map.get(meter.ss011) || [];
       meters.push(meter);
       ss011Map.set(meter.ss011, meters);
     }
-    // Meters with no hierarchy (orphans)
-    else {
-      rootMeters.push(meter);
+    // 380V meters have only ss011
+    else if (meter.ss011 && !meter.ss132 && !meter.ss400) {
+      const meters = ss011Map.get(meter.ss011) || [];
+      meters.push(meter);
+      ss011Map.set(meter.ss011, meters);
     }
   });
 
-  // Build tree starting from root (SS400) meters
-  const buildNode = (meter: PQMeter, level: MeterTreeNode['level']): MeterTreeNode => {
+  // Build tree nodes with proper parent-child relationships
+  const buildNode = (meter: PQMeter, level: MeterTreeNode['level'], isOrphan: boolean = false): MeterTreeNode => {
+    const hierarchyCheck = checkMeterHierarchy(meter);
+    
     const node: MeterTreeNode = {
       id: meter.id,
       meter,
       children: [],
-      level
+      level,
+      hasIncompleteHierarchy: !hierarchyCheck.isComplete || isOrphan
     };
 
-    // Find children based on transformer codes
-    if (meter.ss400 && level === 'ss400') {
-      // Find all meters with matching SS132 that have this SS400 as parent
+    // Find children based on transformer codes and voltage hierarchy
+    if (meter.ss132 && level === 'ss132' && !meter.ss400 && !meter.ss011) {
+      // 132kV root: Find 11kV children with matching SS132
       meters.forEach(m => {
-        if (m.ss132 && m.ss400 === meter.ss400 && m.id !== meter.id) {
-          node.children.push(buildNode(m, 'ss132'));
+        if (m.ss132 === meter.ss132 && m.ss011 && !m.ss400 && m.id !== meter.id) {
+          node.children.push(buildNode(m, 'ss011'));
         }
       });
-    } else if (meter.ss132 && level === 'ss132') {
-      // Find all meters with matching SS011 that have this SS132 as parent
+    } else if (meter.ss011 && meter.ss132 && level === 'ss011') {
+      // 11kV: Find 380V children with matching SS011
       meters.forEach(m => {
-        if (m.ss011 && m.ss132 === meter.ss132 && m.id !== meter.id) {
+        if (m.ss011 === meter.ss011 && !m.ss132 && !m.ss400 && m.id !== meter.id) {
           node.children.push(buildNode(m, 'ss011'));
         }
       });
@@ -491,18 +546,41 @@ export function buildMeterHierarchyTree(meters: PQMeter[]): MeterTreeNode[] {
     return node;
   };
 
-  // Build trees from root meters
-  const trees: MeterTreeNode[] = rootMeters.map(meter => {
-    if (meter.ss400) {
-      return buildNode(meter, 'ss400');
-    } else if (meter.ss132) {
-      return buildNode(meter, 'ss132');
-    } else if (meter.ss011) {
-      return buildNode(meter, 'ss011');
-    } else {
-      return buildNode(meter, 'root');
-    }
+  // Build trees: 400kV standalone + SS132 groups
+  const trees: MeterTreeNode[] = [];
+  
+  // Add 400kV standalone meters
+  ss400Meters.forEach(meter => {
+    trees.push(buildNode(meter, 'ss400'));
   });
+  
+  // Add SS132 groups (132kV as root with 11kV and 380V children)
+  ss132Map.forEach((groupMeters, ss132Code) => {
+    groupMeters.forEach(meter => {
+      trees.push(buildNode(meter, 'ss132'));
+    });
+  });
+
+  // Add orphan meters to a separate section at the end with warning flag
+  if (orphanMeters.length > 0) {
+    const orphanSection: MeterTreeNode = {
+      id: 'orphans',
+      meter: {
+        id: 'orphans',
+        meter_id: '⚠️ Incomplete Hierarchy',
+        voltage_level: '',
+        location: `${orphanMeters.length} meters need transformer codes`,
+        substation_id: '',
+        status: 'active',
+        enable: true,
+        created_at: new Date().toISOString()
+      } as PQMeter,
+      children: orphanMeters.map(m => buildNode(m, 'root', true)),
+      level: 'root',
+      hasIncompleteHierarchy: true
+    };
+    trees.push(orphanSection);
+  }
 
   return trees;
 }

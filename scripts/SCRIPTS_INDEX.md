@@ -1,6 +1,6 @@
 # Scripts Folder - Index and Usage Guide
 
-**Last Updated:** January 5, 2026
+**Last Updated:** January 9, 2026
 
 ---
 
@@ -8,12 +8,17 @@
 
 ```
 scripts/
-├── SCADA_COMPLETE_SETUP.sql          ✨ NEW - SCADA module database setup
+├── SCADA_COMPLETE_SETUP.sql                    ✨ SCADA module database setup
+├── HARMONIC_EVENTS_IMPLEMENTATION.md           ✨ NEW (Jan 9) - Harmonic events guide
+├── backfill-harmonic-events.sql                ✨ NEW (Jan 9) - Populate harmonic data
 ├── backfill-substation-audit-fields.sql
-├── SCRIPTS_INDEX.md                  ✨ NEW - This file
-├── README.md                          📚 Mother Event demo data generator
-└── archive/                           🗄️ Historical scripts (Dec 2025)
-    └── dec2025-seeds/                Scripts from December 2025 refactoring
+├── backfill_customer_impacts.sql
+├── backfill-pq-services.sql
+├── backfill-meter-load-types.sql
+├── SCRIPTS_INDEX.md                            📚 This file
+├── README.md                                    📚 Mother Event demo data generator
+└── archive/                                     🗄️ Historical scripts (Dec 2025)
+    └── dec2025-seeds/                          Scripts from December 2025 refactoring
 ```
 
 ---
@@ -22,7 +27,50 @@ scripts/
 
 ### Database Setup & Migration
 
-#### **SCADA_COMPLETE_SETUP.sql** ✨ NEW (Jan 5, 2026)
+#### **HARMONIC_EVENTS_IMPLEMENTATION.md** ✨ NEW (Jan 9, 2026)
+**Purpose:** Complete implementation guide for harmonic_events table
+
+**Contents:**
+- Overview of harmonic events table structure
+- Step-by-step implementation instructions
+- Data structure and parameter definitions
+- TypeScript integration examples
+- Troubleshooting guide
+- Future enhancements (voltage THD)
+
+**Related Files:**
+- Migration: `supabase/migrations/20260109000000_create_harmonic_events.sql`
+- Backfill: `scripts/backfill-harmonic-events.sql`
+- TypeScript: `src/types/database.ts` (HarmonicEvent interface)
+
+**Status:** ✅ Production Ready
+
+---
+
+#### **backfill-harmonic-events.sql** ✨ NEW (Jan 9, 2026)
+**Purpose:** Populate harmonic_events table for all existing harmonic PQ events
+
+**Usage:**
+1. First apply migration: `20260109000000_create_harmonic_events.sql`
+2. Then run this backfill script in Supabase SQL Editor
+3. Verify results with included diagnostic queries
+
+**What it does:**
+- Creates harmonic_events records for all pq_events where event_type = 'harmonic'
+- Generates realistic THD, TEHD, TOHD, TDD values for 3 current phases (I1, I2, I3)
+- Uses pq_events.magnitude as base THD with realistic phase variations
+- Provides comprehensive verification and statistics queries
+
+**Output:**
+- Total records created
+- Sample data comparison (pq_events vs harmonic_events)
+- Average THD statistics across all phases
+
+**Status:** ✅ Production Ready
+
+---
+
+#### **SCADA_COMPLETE_SETUP.sql** (Jan 5, 2026)
 **Purpose:** Complete database setup for SCADA Substation Management module
 
 **Usage:**
