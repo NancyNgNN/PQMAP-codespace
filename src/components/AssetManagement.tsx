@@ -1102,7 +1102,7 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
                       {(meter.voltage_level === '132kV' || meter.voltage_level === '11kV') ? (meter.ss132 || '-') : '-'}
                     </td>
                     <td className="py-2 px-2 text-sm text-slate-700">
-                      {meter.voltage_level === '11kV' ? (meter.ss011 || '-') : '-'}
+                      {(meter.voltage_level === '11kV' || meter.voltage_level === '380V') ? (meter.ss011 || '-') : '-'}
                     </td>
                     <td className="py-2 px-2 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-bold ${
