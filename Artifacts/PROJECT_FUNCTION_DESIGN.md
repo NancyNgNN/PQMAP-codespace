@@ -141,6 +141,136 @@ src/
 - Voltage Harmonic Measurements (V1/V2/V3 THD/TEHD/TOHD/TDD)
 - Pending verification of PQMS/CPDIS voltage harmonic data availability
 
+---
+
+#### Enterprise Notification System Migration (Jan 14, 2026)
+**Migration Timeline:** 5 days (Day 1-2: Backend, Day 3-5: Frontend UI)  
+**Status:** ✅ Days 1-4 COMPLETED (Day 5 pending)
+
+##### Day 1-2: Database Schema & Backend Services (Jan 13-14, 2026)
+**Features Added:**
+- **Database Schema (7 New Tables)**
+  - `notification_channels` - Multi-channel delivery (Email/SMS/Teams)
+  - `notification_templates` - Template-based messaging with variables
+  - `notification_groups` - User grouping independent of UAM roles
+  - `notification_group_members` - Member assignments with channel preferences
+  - `notification_rules` - Complex rule engine with multi-condition logic
+  - `notification_logs` - Comprehensive delivery tracking
+  - `notification_system_config` - System-wide settings (typhoon mode, etc.)
+  - Migration File: `supabase/migrations/20260113000000_create_notification_system.sql`
+
+- **TypeScript Type Definitions**
+  - File: `src/types/database.ts`
+  - Added 7 notification interfaces matching database schema
+  - Proper enum types for status, channel types, severity levels
+  - Variable definition structure with required/default value support
+
+- **Notification Service (800+ lines)**
+  - File: `src/services/notificationService.ts`
+  - **Template Management (9 functions):** CRUD with versioning, Draft → Approved workflow
+  - **Channel Management (4 functions):** Channel config (SMTP, SMS, Teams), status management
+  - **Group Management (8 functions):** Group CRUD, member management, per-member channel preferences
+  - **Rule Management (6 functions):** Multi-condition rule builder, enable/disable toggles
+  - **Variable Substitution Engine:** `substituteVariables(template, variables)` - replaces `{{variable}}` with values
+  - **Rule Evaluation Engine:** `evaluateRule(event, rule)` - 9 operators, AND logic between conditions
+  - **Demo Notification Sender:** Console logging for testing without real channels
+  - **Logs & System Config (7 functions):** Log filtering, typhoon/maintenance mode toggles
+
+- **User Permission Updates**
+  - File: `src/services/userManagementService.ts`
+  - New function: `canApproveNotificationTemplates(userRole)`
+  - Admin/Owner: Can approve templates, Operator: Create drafts only, Viewer: Read-only
+
+**⚠️ User Role Enum Mapping (Critical Reference):**
+```typescript
+// Database enum: user_role has values ('admin', 'operator', 'viewer')
+// UAM System roles: 'system_admin', 'system_owner', 'manual_implementator', 'watcher'
+
+// CORRECT MAPPING:
+const roleMapping = {
+  'system_admin': 'admin',              // Full system access, template approval
+  'system_owner': 'admin',              // Full system access, template approval
+  'manual_implementator': 'operator',   // Create/edit, no approval
+  'watcher': 'viewer'                   // Read-only access
+};
+
+// ❌ WRONG: INSERT INTO profiles (role) VALUES ('system_admin');
+// ✅ CORRECT: INSERT INTO profiles (role) VALUES ('admin');
+```
+
+**Database Constraint Notes:**
+- **FK Constraint:** `profiles.id` → `auth.users.id` (ON DELETE CASCADE)
+- **For Dummy Data:** Temporarily drop FK constraint if auth.users entries don't exist
+- **Migration Pattern:** `ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;`
+- **Production:** Always create auth.users entries first, then profiles
+
+##### Day 3: Template Management UI (Jan 14, 2026)
+**Features Added:**
+- **TemplateList Component** (`src/components/Notifications/TemplateList.tsx`, 350+ lines)
+  - Stats cards: Total, Approved, Draft, Archived counts
+  - Search by name, code, or description, Filter by status
+  - Action buttons: Approve (admin only), Edit, Archive
+
+- **TemplateEditor Component** (`src/components/Notifications/TemplateEditor.tsx`, 600+ lines)
+  - Basic info form, Variable manager (add/edit/delete with required flags)
+  - Tab navigation (Email/SMS/Teams), Content editors with Insert variable buttons
+  - SMS character counter (160/306/459 warnings), Preview toggle with real-time substitution
+  - Versioning: Creates new version when editing approved templates
+
+- **TemplateApprovalModal Component** (`src/components/Notifications/TemplateApprovalModal.tsx`, 280+ lines)
+  - Template info, variables list, channel preview tabs, Approve/Reject/Cancel actions
+  - Permissions: Only admins can approve
+
+- **Navigation:** Added "Templates" menu item with FileCode icon
+
+**User Workflows:**
+1. Create: New → Fill info → Add variables → Enter content per channel → Save draft
+2. Edit: Click Edit → Make changes → Save (versions if approved)
+3. Approve: Admin clicks Approve → Reviews preview → Confirms approval
+4. Archive: Click Archive → Confirm → Template hidden from rules
+
+##### Day 4: Channel, Group & Rule Management UI (Jan 14, 2026)
+**Features Added:**
+
+- **ChannelManagement Component** (`src/components/Notifications/ChannelManagement.tsx`, 340+ lines)
+  - Channel list with status badges (Enabled/Disabled/Maintenance)
+  - Expandable configuration cards per channel
+  - Email: SMTP server, port, SSL toggle, sender details
+  - SMS: Provider (Twilio/AWS SNS), credentials, demo mode
+  - Teams: Webhook URL, demo mode
+  - Save updates config in real-time
+
+- **GroupManagement + GroupList + GroupEditor**
+  - **GroupList** (`GroupList.tsx`, 240+ lines): Stats cards, search, table with member counts, channel badges
+  - **GroupEditor** (`GroupEditor.tsx`, 410+ lines): Basic info, member management with per-member channel toggles (Email/SMS/Teams)
+  - User dropdown from profiles table, Add/Remove members, Validation: requires name + 1 member
+
+- **RuleManagement + RuleList + RuleBuilder**
+  - **RuleList** (`RuleList.tsx`, 290+ lines): Stats cards, filter tabs (All/Active/Inactive), table with conditions count
+  - **RuleBuilder** (`RuleBuilder.tsx`, 550+ lines):
+    - Condition builder with 9 field types (event_type, severity, magnitude, duration, customer_count, region, voltage_level, status, substation_code)
+    - 9 operators (equals, not_equals, greater_than, less_than, greater_or_equal, less_or_equal, in, not_in, contains)
+    - AND logic between conditions, Dynamic value inputs based on field type
+    - Template selection (approved only), Channel + Group multi-select
+    - PQ-specific: Typhoon mode, Mother event only, Include waveform checkboxes
+
+**Component Integration Pattern:**
+- Management container manages state → List displays data → Editor/Builder handles CRUD
+- All use `notificationService.ts` for backend calls, Fully typed with TypeScript
+
+##### Day 5: Notification Logs & Final Integration (Pending)
+**Planned Features:**
+- NotificationLogs UI component, System Config UI (typhoon mode toggle)
+- Integration with event creation workflow, End-to-end testing
+
+**Known Limitations:**
+- Rejection workflow shows "coming soon" alert
+- Rich text editor not implemented (plain textarea)
+- No markdown preview rendering, No image upload support
+- Template versioning UI not displayed (backend supports it)
+
+---
+
 #### Data Maintenance Module (Jan 7, 2026)
 **Features Added:**
 - **Weighting Factors Management**

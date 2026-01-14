@@ -164,6 +164,80 @@ Complete database schema for the Power Quality Monitoring and Analysis Platform 
 **TypeScript Interface:** `Profile`  
 **Status:** ✅ Matches database
 
+**⚠️ CRITICAL: user_role Enum Values & UAM Role Mapping**
+
+```sql
+-- Database enum definition (PostgreSQL)
+CREATE TYPE user_role AS ENUM ('admin', 'operator', 'viewer');
+```
+
+**ONLY These 3 Values Are Valid:**
+- `'admin'` - Full system access, template approval, user management
+- `'operator'` - Create/edit data, no approval/deletion
+- `'viewer'` - Read-only access
+
+**UAM System to PQMAP Role Mapping:**
+| UAM Role | PQMAP Database Role | Permissions |
+|----------|---------------------|-------------|
+| `system_admin` | `admin` | Full access, approve templates, manage users |
+| `system_owner` | `admin` | Full access, approve templates, manage users |
+| `manual_implementator` | `operator` | Create/edit events, draft templates, no approval |
+| `watcher` | `viewer` | Read-only, no modifications |
+
+**Common Errors to Avoid:**
+```sql
+-- ❌ WRONG - Will cause "invalid input value for enum user_role" error
+INSERT INTO profiles (role) VALUES ('system_admin');
+INSERT INTO profiles (role) VALUES ('system_owner');
+INSERT INTO profiles (role) VALUES ('manual_implementator');
+INSERT INTO profiles (role) VALUES ('watcher');
+
+-- ✅ CORRECT - Use mapped database enum values
+INSERT INTO profiles (role) VALUES ('admin');      -- for system_admin/system_owner
+INSERT INTO profiles (role) VALUES ('operator');   -- for manual_implementator
+INSERT INTO profiles (role) VALUES ('viewer');     -- for watcher
+```
+
+**TypeScript Role Mapping Helper:**
+```typescript
+// Use this in frontend code when syncing from UAM
+function mapUamRoleToDbRole(uamRole: string): 'admin' | 'operator' | 'viewer' {
+  const mapping: Record<string, 'admin' | 'operator' | 'viewer'> = {
+    'system_admin': 'admin',
+    'system_owner': 'admin',
+    'manual_implementator': 'operator',
+    'watcher': 'viewer'
+  };
+  return mapping[uamRole] || 'viewer'; // Default to viewer if unknown
+}
+```
+
+**Foreign Key Constraint:**
+```sql
+-- profiles.id references auth.users(id)
+ALTER TABLE profiles ADD CONSTRAINT profiles_id_fkey 
+  FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+```
+
+**For Dummy/Test Data (Development Only):**
+```sql
+-- Temporarily drop FK constraint if auth.users entries don't exist
+ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;
+
+-- Insert dummy users with correct enum values
+INSERT INTO profiles (id, email, full_name, role, ...) VALUES
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'john@company.com', 'John Anderson', 'admin', ...);
+
+-- Re-enable FK constraint (optional, for production only)
+-- ALTER TABLE profiles ADD CONSTRAINT profiles_id_fkey 
+--   FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+```
+
+**References:**
+- Migration Script: `supabase/migrations/20260114000001_seed_dummy_users.sql`
+- Documentation: `scripts/DATABASE_USER_ROLES_REFERENCE.md`
+- Service Layer: `src/services/userManagementService.ts` (role permission checks)
+
 ---
 
 ### 2. `substations`

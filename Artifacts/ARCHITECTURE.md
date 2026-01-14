@@ -686,6 +686,51 @@ PostgreSQL Database
 2. **Operator** - Read + Update (no delete) on events/meters
 3. **Viewer** - Read-only access
 
+**⚠️ CRITICAL: Database User Role Enum**
+
+The database uses a specific enum type for user roles. **Always use these exact values in SQL:**
+
+```sql
+-- Database enum definition
+CREATE TYPE user_role AS ENUM ('admin', 'operator', 'viewer');
+```
+
+**UAM to Database Role Mapping:**
+| UAM Role (Frontend) | Database Role (SQL) | Permissions |
+|---------------------|---------------------|-------------|
+| `system_admin` | `admin` | Full access, approve templates, manage users |
+| `system_owner` | `admin` | Full access, approve templates, manage users |
+| `manual_implementator` | `operator` | Create/edit data, draft templates, no approval |
+| `watcher` | `viewer` | Read-only access |
+
+**Common Error:**
+```sql
+-- ❌ WRONG - Causes "invalid input value for enum user_role" error
+INSERT INTO profiles (role) VALUES ('system_admin');
+
+-- ✅ CORRECT - Use database enum value
+INSERT INTO profiles (role) VALUES ('admin');
+```
+
+**TypeScript Helper Function:**
+```typescript
+// Use this when syncing roles from UAM to database
+function mapUamRoleToDbRole(uamRole: string): 'admin' | 'operator' | 'viewer' {
+  const mapping = {
+    'system_admin': 'admin',
+    'system_owner': 'admin',
+    'manual_implementator': 'operator',
+    'watcher': 'viewer'
+  };
+  return mapping[uamRole] || 'viewer';
+}
+```
+
+**References:**
+- Full documentation: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md#1-profiles)
+- Migration example: `supabase/migrations/20260114000001_seed_dummy_users.sql`
+- Service layer: `src/services/userManagementService.ts`
+
 **Permission Matrix:**
 
 | Action | Admin | Operator | Viewer |
@@ -696,6 +741,7 @@ PostgreSQL Database
 | Import data | ✅ | ✅ | ❌ |
 | Export data | ✅ | ✅ | ✅ |
 | Manage users | ✅ | ❌ | ❌ |
+| Approve templates | ✅ | ❌ | ❌ |
 | Edit SARFI profiles | ✅ | ✅ | ❌ |
 | View reports | ✅ | ✅ | ✅ |
 
