@@ -1,4 +1,4 @@
-import { LayoutDashboard, Activity, Database as DatabaseIcon, FileText, Bell, Settings, LogOut, BarChart3, Wrench, Database, ChevronLeft, ChevronRight, Users, MapPin, Network, Scale, Target, Settings2 } from 'lucide-react';
+import { LayoutDashboard, Activity, Database as DatabaseIcon, FileText, Bell, Settings, LogOut, BarChart3, Wrench, Database, ChevronLeft, ChevronRight, Users, MapPin, Network, Scale, Target, Settings2, FileCode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface NavigationProps {
@@ -18,6 +18,7 @@ export default function Navigation({ currentView, onViewChange, collapsed, onTog
     { id: 'assets', icon: DatabaseIcon, label: 'Asset Management' },
     { id: 'reports', icon: FileText, label: 'Reports' },
     { id: 'notifications', icon: Bell, label: 'Notifications' },
+    { id: 'templates', icon: FileCode, label: 'Templates' },
     { id: 'services', icon: Wrench, label: 'PQ Services' },
     { id: 'health', icon: Settings, label: 'System Health' },
   ];
