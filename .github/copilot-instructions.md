@@ -21,24 +21,24 @@ Rules to follow when generating code for this project:
 
 The project uses a streamlined documentation structure (see [DOCUMENTATION_RESTRUCTURING.md](../Artifacts/DOCUMENTATION_RESTRUCTURING.md)):
 
-1. **[PROJECT_FUNCTION_DESIGN.md](../Artifacts/PROJECT_FUNCTION_DESIGN.md)** - Complete functional specifications
+1. **[PROJECT_FUNCTION_DESIGN.md] - Complete functional specifications
    - All modules and features documented (2700+ lines)
    - Change History section (Jan 2026: Notification System, Data Maintenance)
    - Acceptance criteria and workflows
 
-2. **[DATABASE_SCHEMA.md](../Artifacts/DATABASE_SCHEMA.md)** - Complete database reference
+2. **[DATABASE_SCHEMA.md] - Complete database reference
    - 17 tables with full column documentation
    - Migration history log (32+ migrations)
    - RLS policies and indexes
    - ⚠️ **Lines 162-200:** Critical user role enum mapping
 
-3. **[ARCHITECTURE.md](../Artifacts/ARCHITECTURE.md)** - Technical architecture
+3. **[ARCHITECTURE.md]- Technical architecture
    - System overview and tech stack
    - Component architecture patterns
    - Integration points (PQMS, SCADA, Power BI)
    - Development workflow (GitHub Issues, branching)
 
-4. **[ROADMAP.md](../Artifacts/ROADMAP.md)** - Feature roadmap
+4. **[ROADMAP.md] - Feature roadmap
    - In Progress (Q1 2026)
    - Short/Medium/Long-term plans
    - Power BI integration options
