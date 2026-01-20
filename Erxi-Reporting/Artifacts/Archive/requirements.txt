@@ -1,0 +1,64 @@
+# PQMAP Python Backend Dependencies
+# Power Quality Monitoring and Analysis Platform
+#
+# NOTE: This is for a potential Python backend service.
+# The main application is React/TypeScript and uses package.json for dependencies.
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database
+psycopg2-binary==2.9.7
+sqlalchemy==2.0.23
+asyncpg==0.29.0
+
+# Data Processing & Analysis
+numpy==1.24.3
+pandas==2.0.3
+scipy==1.11.4
+matplotlib==3.8.0
+plotly==5.17.0
+
+# Power Quality Analysis
+# (These would be for electrical engineering calculations)
+pypower==5.1.16
+pandapower==2.13.1
+
+# Signal Processing (for waveform analysis)
+PyWavelets==1.4.1
+
+# Machine Learning (for pattern recognition mentioned in requirements)
+scikit-learn==1.3.2
+tensorflow==2.15.0
+
+# Time Series Analysis
+statsmodels==0.14.0
+
+# API and HTTP
+httpx==0.24.1
+requests==2.31.0
+
+# Configuration and Environment
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.0.3
+
+# Authentication (if interfacing with Supabase)
+supabase==2.0.2
+gotrue==1.3.0
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+loguru==0.7.2
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Optional: For advanced electrical calculations
+sympy==1.12

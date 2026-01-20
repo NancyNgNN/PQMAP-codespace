@@ -1,0 +1,2232 @@
+﻿Transcript
+December 5, 2025, 6:01AM
+
+Chan, Arthur Man Him started transcription
+
+Lau, Wilson Yiu Ming   0:05
+會先focus on個channel design啦咁誒，我即刻會交比阿FA啦咁會係呢一個project嘅I business analyst啦咁會，喺I design face嘅時候，特別係分Chanel design咧咁同我哋一齊即誒叫做幫我哋手一齊去做過分享design嘅係喇咁係咯咁或者啱，但我交比你呀。
+
+Chan, Arthur Man Him   0:30
+好係好嘅咁。
+
+Fung, Kam Tim   0:30
+咦喂呢個會可唔可以錄影㗎？即係我哋可唔可以capture底之後大家可以再review係啦。
+
+Chan, Arthur Man Him   0:33
+誒。
+當然冇問題，我已經開始係錄影㗎啦。
+
+Fung, Kam Tim   0:39
+哦，係呀OK好Thank you Thank you。
+
+Chan, Arthur Man Him   0:41
+係好咁啊，首先我就簡單share個stream先啦嚇。
+
+Fung, Kam Tim   0:45
+誒。
+
+Chan, Arthur Man Him   0:46
+好睇下大家見唔見到先？
+
+Lau, Wilson Yiu Ming   0:50
+係見到。
+
+Chan, Arthur Man Him   0:51
+見到係咪嚇係啦咁呢個咧誒呢個blog咧？其實就係我喺個meeting之前就share咗出嚟啦咁我大概今日咧，其實都會高呼翻呢個blog上面有嘅嘢嘅咁呀，其實我哋而家叫做係initial咗一個FD design先啦咁暫時咧。今日主要focus一個framework比較多，去多一個咧佢個暫時去到好高啲嘅咁啊，因為我哋後續啦，可能仲打仲要花3至4堂嘅workshop，真係去講清楚個request咁下次咧？如果去workshop咧，我會希望直接去翻大家Office可以大家坐低傾嘅，我想問大家係咪都係喺啟德嗰邊比較多呀？
+
+Fung, Kam Tim   0:51
+好睇到嘅。
+
+Chan, Arthur Man Him   1:28
+因為我就Stay喺紅磡嘅。
+
+Chan, Woody Hing Lok   1:28
+第一幅林。
+
+Fung, Kam Tim   1:29
+喂我哋winter就outside嘅，即係因為我有同事都喺誒外國嘅係啦，即係其他同事，你哋坐埋一齊傾諗住。
+
+Chan, Arthur Man Him   1:32
+嗯，但當然啦，係啦，係啦，係。
+
+Chan, Woody Hing Lok   1:32
+呀。
+
+Chan, Arthur Man Him   1:35
+嗯，係啊，即係如果嚇，如果下次覆診可以嘅話就大家Facebook fill，我覺得我覺得我覺得OK嘅即系我比較鍾意face to face嘅咁大家傾可能會方便啲，不過當然睇大家啦咁啊show time，如果大家喺KT喺啟德就可能下次我就直接可以去啟德果邊再。
+
+Lau, Wilson Yiu Ming   1:53
+Buddy喺紅磡㗎嘛，係咪hoodie喺地？
+
+Chan, Woody Hing Lok   1:55
+系呀，我我哋都融合我哋，係啊。
+
+Li, Crystal Ngong Yung   1:56
+我哋紅磡呀？
+
+Chan, Arthur Man Him   1:56
+哇哎呀哎呀咁就知我過嚟搵着咗佢過嚟搵咗你哋先啦，係呀唉失策失策。
+
+Lau, Wilson Yiu Ming   1:58
+咁呀？
+更加好。
+系呀咩噶大部分人喺紅磡囉，係呀，係。
+
+Chan, Arthur Man Him   2:05
+失策失策好好，咁我哋咁，我下次再走一走，先好咁誒好，咁我哋講講啦咁誒咁啊，其實今日咧？主要係有3個嘅purpose啦咁，第一點咧想做嘅嘢咧就係關於係study翻嗰個所謂叫并point咁最基本就睇下其實誒有個新system啦咁，我哋唔係淨係做出嚟買做出嚟嘅時候究竟係想解決啲乜嘢問題咧？或者係邊一啲位覺得咦，舊有system可能有啲limitation未必做到嘅，想新system做到，咁我哋陣間可能要等一幫手討論下呢方面嘅嘢啦？
+
+Lau, Wilson Yiu Ming   2:07
+系呀。
+
+Chan, Arthur Man Him   2:36
+咁呀？跟住第2個就係一個叫做business嘅save啦咁，我想睇下而家你哋個做法係點做嘅就係最基本，譬如有個voltage dip白有片啦咁啊suppose嘅話，你就每個handling會點樣做喇？有啲乜嘢想睇到？啦咁，我哋會塞幾部分嘅第3個想做嘅objective就係睇翻我哋Wu翻成個RP啦。其實有啲乜嘢，所以我哋叫man嘅model同埋一啲比較重要嘅component咁啊呢個可能你睇亦都要叫做brainstorm下啦咁個唔一定需要係個RFP入邊嘅甚至outside你哋諗到啲乜嘢，即係喺呢個時間諗到喂。
+如果有啲乜嘢會好喎，都可以寫出嚟。
+咁呢個係大概今日嗰個嘅Run Down，暫時有冇啲咩問題，或者有啲咩想再分享下嘅？
+如果冇嘅話啦咁，我哋就去翻呢部份啦咁，我哋今日咧？其實真系誒都好多咗咁多同事係好多同事出席，㗎咁，我哋有PSBG嘅同事啦呀。首先第一件事漏咗講一樣嘢，我誒絕對歡迎返大家咧？可以同時開呢個blog咧喺度打做一啲嘅selling，因為陣間可能要大家幫手嘅譬如可能要打幫手去誒，做一啲嘅comment啦，或者拉啲面毛出嚟留翻自己嘅意見啦咁，所以我非常之welcome，大家可以同時喺個group度打開翻呢條link嘅咁嗰條link咧誒。
+係咪大家都有，我使唔使再輸入一次出嚟喺個group度？
+
+Lau, Wilson Yiu Ming   4:02
+我啱啱喺check嗰度share咗系。
+
+Chan, Arthur Man Him   4:04
+啊，非常之Thank you Thank you。
+
+Lau, Wilson Yiu Ming   4:04
+大家可以撳係？
+
+Chan, Arthur Man Him   4:06
+係啦咁，我哋有好多唔同讀書㗎咁，我哋有誒。PSP同事engine同事啦咁，有I access population嗰邊嘅同事啦，有阿sammi果邊architect嚇我哋，知做添啦。仲有阿olive代表technical嗰邊嘅同事啦咁呀，仲有可能wonderful嘅，不過呢個因為有少少I尷尬，所以暫時我就寫落去先啦。
+因為少少project Netflix佢嘅嘢咁，我會想講講咧咁，其實誒，有啲所謂叫Greenwood啦其實。
+簡單嚟講就系係絕對歡迎任何人share自己意見嘅咁呀可以大家歡迎，講出嚟喇又得喇，或者你鍾意鍾意嘅話，隨時集將I mean報紙落嚟誒打兩隻字comment絕對都冇問題，嘅咁啊任何部門嘅同事依個雖然今日主要係傾呢個叫做Hunter design咁，但系任何部門同事講嘅嘢咧都非常之welcome嘅即系，譬如daddy果邊咦喂傾到某一啲request問有啲意見喎，可能會覺得比較難做啲，或者點樣會好啲？
+都非常之高，教琴嘅。
+咁呀最後一樣嘢啦，就系如果同事可以執look seed嘅話咧，就建議用翻自己偏嘅顏色嚟作咁方便，我哋到時如果顆粒嘅時候咧相對好容易啲嘅咁啊會點樣做咧？我試一試啦嗱。例如首先懷非常之快，下邊同時已經整緊嘢啦咁啊例如啦。第一個而家有一個叫做揀一隻柴山就係幫手寫翻同事究竟醫金有邊一個人出席咧嗱？例如好似我係阿化啦，我就喺度拉翻個pgde erb咗出嚟先或者啲同事嗌返出嚟先。
+咁我就系offer特登。
+就OK㗎喇咁呀麻煩同事可能幫手啦可能作下咦今日有邊一個人會出席返嚟呀就出席咗幫手拉一拉為先
+誒。
+係啦，甚至可能有啲EIE，因為我嗰陣時未必知道有太即系，可能會有邊啲部門會參加啦唔會俾提得曬啦咁可以我哋到時食慳返啲唔同顏色嘅落嚟咁，你見到我後邊我留咗誒知識啦，同埋藍色嘅memo紙嚟嘅咁我哋方便唔同嘅添沙，都捉翻自己嘅notes嘅。
+
+Fung, Kam Tim   7:10
+好，我都都好似幾好玩呀，我覺得係啦。
+
+Chan, Arthur Man Him   7:11
+好。
+係啦，方便大家非常之歡迎大家去拉啲comment出嚟，陣間都係呀，陣間討論咧都系中意拉啲紙仔出嚟咁，我哋陣間可以一齊去好多好多人去討論下。
+誒，我見到阿Jason都join咗。
+
+Li, Jason Chit Yeung   7:33
+喂，Hello。
+
+Chan, Arthur Man Him   7:34
+Hello，係啦，我哋而家喺呢度呢個叫做誒還節。
+
+Li, Jason Chit Yeung   7:35
+呀。
+
+Chan, Arthur Man Him   7:39
+大家去warm up下啫咁啊將自己嘅名啦，或者同事嘅名喇就作咗黎擺低喺度，咁睇下我哋今日其實有幾多同事卒出席咗呢個meeting嘅。
+嗱，我見到應該都差唔多啦嚇咁我，所以我哋睇到啦，其實今日有好多同事都睇幫手出咗只啦咁啊。
+他先哪？
+咁啊藍色啦咁，我見到應該係誒卅怪物。
+咁我就藍色嘅。
+
+Fung, Kam Tim   8:12
+誒，我我哋呢邊winter嘅係啦。
+
+Chan, Arthur Man Him   8:14
+係啦咁，我就誒，我就打返啦藍色我就搏翻阿阿其睇得出黎啦。
+
+Fung, Kam Tim   8:15
+誒，我，我見冇名係啦。
+
+Chan, Arthur Man Him   8:21
+先，咁我。
+我就直行就。
+就要勝利係代表啦。藉口直頭就highlight埋你啦，好咁我諗大家都差唔多喇。熱身完畢啦，好啦咁，我咁我呀。歡迎大家去同時而家，我哋開始正式開始個meeting啦咁啊好啦咁，我哋完咗呢部份之後啦咁呀。其實有啲所謂叫做project，我哋objective嘅呢啲，其實好簡單，大家睇完就算啦，因為大家都知㗎啦咁啊，我哋可以直接去翻而家嘅system design喺度嘅。
+
+Sa, Kelvin Yat Sing   8:38
+呀。
+
+Chan, Arthur Man Him   8:52
+咁咧講翻而家business之前咧咁，我想講少少以前嘅functional design啦咁，我會見到咧以前嘅部份就係support，我哋system有個叫誒PMSCPIS咁，但係如果新嘅structure咧，其實呢2個system咧就會同P劫map就已經merge埋咗佢係或者個P叫map㗎啦咁啊，所以後續所有嘅data咧，應該就係pq map古道去。
+叫做係管控嘅。
+咁呀？大概structure我就唔講咁多啦，因為其實交返畀多次tackle邊同事再傾多啲啦，好啦咁，我哋跟住咧就約第一個部分啦，第一部分呢，我哋想做啲咩咧頭先講緊啦，第一個津貼希望大家幫手嗌delivery返究竟個system有啲乜嘢係可以幫大家做到嘅咁啊？例如我先舉個例子，啦嗱我之前成日聽過咧，就係話誒，我哋成日要花好多唔同嘅effect啦，去做啲咩咧去將一啲唔同嘅report去mos埋一齊。
+咁我就例如貪consuming to March。
+
+Fung, Kam Tim   9:55
+呀。
+
+Chan, Arthur Man Him   9:56
+啲分？
+Report。
+好，咁我就加咗第一個嘅comment先。
+好咁呀麻煩啦，各位同事都可以幫手執返，覺得而家個系統有啲咩限制，或者你想個系統幫你做咗啲乜嘢嘅咁，又可能大家花5分鐘嘅時間可能再作啲minute先，咁我哋跟住落嚟之後再會討論嘅。
+呀。
+係啦咁而家後追，同時又再講一講啦咁，其實咧個做法好簡單啫，純粹就係將隻gas呀擺喺嗰個紙條上邊自己添嗰個紙條上邊跟住就禁拉落嚟咧咁就可以喺上邊就咁打一字㗎啦。
+咁我哋大概去到16分左右啦，2點16分左右咧咁，我哋就提一提返大家有啲咩idea咁我哋成日嘗試再高呼一下。
+啲死。
+嗱，我見到啲同事。
+好直接啊。
+呀。
+呀。
+好，大概仲有2分鐘時間。
+呀。
+禿鷹哥差唔多落機同事仲入緊等緊同事入埋先。
+好去見應該差唔多啦哇誒睇一睇下其實都幾多嘢可以，我哋去改善嚇我哋，逐個逐個去高呼下先好誒。首先我哋睇一睇I engine果邊同事提出嘅嘢，先啦睇下先哦貪抗Schumann to analyze PQ data誒，可唔可以同時咧幫手講一講，誒，大概你係點解會覺得time consuming咧？係因為有唔同system之間你要將啲嘢咩出來。
+
+Li, Crystal Ngong Yung   15:49
+誒。
+
+Chan, Arthur Man Him   15:59
+其實除係關於report佢嘅嘢定係嗯。
+
+Li, Crystal Ngong Yung   16:00
+冇錯呀。
+誒，好似如果有時可能誒有同一單嘅誒可能要嘅instant啦咁分別喺PMS同CPIS都會度到嘅咁，如果我哋進行分析，只要兩邊systems都要睇，再漲紅嘅宴string埋一齊敢做分析都要誒，快啲時間。
+
+Chan, Arthur Man Him   16:03
+係？
+嗯。
+好暗？
+係，所以其實support就系，因為可能係譬如同一個instant呀，或者同咗event啦喺唔同system都會見得到調翻轉就係咁，我想問哩2個system睇一件一邊嘅嗰啲嘅data咧？
+
+Li, Crystal Ngong Yung   16:28
+係啦。
+呀。
+
+Chan, Arthur Man Him   16:37
+誒，或者叫做愧theory係咪一樣㗎？
+即系都系嗰啲Korean嚟㗎喇都係類近嘅嘢嚟嘅哦咁，反而可能就調翻轉要自己翻最重要花市係人為判斷返究竟邊個數值係為之叫啱嘅。
+
+Li, Crystal Ngong Yung   16:41
+最近。
+
+Chan, Arthur Man Him   16:51
+然後先至會得到最終結果。
+需唔需要咁樣做咧，定係其實我誒做啲嗯？
+
+Li, Crystal Ngong Yung   16:59
+係啊，係啊。
+
+Chan, Arthur Man Him   17:01
+咁我想問咧，到時出嚟嘅話咧，你係好似呢個point咁樣，你會唔會需要一份report嚟睇㗎？
+
+Li, Crystal Ngong Yung   17:09
+誒。
+拜企度，誒，可能需要。
+
+Chan, Arthur Man Him   17:13
+即係會唔會export份report啦？定係on icecream，但系平時可能其實你純粹個目的就係on stream嚟睇就OK啦。定系話咦唔係喎，其實有特別Perfect，我係要好似呢啲咁嘅地圖咧，我要export一份report出嚟去交俾唔同嘅人。
+
+Li, Crystal Ngong Yung   17:27
+唉，應該安screen係啦。
+
+Chan, Arthur Man Him   17:30
+嗯。
+明白好咁我就mark Down咗啲嘢先。
+好咁啊大概OK啦，明白咁我誒去第2個point啦咁，我見同事話咧誒唔同meter係好難去誒都話。
+哈to manage Windows system，咁我想同時可唔可以解釋多啲咧？
+
+Li, Crystal Ngong Yung   17:57
+誒阿都係我落嘅誒就係我哋係啦誒，我哋啲誒別呀誒即系可能我哋。
+
+Chan, Arthur Man Him   17:58
+係都係你老嗨K。
+
+Li, Crystal Ngong Yung   18:06
+誒，破力。
+
+Chan, Arthur Man Him   18:06
+嗯。
+
+Li, Crystal Ngong Yung   18:08
+嘅時候，咧咁誒都。
+但係搵翻佢哋嘅同誒嗰啲I啲呀誒咩address呀嗰啲咁，我哋就誒，係可能係infantry方面誒，本身誒是石system都未必。
+
+Sa, Kelvin Yat Sing   18:15
+誒。
+整個特別係reason，上面係真嘅。
+係係fill。
+
+Li, Crystal Ngong Yung   18:23
+誒，好好感manage得到咯即系佢資料可能明白好齊。
+
+Sa, Kelvin Yat Sing   18:25
+誒，跟住呢度。
+
+Chan, Arthur Man Him   18:29
+嗯，我想問呢個case咧？係誒，係因為同因為係一個同一個meter會喺唔同system出現啦，定係其實係要睇誒唔同嘅combine埋先睇得到咧。
+
+Sa, Kelvin Yat Sing   18:30
+誒。
+跟住拍。
+即係點？
+
+Li, Crystal Ngong Yung   18:41
+誒誒分開嘅嗱分開嘅。
+
+Chan, Arthur Man Him   18:41
+個情況係？
+
+Sa, Kelvin Yat Sing   18:43
+嗯。
+
+Chan, Arthur Man Him   18:43
+嗯。
+係即係唔係同一個Rita嚟嘅，因為suppose誒，即係。
+
+Sa, Kelvin Yat Sing   18:48
+但係鍾意講呢啲係啦。
+
+Chan, Arthur Man Him   18:49
+2個system啦睇嘅嘢應該過substation係有少少唔同㗎嘛即系一個可能係I customer啦一個係CLP㗎嘛。
+咁都唔知我嘅理解正唔正確啦。
+
+Li, Crystal Ngong Yung   18:58
+惡係。
+
+Sa, Kelvin Yat Sing   19:00
+冰涼拜。
+
+Li, Crystal Ngong Yung   19:01
+係呀，係呀唔同嘅。
+但系即誒個you I上可能S可以改善到可以誒睇哂2個system嘅I return information醫療咁樣。
+
+Chan, Arthur Man Him   19:03
+五。
+
+Sa, Kelvin Yat Sing   19:07
+呀。
+
+Chan, Arthur Man Him   19:12
+嗯，明白明白。
+
+Li, Crystal Ngong Yung   19:13
+田老師都有include奧洛啲spec度嘅。
+
+Sa, Kelvin Yat Sing   19:15
+就雖然話你見到。
+
+Chan, Arthur Man Him   19:17
+嗯呀咁，我就純粹問多小小一步啦，我想問咧嗱，你會expect呀？到時真係想像下喇，到時嗰個呢區個介面咧？即係，嗱，假設應該會有個類似叫做meter，即係個inventory嘅list喺度啦咁，你會想去好似分開兩棵樹咁咧俾你睇到就係兩招，叫做係兩項唔同嘅嘢，一個係原本係嚟自個custom，一個來自CLP咧，但系其實你都唔你都會想去就咁擺一擺曬一齊誒淨係落filter嚟睇就OK咧。
+有冇咩特別諗法？
+
+Li, Crystal Ngong Yung   19:52
+部無乜所謂，呀呢排，但系誒。
+
+Chan, Arthur Man Him   19:56
+嗯。
+
+Li, Crystal Ngong Yung   19:57
+係？
+
+Chan, Arthur Man Him   20:00
+得冇問題，誒唔好意思，Kevin係咪要問？
+
+Sa, Kelvin Yat Sing   20:03
+啱係好好好奇咋呀Krystal，我想請教下咧，我擺度隻狗Kelvin呀，都係阿凡有條team嘅誒，我想請問下你依個manage meter瞓defence system咧？你啱先講緊beta大啲咩唔番啲資料係問你想買翻一啲誒嗰啲meeting大啲嘅誒誒，例如I地址呀，或者customer嗰邊嘅data啲呢啲，而家系咪要上去咁嘅需求噶。
+
+Li, Crystal Ngong Yung   20:26
+誒，其實最主要係啲backuptrans，因為誒，我哋。
+誒，有時可能辨別呀，都誒。最近有啲whiplash問啦，但係誒個system就誒，而家嘅system就冇一個誒個number特登儲住跟著我哋就自己喺Excel度落低，咁所以誒就比較麻煩。
+希望之後可以I整合曬兩邊。
+嚇嘅。
+誒有個infantry嘅I page，咁樣係啦。
+
+Chan, Arthur Man Him   21:01
+嗯，明白，即係可能之前個。
+
+Sa, Kelvin Yat Sing   21:02
+好呀好呀唔該曬Thank you。
+
+Chan, Arthur Man Him   21:04
+瞓覺成日可能以前個system support可能係冇adjust，咁就可能仲要咩反Excel先會睇到曬成個嗯，明白明白可以嘅好琴日你有記錄翻先好跟住第3個謊先check band grammar request to recreate strictly底線given report。
+
+Li, Crystal Ngong Yung   21:04
+係誒？
+系系。
+揭。
+
+Chan, Woody Hing Lok   21:24
+誒，我呢個我咁我落嘅咁咧誒我哋誒點其實初頭咧，你要咩呢個idea咧？本身就誒，即係有一個本身嗰個就好叫maisel嘅一個津貼呢，就係想做一個類似dashboard嘅一個花牌feature嘅咁，點解咧？因為咧喺誒誒呢幾年咧咁，我哋就即係誒誒都畀唔同，即係無論international嘅同嘅人咧，都會想request，我哋就做一啲誒分析啦，可能係圖表呀誒刷呀誒誒呢類似咁樣嘅咁樣。
+
+Chan, Arthur Man Him   21:26
+係？
+和號。
+嗯。
+嗯嗯。
+
+Chan, Woody Hing Lok   21:55
+咁咧就誒咁誒過往我，咁我哋啱啱講就係有PSICDS啦咁樣，咁各自都有自己嘅report general出嚟嘅咁誒誒誒嘅user，即係話即係即係你即係其實出邊嘅，即係我哋啲色好大市咧，就就就即係開，可能唔識睇嗰啲即係做咁喎嘅report㗎嘛咁可能需要轉乘一啲測誒起播出嚟俾佢睇咁咧咁，我哋咁我誒，過往我拼搏咩咧就係誒，我就需要誒譬如話我我一誒叫佢可能崩誒誒。其實喺之前喺試過vd咧就可能就系export喺2個舌頭或幾個試探道咧SN啲data即係呢啲report出嚟啦，跟住咧就誒。
+
+Chan, Arthur Man Him   22:01
+嗯。
+
+Chan, Woody Hing Lok   22:30
+喺喺呀就將啲data都拉落去一個Excel度咁樣樣Excel就砌啲圖呀誒誒把擦呀誒或者係其他，即係誒一啲誒誒譬如圖表咁樣咧咁就去，即係轉化成一啲誒誒啲user想睇到嘅嘢咁樣，咁你喺呢個過程咧？就係啱啱講開worry，我喺money咧咁，我亦都要需要做啲任動作，咁啊時間就誒，即係誒，會有即係有即係嘥時間咯，我就覺得成日花好多時間去做呢啲嘢咁誒誒佢佢啲call係自己死咗嘅即系，譬如我一定係睇誒日期時間。
+
+Chan, Arthur Man Him   22:56
+嗯嗯。
+
+Chan, Woody Hing Lok   23:02
+嚇睇誒誒，例如呢一個誒？Wrote，我可能哋位置誒睇誒誒，即係可，呢啲類似啲即係外，即係都有再講啦，你話有啲指正指明有幾個記得fill係睇住嘅咁嗰啲差咧都係根據嗰啲咧做嗰啲XY軸呀誒咁樣就睇住佢啫咁誒，即係fix嘅叫做叫做table方面其實係咁，所以咧誒誒BMS本身個texture就係要寫咧，就系可以類似一個誒誒相有嗰啲life，或者係誒一個用唔知點講點形容啦，即係個即係cable出嚟咁誒我express咧就可能俄斐可能依家咧可能before可能一個一個月嘅咁樣就可能即刻睇。
+
+Chan, Arthur Man Him   23:12
+嗯嗯。
+嗯。
+
+Chan, Woody Hing Lok   23:38
+作睇過負皮要挨到可以睇到誒，即係誒誒就可以，即係數到table好再收到刷咧喺呢一刻佢冇埋，或者係呢個月佢報埋入面啦，然后仲有啲friend可能打死我，想睇返上月我上2個月係點樣咧咁，我可能誒誒升幅ex嘅咁就可以誒誒將佢轉化成一啲誒誒，即即唔同時間嘅拆出嚟table出嚟譬如我有啲老細話想要上年啲誒誒，同期係點樣嘅咁我就可以，即係快啲攞到咯，因為過往咧就好好煩呀，或者叫我想你同我嗰陣啦喎，你下晝先記得你噉樣咁我就呢呢個就就會唔輸。
+
+Chan, Arthur Man Him   24:11
+嗯嗯。
+
+Chan, Woody Hing Lok   24:13
+焗爐，但我就會覺得錦明嗰啲好簡單啫，做咩要咁多時間啫咁樣，咁就會有啲咁嘅concern咁，所以咧誒fill本身誒個即係愛嚟我，我覺得啦，我認我啦，即係最主要就係將係想一係好似有個UI，有個degree出嚟係可以比較快速，可以攞多啲data，然后仲有啲Jenny埋個table或者個白飯類似啲喇咁可以俾我老細睇嘅咁樣咯。有時咁啦。
+係？
+
+Chan, Arthur Man Him   24:37
+嗯，明白明白。
+嗯，因為I suppose咧日後個system咧？應該會有兩部份啦，即系至少一部分就係第一部分係個dashboard啦咁，可能有啲常期有啲數據你可能想換Mon later住嘅即系，例如最少有幾多單quotes呀呢啲咁嘅嘢咧隨時幫你睇住嘅咁啊個task可以方便睇就砌曬誒，可能你有啲你想要嘅一啲圖呀兜腳出嚟方便你睇啦。另外應該system咧，仲有拍嘅reporting記嘅鎖post咧其實就系可能做你頭先想講嗰嗰嗰嗰嗰嗰類咧誒，我想要邊一年嘅data喎，點樣點樣揀下啲criteria？
+
+Chan, Woody Hing Lok   24:46
+嗯。
+嗯嗯。
+嗯嗯嗯嗯。
+嗯。
+嗯。
+嗯。
+
+Chan, Arthur Man Him   25:10
+即系可能撳個債就將一份你想要嘅report出嚟，甚至可能會包埋啲telegram嘅咁呀，我相信應該兩部分嘅咁誒亦都可以再後續再傾下喇，即係譬如話dashboard，如果我想講啲dashboard嗰啲都OK喎，會唔會嗰啲都可以叫做X box到出嚟可能俾Excel睇咧都冇問題嘅，嗰啲我哋可以so far再傾傾嘅咁，當然誒，我見你即系啱啱會前變咗一扎嘢我睇啦咁可能又有啲report嗰啲咧，我可能會再高呼下之後先至再搵哋再detail啲傾深入啲啦。
+
+Chan, Woody Hing Lok   25:10
+嗯。
+嗯。
+嗯嗯嗯。
+嗯。
+嗯。
+嗯。
+嗯。
+嗯。
+嗯，可以呀嗯唔好，嗯。
+
+Chan, Arthur Man Him   25:42
+冇問題，OK，好非常清楚呢一個位好咁呀，跟住第4個point啦，係關於嗰個KPI嘅。
+
+Li, Crystal Ngong Yung   25:52
+係啦咁誒我哋自己DPQ嘅誒Instagram咧？都有一啲誒誒片index咁去計翻嘅咁，但係一以往計呢啲index咧就擺撚就等，咁就誒逐coincident咁入去先睇到啦咁但系誒，可能我哋都想好似有啲策劃者diagram先啱好啲咁講就誒，可以揀誒某幾個月呀咁，可以show到個trend或者誒等等嘅資料。
+
+Chan, Arthur Man Him   25:53
+係crystal。
+係？
+哦。
+
+Li, Crystal Ngong Yung   26:20
+咁可以I visualize到咁樣更加好啦。
+
+Chan, Arthur Man Him   26:24
+嗯，明白。
+我想問下咧誒，我有少少我，吾知我理解係咪啱唔啱喇咁你嗰啲咧，所謂叫做KPI咧，會唔會係同我哋嗰啲叫做compress禁balance有關㗎？
+即系，譬如嗰啲I standard太講緊嗰啲誒EM50160啦I22519啦嗰類又會唔會係？
+
+Li, Crystal Ngong Yung   26:40
+誒。
+
+Chan, Arthur Man Him   26:48
+係咪講到係極其Pi呀？
+
+Li, Crystal Ngong Yung   26:48
+誒。
+誒有兩part嘅一part就誒，就系純粹係for index，未必係AKPI啦，純粹係誒嗰個係啦，係普通嘅一啲standard嘅index啦咁，第2個就可能係一啲PQ嘅service誒，我哋誒我哋team出去做嘢，跟住profile比個客嘅service之後可能會落低嘅KPI。
+
+Chan, Arthur Man Him   26:59
+誒。
+哦系。
+
+Li, Crystal Ngong Yung   27:17
+即系誒，關於嗰啲I instant去follow up嘅一啲pq service啦。
+
+Chan, Arthur Man Him   27:17
+哦。
+明白明白PQ service嘅一啲instant明白。
+
+Li, Crystal Ngong Yung   27:24
+係？
+
+Chan, Arthur Man Him   27:29
+OK冇問題，咁呢個就大家都清楚啦咁誒，當然detail我哋之後去再高DD啦咁好啦咁大概IPSPG即係engine啲同事咧，大概幾個point都OK啦，好啦咁我哋去翻哇。
+
+Li, Crystal Ngong Yung   27:32
+嗱。
+
+Chan, Arthur Man Him   27:45
+啲贏到變同事，就好似好多都好多concern喎，想第一個我見到係關於曬翻APP嘅問題，可唔可以講多少少係啲咩concern咧？
+嗱，介唔介意同事講多少少關於呢一個？
+係關於啲咩事咧？
+
+Li, Crystal Ngong Yung   28:09
+應該係咪AOS？
+
+Chan, Arthur Man Him   28:12
+係囉，係咪AOS果邊同事Hello Hello，請問呢啲呢啲comment邊個流嘅咧？
+
+Li, Crystal Ngong Yung   28:18
+係咪Jason，我見係出咗個會係咪可以傾？
+
+Chan, Arthur Man Him   28:20
+係我，我係Jason。
+咁可能誒唔緊要，等佢再翻嚟先啦，可能或者我哋之後分別再同佢高呼啦。
+
+Li, Crystal Ngong Yung   28:24
+一。
+
+Chan, Arthur Man Him   28:31
+咁好誒？
+
+Lau, Wilson Yiu Ming   28:31
+Bbcare Kelvin同阿鍾系咪有冇落呀誒AS嗰啲？
+
+Wong, Calvin Wing Hong   28:35
+誒，我我，我留咗第2個嗰個呀，第二嗰個係我留。
+
+Chan, Arthur Man Him   28:38
+哦好誒好呀，好呀好呀咁。我哋可以講埋先I defence of data。
+
+Lau, Wilson Yiu Ming   28:38
+係好。
+
+Wong, Calvin Wing Hong   28:41
+咁咧。
+係啊，因為其實誒。正如頭先同啲同事所講啦，其實有啲誒我哋分別有PSISBDX呀，大家都可能會係好多裝著相類似嘅data嘅。
+
+Chan, Arthur Man Him   28:53
+嗯嗯。
+
+Wong, Calvin Wing Hong   28:56
+咁就，但係咁樣做，有個問題就唔係一個single source of truth嘅問題產生啦。
+
+Chan, Arthur Man Him   28:56
+係？
+嗯。
+並白，所以suppose bitcomet就到時已經會見翻一個single softwares啦。
+
+Wong, Calvin Wing Hong   29:09
+係？
+
+Chan, Arthur Man Him   29:13
+冇問題，咁我相信呢個一定係要個要做到嘅咁誒囉勁咧，我想問係因為之前個system可能有啲login係missing咗？
+
+Wong, Calvin Wing Hong   29:26
+冇咁之后嗰啲日日Jason嘅嚇。
+
+Chan, Arthur Man Him   29:29
+我都係阿Jason嘅哦OK得咁咁我哋誒高峯與其他先睇下先啦嚇IUI。
+
+Wong, Calvin Wing Hong   29:30
+我就捉咗定倍。
+
+Chan, Arthur Man Him   29:39
+我想問，誒，關於客係？
+
+Sa, Kelvin Yat Sing   29:39
+冇㗎呢個我寫嚟eye test下嘅啫。我純粹覺得以前嘅勇武咁靚啫，所以我唔使理我嘅，依家可以係啊。
+
+Chan, Arthur Man Him   29:44
+係？
+哦，OKOK係啦呢個我就呢個我UR暫時都未睇過我等陣我遲啲睇睇再contact返係啦咁，我相信誒，我第一個月嘅時候都純粹係想做一個demo啦咁，我見同事其實都做得好好呀，都起碼講到曬啲水嘅評判咁啊爭追成一跌再嚟再高呼啦好咁咧I suppose呢一紮嘢咧到時就係會我哋會base on呢一紮嘅原則啦，去design啲封信囉，design嘅好敢完咗呢part啦咁啊多謝曬咁多位先咁好啦，我哋想講下小小at least嘅嘢就係想睇下咦，好似假設啦，而家嗰個做法啦，如果假設。
+
+Sa, Kelvin Yat Sing   29:47
+係？
+
+Chan, Arthur Man Him   30:21
+誒仲有original啦。而家假設真係有個叫做quotes to PQ1個問題喎咁呀究竟成個handling咧？你哋會點樣做啦咁誒亦都好似就阿Woody護士所講喇，亦都歡迎你哋咧，可能去到某一部分咧調翻轉可以share番你哋，而家個system入邊究竟嗰個畫面係點樣？同埋你哋個做法係點做嘅非常之歡迎嘅咁呀。我可能先簡單講一講我嘅理解先啦，好啦咁我首先我理解一嚟啦誒。
+跟住一開始啦，假設有個叫做PQ event啦，嗰活H嘅問題，啦咁啊嗰啲data咧，會喺Victor度咧？就pass就可能或者S果度喇，就pass俾PMS或者CPIS，咁當然有後呢一呢一部分呢一屆嘢。
+其實咧，就係應該會包埋一個pq入面嘅，不過暫時我哋攞翻，而家先十嚟睇先啦咁啊好啦，當呢一紮啲題有咗之后，咧咁佢就應該會pass俾而家日後嘅pq map咁啊B咩最基本啦第一步啦，相信一定係落咗呢個event先嘅好啦，我想問樂園個E flat之後個system樂園event之后咧？我見到有個weekend咧就叫workstation，係weekday一啲fill有一啲所謂叫force嘅policy defend嘅。
+咁我想問誒？
+呢一個step係咪應該係而家呢一個黑發生咧？即係第一件事，首先有event啦，我哋應該filter走一啲所謂嘅false positive嘅嘢先。
+同埋呢個信息係咪真係嚟自誒ATMs咧？
+
+Chan, Woody Hing Lok   31:53
+誒，我講少少咧誒誒，首先喺PMS嗰個嗰度咧，其實已經有一開始有個初期嘅一個誒，wrote信啦，已經即係黃色呢度咧？係當然有，即係有啲誒誒fill device有啲搣呀當呢啲線曬嘅啫咁佢見到嘢咧就就咗膠手就掉出去俾IPS就server到咁衰反其實本身有一個好簡單嘅logic咧，就去做啲格定嘅咁就叫做誒，即係去篩選一啲係真真定假嘅event啦，叫做咁誒誒，當即係有呢個即係誒嗰關喇叫做OK啦喎咁樣。
+
+Chan, Arthur Man Him   32:03
+哦OK。
+嗯。
+係？
+嗯嗯。
+
+Chan, Woody Hing Lok   32:27
+佢先至會再誒，再調出去出邊，即係去第其他時辰度嘅會咁，所以誒個即係最即系開始，最簡即係即係開始，已經由PS呢個所謂可以頂住都會喺啦跟住誒誒誒咁PS自己都會有一個誒以諾啦，當然就咁啊即係誒儲，只儲完再調番出去咁樣咖咁樣咁如果喺誒即系當PS將來嘅咧呢排咧咁誒佢就會食緊TMS掉出嚟嗰啲醫病都係會一樣照掉，咁即係佢PS就儲住，咁因為TF係一個，當呢個誒誒即係個I device嘅一啲誒誒誒誒。
+
+Chan, Arthur Man Him   32:44
+嗯。
+嗯嗯。
+係？
+
+Chan, Woody Hing Lok   33:02
+誒消化啦咁另一邊張圖片係Google度咧都都有一個，即係有個event儲住，咁樣一舊就咁樣啦攞住跟住誒，所以啲綠色嗰嗰嚿咧挺event咯呢個都啱嘅，係啦，即係又亦都會掉俾啲咁樣啫嘛咁呀又就諗住邊個S落完之后就變咗飄咩又落落到咁樣啦係啦咁誒誒誒誒？
+
+Chan, Arthur Man Him   33:13
+嗯嗯。
+
+Chan, Woody Hing Lok   33:22
+APSD都系都系有呢個Watson啦嚇佢佢再誒收佢問即系佢又唔系，因為PADS掉收完嘢之後咧佢又唔係誒，乃手就掉啲嘢出去做facial，其他人嘅咁佢都會有一個誒，即係一啲誒踹logic啦即系，或者或者有啲setting咧係誒，再做一個fill嘅會咁，所以咧就誒，即係隨即係我先講第第一第一誒，即係第一條第一個值值個column啦佢叫落去咁樣咁誒都啱嘅，係啦咁樣叫做咁樣嚇。
+
+Chan, Arthur Man Him   33:41
+嗯嗯。
+明白。
+即系，起碼其實我哋即係簡單嚟講有2個。
+
+Fung, Kam Tim   33:53
+因為喂，我有少少問題呀，反而。
+
+Chan, Woody Hing Lok   33:55
+但系系。
+
+Chan, Arthur Man Him   33:56
+係？
+
+Fung, Kam Tim   33:56
+係誒唔好意思係啦喂，因為咁樣睇幅圖咧，其實係誒啲data係驚上邊一路落誒，反而係PQ map會有data射落去ATMs，即係幅圖誒嘅。
+
+Chan, Woody Hing Lok   34:06
+誒係我哋express future咧佢將來就會係咁樣咯，會係喇。
+
+Chan, Arthur Man Him   34:08
+嗱。
+
+Fung, Kam Tim   34:11
+哦，OK係。
+
+Chan, Woody Hing Lok   34:13
+係啦，而而而家咧其實係誒冇咗綠色項嘅，而家咧係PMS黃色個個LOL咧，我直接去緊橙色個LOL嘅即係ETS，直到EDS嘅將來嘅想即係入邊個逐個先過票咧。再過EDMS咁咯會係嗯。
+
+Fung, Kam Tim   34:30
+係，但係中間有啲嘢會做fill㗎喇，應該唔係淨係就咁左手呀，即係綠色嗰格。
+
+Chan, Woody Hing Lok   34:35
+誒咁咁當然係，如果誒，綠色嗰格係有feudal就誒，即係我哋到，即係即係即係我哋都都誒，都expect嘅就都係啦喎嚇。
+
+Fung, Kam Tim   34:44
+係OK，好，即係預期果度，有啲logic啦，係啦，先再比個result ADMS嘅係。
+
+Chan, Woody Hing Lok   34:45
+系啊，系啊系。
+係啊冇錯誤誤誤冇錯誤。
+
+Fung, Kam Tim   34:49
+好喂，但係我，我聽，係咪我哋暫時做唔到ATMs個integration住㗎？
+
+Chan, Woody Hing Lok   34:54
+係冇錯呢個future啫，所以呢個係係喇。
+
+Fung, Kam Tim   34:55
+即係呢呢個呢條線應該去唔到住㗎嘛即係，但係呢個係將來個和Mac都想做到嘅係啦。
+
+Chan, Woody Hing Lok   34:57
+係啦冇錯？
+
+Chan, Arthur Man Him   34:59
+嗯。
+
+Chan, Woody Hing Lok   35:00
+嗯嗯嗯，係囉，好最歐洲調味係想做咁樣做嘅，係喇。
+
+Fung, Kam Tim   35:02
+OK，好好。
+好明白明白。
+
+Chan, Arthur Man Him   35:06
+好，我都話大聲喎咩item嚟嘅呢個係。
+好唔好意思阿Kevin係咪有咩問題？
+
+Sa, Kelvin Yat Sing   35:10
+咦喂唔好意思呀，我都想有，係呀，我想問咧，即系依家咧？我哋冇PQ咩啦，即係綠色嗰對我暫時就唔唔理咧咁你個PMS同埋CPDS呢一刻咧？係同ADS有冇溝通噶有冇integration噶？
+
+Chan, Woody Hing Lok   35:11
+誒，因為今哦，係係你好Kevin你好，嗯。
+誒。
+誒依家PQMS係有同A啲Ms有溝通嘅係啦。
+
+Sa, Kelvin Yat Sing   35:28
+哦，即係而家啱啱即係你知咩就啱啱高live啫咁，即係已經係搵緊嗰genovese。
+
+Chan, Woody Hing Lok   35:31
+係？
+誒，係啊冇錯，冇錯，正確。
+
+Li, Crystal Ngong Yung   35:34
+系系。
+
+Sa, Kelvin Yat Sing   35:35
+哦，OK，咁我想問個logic咧即系例如依家PMS係咪CPDS你掟啲嘢過去畀啲Ms咧，你話有個meditation呀個logic係implement咗㗎啦嘛即系嗰啲business嗰啲咯即係唔洗改㗎嘛，即係將來BQ係用翻同一個logic㗎嘛定系有啲新嘅你會expect。
+
+Chan, Woody Hing Lok   35:38
+咁？
+
+Chan, Arthur Man Him   35:38
+嗯。
+
+Li, Crystal Ngong Yung   35:41
+誒。
+
+Chan, Woody Hing Lok   35:50
+係誒冇冇應該就冇醫生，但係可以apply，即係當然可能誒咪，每個每個user都有幾即系，可能話多要求嘅，或者係我哋再做fill嘅家庭嘅咁喺飄咩嘅logic都會開intern到咯可以即係可以withdraw可以係啦冇錯。
+
+Chan, Arthur Man Him   36:03
+呀。
+
+Sa, Kelvin Yat Sing   36:05
+哦。
+OK咁感第3個問題唔好意思，我想問你EDSE鵬喺呢個integration系lor S啦咁咯megb嘅意思，你哋有冇諗著係幾時做，或者係依個project team做呀？定係其實將來嘅project team會去做噶？
+
+Chan, Woody Hing Lok   36:20
+誒誒今次誒，首先首先咧愛嚟expect係誒，即係誒限2016年咧咁我嚟齊要飄咩之后咧？係會VS之後即係26年打黑往後啦，即系可能下年咧，我哋先至再即當P係成功誒誒誒落到啦，即係叫誒即係咁撳咗啦叫做咁咧我哋先至再誒，再有可能再S嘅即係再叫叫叫request有有誒式2.0噉樣就開始呀就識咗個ETM落去咧就ES到入便咁樣撳落妹下。
+
+Sa, Kelvin Yat Sing   36:39
+嗯。
+哦。
+OK，好好理解，唔該曬蝴蝶Thank you。
+
+Chan, Woody Hing Lok   36:51
+嗯嗯嗯嗯嗯嗯。
+
+Fung, Kam Tim   36:52
+嗱，我，我相信個integration未必單向㗎啦，有機會係咪都會fit翻一啲data，即係flamme啲Ms落翻去pick map㗎都有個調調翻轉嘅路呀嘛。
+
+Chan, Woody Hing Lok   37:00
+誒呢個呢個誒唔，敢呢個唔敢答你呢個咧？因為阿因為AD係學學學嗯。
+
+Tang, Samuel Tian En   37:04
+我，我講嗱呢個我咁答。
+
+Chan, Arthur Man Him   37:06
+餸。
+
+Tang, Samuel Tian En   37:07
+誒嗱，我哋今次嘅scope咧？係唔會雙向嘅，今次嘅時候咧？純粹係PS出data俾A隻Max，即係未來推出map出data俾Ms咁而ADS。
+
+Chan, Woody Hing Lok   37:10
+嗯。
+
+Tang, Samuel Tian En   37:18
+可能再未來會有啲人handle啦咁呢個我哋今次就唔講住先啦嚇。
+
+Fung, Kam Tim   37:23
+OK好，即係有可能啦，係啦，即係有有機會個WhatsApp會將來有係啦。
+
+Chan, Arthur Man Him   37:25
+誒。
+嗯好。
+
+Tang, Samuel Tian En   37:29
+係啦，但係今次就一定唔夠啦喺啦。
+
+Chan, Woody Hing Lok   37:32
+嗯。
+
+Chan, Arthur Man Him   37:34
+咁啊，暫時我哋當住係單向先喇，純粹就係誒落翻去ADS嗰邊可能會做少少courtesan啦。好，我想問一問咧誒好好啦咁啊，下一次我哋去到而家呢個step喇，去咗個word Asian，如果發現呢個真係一個所謂叫做false positive，呢個其實都系一個假嘅event嘅咁，我哋除咗可能叫做落，即係take log之外，仲有冇特別action要做㗎？
+
+Chan, Woody Hing Lok   37:59
+嗯。
+
+Chan, Arthur Man Him   37:59
+即系可能PQ master佢落翻哦呢個係誒呢一個幾時嚟嘅係一個貨I force嘅positive嘅嘢event，咁仲有冇其他我哋handling要做嘅咧？
+
+Chan, Woody Hing Lok   38:10
+如果佢係嗱，科學需要就就就就放低佢啦，跟住如果喺真以friend就落低，佢跟住就餓啦，即係擺擺度跟住就等佢。下一步律師信Oslo就已經係係啦。
+
+Chan, Arthur Man Him   38:23
+嗯，即係如果假設佢係force嘅event，就係你哋根本都唔會特別睇佢添嘅藉口，唔理㗎啦？
+
+Chan, Woody Hing Lok   38:24
+系呀。
+嗯嗯嗯誒。
+誒啲得到節娛樂，知道有有有火箭喎，有機會系咪啲標題問題咧？
+
+Chan, Arthur Man Him   38:34
+嗯。
+
+Chan, Woody Hing Lok   38:36
+IPS有問題，即係我哋就敢敢有貨，攝影自然就當然要睇啲教科書片啦，係啦咁囉？
+
+Chan, Arthur Man Him   38:37
+係？
+嗯，明白即系可能誒，即係簡單嚟講啦，其實expect到時可能個bigman啦，按就好似落咗呢啲所謂嘅forces you and即可能有版個history畀你睇翻我有斬嘅嘢咁呀當你哋誒即係有書嘅時候就會入番去泰國睇翻啲落啦，其實就已經足夠啦就冇乜特別話action要做嘅。
+
+Chan, Woody Hing Lok   38:45
+係？
+嗯嗯，係冇錯。
+
+Chan, Arthur Man Him   39:03
+係咪咁理解？OK好冇問題好咁啊繼續啦咁加持個flow係。
+
+Sa, Kelvin Yat Sing   39:07
+你唔好意思，啱啱先見到Alvin，係咪有啲問題想問你，見到佢舉咗手眼先Alvin系咪呀。
+
+Tam, Elvin   39:12
+哦收番啦隻手佢錯咗佢。
+
+Sa, Kelvin Yat Sing   39:14
+哦哦唔緊要唔緊要，我OK，唔緊要，唔緊要，有咩問題可以隨時講OK，好敢跟返比你阿爸跟返比你下。
+
+Chan, Arthur Man Him   39:14
+原本唔好意思係係我都miss咗好似。
+
+Tam, Elvin   39:15
+嚇咁講。
+
+Chan, Woody Hing Lok   39:16
+啦。
+
+Chan, Arthur Man Him   39:20
+誒好啦咁誒咁假設啦，如果呢個真係一個真嘅event啦，敢suppose喺我我support睇嗰個誒以訓導咧就應該你會見到佢update咗一個係一個真嘅event confirm event嚟嘅咁下一步咧？其實個system就會可能做一啲簡單嘅analyze啦咁誒，我想知道咧。
+第一步呢就想個system有啲咩auto嘅analyst佢可以幫人做咗先咧即系例如我見RP有啲所謂叫做benchmarking嘅嘢啦誒有個我都唔係好肯定乜嚟㗎SARFI
+我見到有斬有要求嘅咁可以大概講一講你想expect個system幫你做啲咩？
+喺暫時呢個位？
+
+Chan, Woody Hing Lok   40:01
+誒，好誒，因為本身誒啱啱crystal講過啦，就我哋有啲index咧，其實喺誒我哋Cedric有個，即係有啲地方去計嘅咁呀全部誒有有，即係誒誒個有，譬如PPPMS咧，就有帝臺嘅嗰個系統叫Q啲啦咁Q啲你就系一個誒誒誒，當個地下basic喺度一個系統啦，就會儲住一啲Solo data嘅咁，我哋就會靠彪TQ qdc咧就誒會X搏一啲誒誒，即係本身發覺個個個係統咧就有埋誒，即係草擬好多唔同嘅research啦。
+
+Chan, Arthur Man Him   40:11
+嗯嗯。
+誒。
+嗯。
+係？
+嗯嗯。
+
+Chan, Woody Hing Lok   41:02
+咁其實，咁每一隻錶咧，其實你每年年頭咧？我都會有一個，即係叫做拍一個數字落去就可能講下其實呢隻錶呢隻呢隻Peter咧，可能你當係孭住一一幾點1萬個客，咁樣類似咁樣啦咁，當只要隻錶係見到有福啲咧咁，我哋就assume啲1萬個刻咧就會一齊肚都會減咗。沈受到碟嘅感叫做受讓一後就1萬個類似咁樣啦，我哋有啲咁嘅咁嘅概念嘅嘅嘅數計嘅感每一單quotes帖咧support都有一個一粒數啦，叫做一個一個曬啲素誒我哋我哋叫Savile呀咁樣咁咧誒誒咁誒啱啱講過我哋嗰啲可能我有，我有啲我都唔同色好大嘅。
+
+Chan, Arthur Man Him   41:06
+誒。
+嗯。
+
+Chan, Woody Hing Lok   41:37
+都會想了解多啲究竟嚟points誒誒每一單誒玩設施或者一個月嘅威脅究竟誒就total嘅3月係幾多咧咁樣，咁可能年尾有有喺呢一年裏面嘅數total幾多咧咁樣咁誒誒呢個就係我哋啱啱講嗰個index啦咁，我啱啱講過merries下cable嗰啲其實系有有部分咧？對因應有呢一個index，有啲人就想知個pattern或者個challenge係點樣咧咁，我係相應就要缺呢嗰啲嗰啲table嘅賊嘅咁樣咁所以咧誒誒斯Samantha其他part就係講外。
+誒，要分析一啲index，噉樣做啲table出嚟可能要Cosplay，可能譬如話打風期間有誒幾多size湯鼠標上面啦係幾多啦，跟住譬如話誒，可能誒誒誒誒唔知誒誒，甚至某時有有一單係好好好大Curtis帖咁，究竟想影佢會後有幾多啦咁樣？咁有啲敢嘅，我哋會有啲咁樣嘅誒，即係唔同嘅誒誒分誒叫誒分析啦叫做喺喺岸呢個service嘅會咁咯嚇呢個就係我哋想SN一part會係咁樣咯。
+
+Chan, Arthur Man Him   42:36
+嗯，明白嚇如果我如果我聽咁嘅理解咧suppose其實都係想個誒fill個system啦其實可以誒破WiFi一啲historical data啦，同埋可能畀你睇翻，譬如牌而家我減緊一個誒PE finet嗰個呢只咧可能受影響咗幾多人？
+
+Chan, Woody Hing Lok   42:38
+嗯。
+我。
+
+Chan, Arthur Man Him   42:53
+主要係睇翻，呢啲叫做係舊data去俾你人手analyze返一啲嘅，而家個現狀嘅。
+係咪可以咁樣理解呀？
+
+Chan, Woody Hing Lok   43:00
+嗯。
+誒，可以咁理解嘅係可以用理解嘅。
+
+Chan, Arthur Man Him   43:05
+唔緊要，我哋可以再遲啲可以再高啲嘅，我明白。
+
+Sa, Kelvin Yat Sing   43:10
+SN唔好意思，佢近排就少少問題，想跟進下呢度？
+
+Tam, Elvin   43:13
+好似走火警咁我哋。
+
+Chan, Woody Hing Lok   43:14
+誒，收收收系咯。我都聽到走火警嘅，點解要咁樣嘅？
+
+Chan, Arthur Man Him   43:14
+係？
+
+Sa, Kelvin Yat Sing   43:14
+個樽喂，點解呢個係火警鐘喎？
+
+Chan, Arthur Man Him   43:16
+係啦。
+
+Sa, Kelvin Yat Sing   43:17
+係囉呢個真火警，我大家走火警先可能係唔係主要嚟㗎喎。
+
+Chan, Arthur Man Him   43:18
+係啦，我都，我都。
+
+Li, Crystal Ngong Yung   43:20
+係喎，係喎，走咗先喎。
+
+Chan, Arthur Man Him   43:21
+我都震一震。
+
+Sa, Kelvin Yat Sing   43:21
+Pig嚟嘅唔係做嚟嘅喂走一走先走咗先走先OK拜拜再再開會係好。
+
+Chan, Woody Hing Lok   43:24
+咁嘅？
+
+Tam, Elvin   43:24
+我仲食緊飯添。
+
+Lau, Wilson Yiu Ming   43:24
+但係拜拜拜拜拜誒，我哋再拍翻黎啦。我哋走火警要緊OKOK好好，唔該再返嚟好唔該好拜拜拜拜拜。
+
+Chan, Woody Hing Lok   43:26
+你仲未食完飯俾你？
+
+Tam, Elvin   43:27
+啫。
+
+Chan, Arthur Man Him   43:28
+係？
+
+Chan, Woody Hing Lok   43:28
+點會咁㗎，我唔該唔該。
+
+Chan, Arthur Man Him   43:30
+但集一集添再翻嚟再返嚟好好。
+
+Chan, Woody Hing Lok   43:32
+呀。
+
+Chan, Arthur Man Him   43:35
+拜拜就返嚟就返嚟，我唔到呀。
+
+Fung, Kam Tim   43:42
+Empathy係紅磡嗰邊。
+嗯。
+
+Tang, Samuel Tian En   43:57
+咦佢哋唔使走。
+
+Fung, Kam Tim   43:58
+咦？
+喂，sammi咦，系咯嗰嗰邊係邊走呀？我見走得好快，啲人走曬。
+
+Tang, Samuel Tian En   44:02
+即係，嗱，我，我同Nancy係喺睇低呢邊嘅可能某啲同事。
+
+Fung, Kam Tim   44:05
+哦。
+
+Tang, Samuel Tian En   44:07
+佢走嘅速度係快喺度，連個call都唔quit就走，咗咯我一股。
+
+Fung, Kam Tim   44:12
+哦系嘩咁咁可能走都要半個鐘喎，我諗最快都。
+
+Tang, Samuel Tian En   44:13
+我，我估啊Woody誒。
+冇咁快，我諗等佢call返嚟咯喺咯，我可能都離開個cost。
+
+Fung, Kam Tim   44:20
+等佢call係OK喂嗱咁咁，我哋有冇機會講少少，因為而家我感覺上咧誒，反而好早期呀，今日去傾緊呢樣嘢，係咪呀？再早期啲喎。
+即係似即係未必係去到個report聞嗰浸，係囉。
+
+Tang, Samuel Tian En   44:34
+誒，其實我，我想問呢個會咧，係係你你誒，我都問過嘅，其實呢個位如果搵你哋嚟再咧，嗰個嗰個嗰個，因為我諗我，我expect嘅流程會係點咧？首先就就就有啲否官方啦嚇，因為其實未必話咁，但係我會expect，其實個流程都係首先誒，我哋嘅BA會同我哋嘅user傾好個functional先嘅咁，我會再改一轉make sure佢啲functional攞一啲好telegram Facebook嘅嘢係裏面咁跟住我諗住。
+再之後先搵你哋去一齊傾個technical店面去，我諗住係咁嘅，其實。
+咁今日呢個位，我見到佢哋主要都係傾function嘅咁我，我卻Siri你問我嘅話，我就唔係好信你哋，你哋有冇需要參與落去啦？當然歡迎啦，如果你想繼續係啦。
+
+Fung, Kam Tim   45:10
+譬如嗯。
+喂誒，我和定welcome嘅我哋welcome嘅可以可以繼續聽嘅係啦，但係我見誒，未即係有好多可能，我哋refund番份document啦，即係一路講一路我都refer緊之前個個spec裏邊講啲嘢嘅，其實有好多都match到嘅係啦咁，但係就我，我覺得誒，因為我哋想加速㗎嘛。其實即系即系事實咁講快啲開始去埋牙，做得誒，即係早啲開始搞啦喺啦咁，但系睇落去暫時都仲係未得住喎。而家我我feel到就係啦咁樣咯，因為尤其是technical嗰邊都都想睇下有啲嘢。
+
+Tang, Samuel Tian En   45:24
+和號。
+係？
+嗯。
+係？
+
+Fung, Kam Tim   45:51
+糖粉唔到就早啲同你開始夾落去傾咯。
+
+Tang, Samuel Tian En   45:54
+嗱，我都覺得未得嘅，因為佢佢即系你之前我哋都comment過啦喺RT裏面個Seven eleven detail就相當之高嘅，就未去到一個可以Mandarin of detail啦咁，所以誒，通過即係可能呢1系列嘅workshop就會諗住同business去傾返啱啱個level detail，咁先至去進行個technical嘅咁，而嗰個速度會如何咧？我諗呢個可能要問返Wilson，佢哋個關於plan裏面點樣寫？
+
+Simon Yu(JKTech) - Mobile   45:56
+誒。
+
+Fung, Kam Tim   46:23
+誒。
+嗯，OK，好係咁就係咯。我哋繼續尸片，呢啲會先啦，我我諗而家暫時就喺咯，因為我都好難拉得快即系即系我事實想快啲開始誒在曬啲report埋出嚟啦喺啦咁開始出designer出城咁去去做呢啲嘢囉？係啦。
+
+Tang, Samuel Tian En   46:27
+和號。
+
+Fung, Kam Tim   46:42
+咁我可能我哋係囉。
+
+Tang, Samuel Tian En   46:43
+你你個expectation係要幾時開始做technical design啦？
+
+Fung, Kam Tim   46:47
+喂嗱，其實誒，因為嗱，始終未official嘅，即係大家知啦，而家未official而家幾時official我哋都問咗好多次㗎啦咁誒，我暫時收到message lavine今個月嘅我諗未必去到中後期嘅可能月中應該係最遲啦咁，應該就我facial confirm㗎喇敢confirm咗我哋就可以正式咁去去參與啦喺啦咁當然誒，我我覺得有好多嘢要要傾嘅即係棘of我哋其實total成個project有幾多讀conversion要做啦，其實裡邊跟住點樣個time frame係點啦。
+
+Tang, Samuel Tian En   46:51
+嗯嗯。
+黑。
+和號。
+
+Fung, Kam Tim   47:17
+其實嗰啲全部都未未傾得住啦，即係叫做係啦。
+咁我諗可能月中都係有機會傾，前期少少嘅嘢咁，但係喺前期我希望呢2個禮拜有冇機會可以，即係即係傾曬前面呢？扎嘢跟住就其實可以快啲做到正式嘅report嘛，即系海洋confirm到誒有幾多個report蚊啦？同之前個tender個出入有幾大啦喺啦咁，我諗希望可以course嘅時候都齊呢啲嘢咯喺喇咁，同埋我啲同事點樣埋牆，大家啲document點樣share咧？其實呢個都我另一個concern咯。
+因為我，我可能有total。有4個同事會賣場嘅，即係計埋我係啦咁，我想有account咯系咯。
+
+Tang, Samuel Tian En   47:49
+OK好。
+2個問題呀，首先就係拍喇，靠呢個冇問題嘅一定一定有多個近同埋會開翻一啲商舖拿去上pokéMon呢個應該無乜問題I functional design我哋可以盡快，我哋都係想儘快做完得快就係而家開始啦。即使未期望。
+
+Fung, Kam Tim   48:02
+遞補。
+明白都知道嘅呢個係啦，OK好。
+
+Tang, Samuel Tian En   48:12
+所以都係想盡快嘅，但系其實我而家答唔到實哦佢地幾時會傾完？
+
+Fung, Kam Tim   48:19
+嗯，係囉，我都見因為系咯亦都有少少dependence喺嗰個confirmation方面，即係暫時未official啦，我哋叫係啦咁樣咯。
+
+Tang, Samuel Tian En   48:20
+係啦。
+嚇。
+據我理解就係一定去嘅，即係呢個應該唔係一個係唔即系啦。
+
+Fung, Kam Tim   48:28
+所以都。
+誒，知道呢個message咗我都收到呢個message係啦係啦咁，但係都期就真係仲係I向後褪緊嘅，我哋都見係啦咁樣嘅。
+
+Tang, Samuel Tian En   48:34
+係啦。
+係囉呢個我，我unfortunately我都唔係好肯定嘅，所以我。
+
+Fung, Kam Tim   48:44
+嗯譬如明白。
+
+Tang, Samuel Tian En   48:45
+我畀到你嘅訊息就係我會幫手監管佢哋嗰啲requirement咯咁。
+
+Fung, Kam Tim   48:47
+咁樣。
+係technical，佢果邊喎，即係尤其是主力都係？
+
+Tang, Samuel Tian En   48:54
+係？
+I functional嗰陣時，就SA會主力去去去ice攞出嚟啦咁，但系我都會喺喺。舉行workshop嘅呢個期間，我都會friend嘅，即係唔想係佢哋講完之後咁先第一次俾daddy個人體感跟住發覺有啲嘢應該係work㗎噃即系咁咯誒，所以百度貪你見到理論上應該係係SanDisk咗嘅。
+
+Fung, Kam Tim   48:58
+我。
+係？
+OK明白。
+其實好明白。
+係保？
+
+Tang, Samuel Tian En   49:23
+係啦，同埋都係target快嘅，係啦，都係target快嘅。
+
+Fung, Kam Tim   49:26
+喂，大家都有同一個I理念嘅呢個，我相信係啦咁，所以我哋都想我哋都welcome。配合一齊快嘅，其實即係係啦，所以我哋都想早啲開始裝個會嘅，係啦。
+
+Tang, Samuel Tian En   49:28
+我。
+係啦，係啦。
+
+Fung, Kam Tim   49:37
+咁樣嗱喂我哋點樣？因為？嗱，我我見而家走火警，我哋都control唔到幾時可以assume翻啦，因為其實個股票到達半嘅咁我哋後少少，其實都schedule有有啲meeting嘅咁就。
+
+Tang, Samuel Tian En   49:37
+係啊咁？
+和號。
+誒。
+
+Fung, Kam Tim   49:51
+我地點呀，等定係定定點。
+
+Tang, Samuel Tian En   49:54
+誒，你個meeting係同其他客定係同佢哋傾？
+
+Fung, Kam Tim   49:57
+誒唔系佢哋㗎佢哋去到3點半嘅，但係當然我冇估到，即係大家冇遇到有個走火警喺中間出現啦喺啦？
+
+Tang, Samuel Tian En   50:00
+OK。
+啦誒冇呀嗱首先就唔會係今日傾完㗎啦即系。
+不嬲都唔係覺得今日傾得曬嘅啲，係啦，係啦，所以我諗。
+
+Fung, Kam Tim   50:10
+系，咁呢個一定啦，我相信今日都好好kick start，咁即系係啦。
+
+Tang, Samuel Tian En   50:14
+係啦，所以我覺得係咯，即係今日。
+個個張大有少少變稀咁喺其他嘅workshop最快喎，只要係咁喇。
+
+Fung, Kam Tim   50:23
+OK咁好呀嗱，我哋一係就。
+
+Tang, Samuel Tian En   50:24
+所以我覺得都系嗰句，我覺得如果你哋要走，即係又有啲其他product啦。盛咧咁咪照可以照離開先嘅，我相信誒，即係其實嗰個requirement嘅tethering咧？你地？
+誒睇唔喺呢2個first meeting度應該個即fill都唔會好大咁啦嚇就大膽咁樣講，係呀，我諗我諗追翻嘅系啦。
+
+Fung, Kam Tim   50:46
+嗯。
+我明白係啦，因為我見係開頭冰箱緊而家係啦，係啦，係啦OK明白。
+
+Tang, Samuel Tian En   50:52
+係啦，都係係一個比較early stage嘅deadline，其實如果你問我嘅話咧，你哋都未必一定需要章嘅，如果你哋覺得誒，即係呢個你，當然你哋自己可以去去拿捏啦喺啦。
+
+Fung, Kam Tim   51:00
+譬如。
+明白明白係啦，係啦，因為我哋諗緊誒，即係一定我哋啲schedule到咩㗎啦，即係O到去I 3點半嘅，因為本身個meeting果度3點半嘅係啦咁，但系我唔知道即係，當然其他同事都應該係有機會有其他apartment啦，我相信係啦咁，可能我哋暫時Keep住喺度先等佢哋睇下會唔會返到嚟，因為起碼Alex去到3點半係咯。
+
+Tang, Samuel Tian En   51:23
+我都係諗住I Stay喺度，即係到3點半喎咁呀跟住傾到去邊就去邊咯。
+
+Fung, Kam Tim   51:26
+系呀。
+OK好好明白喂咁係咯咁，我哋做住其他嘢先，咁就掛住機先喺度係啦咁樣咯。
+
+Tang, Samuel Tian En   51:33
+係啦冇錯好唔該你？
+
+Fung, Kam Tim   51:34
+哦，好好Thank you你好sammi咁好。
+
+Chan, Woody Hing Lok   1:06:22
+喂，阿Tim又添。
+
+Tang, Samuel Tian En   1:06:32
+佢話會等嘅，所以可能佢啱啱行開咗佢啱唔係你哋走咗之后，我同佢傾咗兩句。
+
+Chan, Woody Hing Lok   1:06:33
+哦系咩哦哦。
+係咪就係？
+
+Tang, Samuel Tian En   1:06:38
+系呀。
+
+Chan, Woody Hing Lok   1:06:39
+爸爸都走咗上枱，值即係點呀，你個會。
+
+Tang, Samuel Tian En   1:06:42
+唔系因為你哋，你哋係冇job com嘛，所以我哋唔肯定你哋走左未誒，我我，你阿大添可能隨時就翻㗎啦即系佢話會等嘅佢話會，佢話會Stay 1到3點半嘅。
+
+Chan, Woody Hing Lok   1:06:44
+拍哦OK好。
+好哦哦咁好好。
+哦，好好好一個會去到3點半啦係嗎？但係浪射。
+
+Tang, Samuel Tian En   1:06:56
+係咪3點半呀哦？我係咪記錯啦？SN唔系家樂3點半3點半校。
+
+Chan, Woody Hing Lok   1:06:58
+誒唔知喎。
+系生一部K好好好好咁好咯好咯。
+
+Tang, Samuel Tian En   1:07:02
+係，但係即係我諗我都同team講話我哋點點都傾唔完，咁即系，其實就算冇火警都傾完㗎喇今日咁所以都係即係會Keep住行1系列嘅workshop啦咁，跟住之後如果有啲乜嘢functional design嘅結論都會帶翻俾佢哋嘅系咯。
+
+Chan, Woody Hing Lok   1:07:07
+係咯？
+係冇錯。
+嗯。
+係咁，再唔係我哋喺返啱啱嗰個，我唔知嗰個叫乜嘢Mirror Mirror到我哋就叫mark翻低啲拼盤，即係因為佢啲群入邊㗎嘛，希望人喺里邊沁啲嘢㗎嘛，因為喺果度叫得佢系好。
+
+Tang, Samuel Tian En   1:07:25
+Neo。
+唔會唔會全程喺mirror做嘅即系offer，佢哋有好多tools嘅咁咁，可能第一第一輪喺mail先啦咁喺level啲感，下次可能就會誒喺。第2度Keep Keep住capture㗎啦係啦，所以我諗誒我我我應該miss咗你哋禮拜3個會嘅誒有冇講話有話plan有幾多次workshop呀？
+
+Chan, Woody Hing Lok   1:07:34
+嗯。
+嗯嗯嗯係？
+係好。
+哇佢話好Keep住都有喎佢冇嘅一次，仲有冇待避同我講？係呀。
+
+Tang, Samuel Tian En   1:07:53
+系呀，應該我。嗱，我平時都至少三四次嘅我，我覺得會係啦，係啦，係啦咁，我哋就盡快做完，咁跟住就喺真的of大增既coffee嗰可以寫到份spec，咁就最好啦咁就可以直接跳落去睇到technical嘅design囉嚇。
+
+Chan, Woody Hing Lok   1:07:57
+系系系，系系系。
+嗯嗯。
+好呀，好呀好呀好呀。
+
+Tang, Samuel Tian En   1:08:16
+我諗你我諗你哋照傾啦嗯，係囉，即係都係嗰句啦，即系添佢哋喺唔喺度。
+
+Simon Yu(JKTech) - Mobile   1:08:19
+係咯誒照傾呢樣我話咗畀阿Tim聽㗎佢應該誒好快裝得返㗎。
+
+Chan, Woody Hing Lok   1:08:19
+平，嗯。
+
+Chan, Arthur Man Him   1:08:20
+嚇。
+
+Chan, Woody Hing Lok   1:08:21
+嚇。
+
+Tang, Samuel Tian En   1:08:23
+節。
+
+Chan, Arthur Man Him   1:08:25
+哦OK，好呀唔緊要咁我哋繼續呀睇下先嚇。
+
+Tang, Samuel Tian En   1:08:25
+嚇。
+呀。
+
+Chan, Arthur Man Him   1:08:30
+打打斷咗去睇睇翻六呀六八，我哋去到邊先。
+阿嬋應該係講緊個I system error咗部分咁呀睇啲historical data，即係睇翻，而家會影響到啲乜嘢達咁上下嘅？
+
+Chan, Woody Hing Lok   1:08:43
+嗯。
+嗯嗯。
+
+Chan, Arthur Man Him   1:08:50
+但我記得有一個問題，我問緊就係話誒唔好，是係咪有問題？
+
+Chan, Woody Hing Lok   1:08:51
+係？
+
+Sa, Kelvin Yat Sing   1:08:52
+誒陂首先又見到CC，係呀時事嘅問題。
+
+Chan, Arthur Man Him   1:08:55
+係啦，電視係有問題。
+
+Chow, Chun Chung   1:08:58
+哦系呀誒，其實想問一問咧，即係話其實依家existing已經喺PMS會射啲嘢過去ADMS咧咁但系，如果我哋呢個project個ATMs可能係2.0嘅時候咧？
+我哋上咗之後係咪同ADMS會有段空窗期，係咪OK㗎？想問返user嗰邊？
+
+Chan, Woody Hing Lok   1:09:21
+誒，意思係誒誒？由PQS去ADS就變成PMS去pick咩再ATMs係嘛？
+
+Chow, Chun Chung   1:09:29
+依一講緊PQ頭先我冇聽錯嘅話，PQ咩去ATMs係會係誒？再有下一個project先做㗎嘛咁，即係我，我哋呢個project上咗之后到下一個project上嘅時候係講緊可能。
+
+Chan, Woody Hing Lok   1:09:38
+呀。
+係冇錯，係啊。
+
+Chow, Chun Chung   1:09:45
+半年一年誒，可能幾個月嘅時間咧？
+
+Chan, Woody Hing Lok   1:09:46
+哦冇誒咁，我明好誒冇冇冇冇誒咁，因為user一直都係收EDS嘅嘢，其實都系咁誒誒，即係真正要用用家咧誒誒會誒？分別會都系SN，但係即係真係睇過兒科嗰啲嘢睇detail嘢咧就係PMS睇，跟住啲installcore咧，就會係EDMS睇咁，所以咧誒，如果PS新城咗之後咧？其實佢呢個係呢臺，你當係一個strength，好似嗰一刻moment係一個類似standard嘅啫佢就係佢一個佢佢都係一個一個誒誒I system咁但係咧就系叫做T咗誒PMF嗰啲data落去儲NP味道先。
+
+Li, Crystal Ngong Yung   1:10:12
+呀。
+
+Chan, Woody Hing Lok   1:10:19
+跟住將來咧先至誒，如果即係成功可以去到嘅話，咧咁就先會將誒PMS誒由ADS即係APM去EDMS嗰條路咧？就撥咗去被騙map，然後另一邊廂就pick咩再有條路就去dqv咁樣嘅，所以誒對user嘅機iPad咧，其實係誒誒，今今即係去到形容年咧，其實都係對於佢嚟講係冇乜誒大嘅concern，應該係佢只係多感覺係多同人system係要入去篇文度睇嘢咁樣咯會。
+
+Chow, Chun Chung   1:10:51
+呀，即係嘅意思咧，就算1.0嘅時候PQMS都會繼續射嘢落ATMs，係咪？
+
+Chan, Woody Hing Lok   1:10:57
+係冇錯，冇錯，冇錯，係啊。
+
+Chow, Chun Chung   1:10:57
+就哦，OKOKOK好明白唔該曬。
+
+Li, Crystal Ngong Yung   1:11:00
+即係黃色果個collective data都仲會多條線去ATMs嗰邊。
+
+Chan, Woody Hing Lok   1:11:06
+係啦冇錯係啦，係啦冇錯？
+
+Li, Crystal Ngong Yung   1:11:06
+2KMS係分別有2條線。
+
+Chan, Woody Hing Lok   1:11:09
+嗯嗯。
+
+Chan, Arthur Man Him   1:11:10
+嗯，即係一。
+
+Chow, Chun Chung   1:11:10
+好唔該曬？
+
+Chan, Arthur Man Him   1:11:12
+即係1.0部分就會繼續舊嘅TS照去AD Max純粹係多條新嘅路，就係pq map咁解啫。
+
+Chan, Woody Hing Lok   1:11:16
+嗯。
+錯。
+
+Chan, Arthur Man Him   1:11:20
+嚇福啊。
+
+Tang, Samuel Tian En   1:11:27
+呀。
+
+Chan, Arthur Man Him   1:11:27
+等緊咧誒即係嗱呢個係講緊suppose I system會有一啲叫做historical data啦咁個流翻入俾你睇返關於呢一個meter，關於呢個instant嘅事啦，敢純粹就係誒。
+因為嗰陣時睇緊就話有啲所謂嘅band Mac聽嘅嘢，或者其他一啲唔同嘅analyze啦，其實除咗叫做撈翻data beta之外，有冇其他一啲嘢要system去幫你去analyze咗先嘅咧？
+
+Chan, Woody Hing Lok   1:11:44
+誒。
+
+Chan, Arthur Man Him   1:11:54
+即係睇下啲data有冇啲乜嘢地方嘅雙方叫睇下先就係譬如誒睇啲wave form就主持落我個我估㗎咋，即係譬如一啲wave咁樣有咩問題呀？我會可以叫做係P會比你睇一睇一啲所謂嘅Thanos嘅嘢呀。
+
+Chan, Woody Hing Lok   1:11:59
+係？
+會會會會會有有有誒，因為我哋誒喺市道咧？仲有個叫做standard standard嘅一個誒嘅completion post啦咁樣誒？叫做beautiful啦咁，除咗啲beauty咧係包含咗幾樣嘢嘅第一個咧就系啱啱講嘅。
+
+Chan, Arthur Man Him   1:12:16
+係？
+
+Chan, Woody Hing Lok   1:12:22
+IT event啦。
+即系誒誒覺得以為係誒？即係儲住啲Instagram嗰啲資料啦，但係如果就係誒，我哋就會有個叫做comjav嘅，一個誒方面啦咁就會掉俾誒，即係喺個we form嘅一個format嚟嘅咁就係一個都系類似一個standard嘅一個方面啦，就系數一啲weiphone嘅pattern嘅會感誒誒X battle咧，就係愛嚟誒平保咧，係希望會收到啲兩樣嘢咧，係叫做喺依個編導喺掃到呢啲資料出嚟嘅會咁咯嗯？
+
+Chan, Arthur Man Him   1:12:25
+係？
+嗯嗯。
+係？
+係誒，會寫呀我我我頭先未讀過誒咁trade啦，係睇個wave form啦，跟住另外仲有個係咩呀？
+
+Chan, Woody Hing Lok   1:12:58
+IP誒呢個PQ TIF啦PQPQ啲IP係啦P叫DFDF sorry DIFPUTIFI1個字呀，即係全日誒，全部誒誒別大約係咁樣係啦，日日係係啦，係啦誒呢個就系啲片嚟嘅啫即系event嘅一啲bootstrap係啦。
+
+Chan, Arthur Man Him   1:13:03
+CIP係？
+哦哦OK，唔好意思。
+係？
+哦。
+不過即係純粹可能叫睇翻啲event入邊嘅detail嘅啫。
+
+Chan, Woody Hing Lok   1:13:22
+係啦，係啦，係儲住啲誒黑豹quality嗰啲誒誒xd啲嘅一啲I terms咯會有。
+
+Chan, Arthur Man Him   1:13:28
+嗯，OK明白。
+
+Chan, Woody Hing Lok   1:13:30
+嗯。
+
+Chan, Arthur Man Him   1:13:32
+好得冇問題。
+I返轉頭想問少少？關於data上嘅咧，我想問咧，I suppose而家嗰啲叫誒，美T metal嗰度啦，我想問會唔會話可能又會有唔同嘅牌子或唔同唔同嘅model咧？其實佢出嚟XX度出嚟嘅data去呢一部分咧？係咪應該都系一樣價，會唔會有啲唔同嘅conversion要做㗎？
+
+Chan, Woody Hing Lok   1:13:39
+嚇。
+誒。
+誒誒誒如果係由朝Ms掉出嚟嘅話，應該就係support曬全部standard，應該一樣嘅係啦，但係你話喺可能誒，可能最即係歐盟微係咪真係咁完美呢一個你知好多咁誒誒party㗎嘛佢哋啲我哋啲誒sorry呀誒系咪有又俾100%係完全阿拉咧呢個就達唔敢答你嘅真系誒，但系誒我哋誒誒你嘅holika嚟講咧，係應該係一樣嘅，係啦，我只係咁講啦嚇係啦。
+
+Chan, Arthur Man Him   1:13:58
+而家呢部份。
+哦OK，嗯。
+嗯嗯。
+嗯，明白明白。
+
+Chan, Woody Hing Lok   1:14:26
+呢個真係是先至係啦嗯？
+
+Chan, Arthur Man Him   1:14:28
+明白好咁我到時可能再講，即係起碼咁講啦，即係事先我哋去到而家呢一刻理論上應該係唔同pet抌出嚟data應該係一樣啦，即係唔需要話有啲特別特別connection嗰啲要做啦。
+
+Chan, Woody Hing Lok   1:14:37
+係啦冇錯？
+唔使唔使係啦。
+
+Chan, Arthur Man Him   1:14:40
+好。
+OK明白。
+咁我想問咧誒問多少少就係咧，如果假設data flow嗰個位咧咁好似而家做法咧？如果誒PQ嚇因為而家冇PQ咩？
+如果PMS或者CPICPIS嗰啲data抌出嚟咧，其實仲會唔會需要有其他唔同嘅system，再補充返多多一啲嘅data先至會落pq map㗎定係其實哦純粹呢個system出嚟嘅data出黎嘅data，即係譬如I假設H出嚟嗰個當係XL啦X入邊可能有10個column其實已經係足夠，就係你哋想要嘅嘢㗎啦會唔會仲要可能咦其他唔同嘅神可能再加多兩三個call諗砌出嚟嘅嘢先喺你哋想要沽嘅，所謂叫PQ device嘅data。
+
+Chan, Woody Hing Lok   1:15:27
+誒嗱呢個呢個都要睇翻篇遊有嘅我哋list咗一個誒，即係誒誒呢啲related嘅system誒，邊啲係真係有需要？我覺得係我記得RP由講㗎呢個，譬如呢個我就唔係好記得呢個真係嚇多嘅，我想講唔係啦，有嘅有嘅有呢個有嘅系啦。
+
+Chan, Arthur Man Him   1:15:28
+知唔知呢啲嘢？
+哦OK。
+系有嘅唔緊要，咁我純粹係mark翻有其他。
+
+Chan, Woody Hing Lok   1:15:44
+嗯嗯嗯，係呀，我都係呀嗯。
+仲有嘅，應該仲有㗎？
+
+Chan, Arthur Man Him   1:15:53
+好，咁我哋可以之後先再再失電。
+
+Chan, Woody Hing Lok   1:15:56
+嗯。
+
+Chan, Arthur Man Him   1:15:57
+好明白好啦咁啊假設啦咁，我誒頭先我哋同事睇咗誒有啲所謂airlines，即係睇咗頭先嗰一扎，譬如睇咗waveform啦睇一啲event嘅一啲嘅誒破結呀。
+
+Sa, Kelvin Yat Sing   1:16:06
+唔好意思呀，想一個問題想問一問I voting，我想請問你啱先你講咧，即系你依度做出信ISIS咧，你會好多嘅calculation㗎嘛即系嗰啲index呀，或者你會放我想問呢，你哋而家系咪誒，依家係自己offline自己Excel去計呀，定係已經online？例如誒？PMS icbc已經幫你計緊噶，即係個形式係點噶。
+
+Chan, Arthur Man Him   1:16:08
+係？
+
+Chan, Woody Hing Lok   1:16:15
+嗯。
+嗯嗯。
+好。
+哦咦係啦，不如咁啦，我再飛，我見誒，今日個會本來係3點半吖嘛，我哋時間無多啦，不如不如誒數我，我哋依家誒，究竟我哋喺背底後邊啲，即係我哋用啲乜嘢data嚟砌咧咁樣咁不如噉樣，佢係咪好似好似誒好啲呀嗬係嗎？好咁咧誒，但係。
+
+Chan, Arthur Man Him   1:16:33
+嗯嗯。
+好呀，好呀。
+我又可日可以呀。
+好呀，好呀。
+
+Chan, Woody Hing Lok   1:16:46
+哦，我咁樣咯，我唔會好喺喺我跳一跳啦唔好意思嚇咁誒啱啱講過誒，我哋好多時頭啦。其他臺叫PMS，啦咁呢個係PSUI，其實呢個就系咁咧誒誒佢佢個UI開誒，都都同大家講一樣啦佢又係有啲唔系好靚仔嘅，係真係係啦咁咧咁開頭咧，就我哋好多嘢表啦唔同嘅錶咧使其B48132咁喇喺啲錶唔同嘅錶嘅咁咧，有啲人一入去咧home page咧就會比較即刻可以畀入得咧揀唔同嘅Peter啦咁呀唔同嘅地方，咁樣同有隻錶咁樣啦咁呀，包括有。
+
+Chan, Arthur Man Him   1:16:47
+冇人麻煩report咗share下啦。
+哦。
+係？
+嗯。
+
+Chan, Woody Hing Lok   1:17:19
+唔同咗誒賺名啦I circle啦。跟住誒，我哋meter嘅model係乜嘢啦咁都有嘅咁呀，究竟ABCD咁樣睇啦咁有好多好多謝咁樣啦OK咁誒如果敗逐只嚟睇嘅話咧咁譬如話我撳撳落去誒譬如就呢個啦機場喺機場度有隻錶啦我哋有啲有隻錶Peter咁撳入果隻錶頭咧就會見到有誒一啲唔同嘅誒誒資訊去睇嘅咁譬如話我哋想睇I quotes啦即系嗰啲誒誒wrote啦更是啦咁，可能有唔同嘅quality嘅一啲誒誒誒資料啦都可以喺誒根據隻錶。
+嘅即係大煙by diverse去睇想睇嘅嘢啦叫做我地咁樣啦，大一扎嘢睇啦咁樣咁你譬如你想睇睇睇？第第第第2個嘅睇第2個囉，OK好咁誒真真正正誒誒我哋好咁誒我哋玩X box啲誒唔report係乜嘢waitlist咩report咧就會喺我地其他唔同嘅function啦咁樣咁譬如話我哋想睇譬如誒誒誒誒誒誒有一有一有4月1號去到4月5號，咁有咩event出過嚟咧咁樣？咁我就有個咁嘅野report出嚟嘅會咁就講咗咧我可能誒誒一最後嘅唔知幾點咧就有有ft碟出現咗啦喎。
+叫人敢呢啲report咧就系我哋啱啱講個其中一個咧，係呢啲和嘅report咧？我哋需要攞出嚟做x'mas嘅一啲report嘅呢個就系咁呀譬如XXX咧咁就可以export到個Excel出嚟咁樣咁咧呢個就係我我我要揀翻一年嘅咁由1月1號開始去到今日，今天有幾多單誒錄碟嘅event咧咁樣event講係咁咧就會有就就可能X多個Richard又就可以咁樣咁誒呢個係最和嘅report呢其中之一啦佢哋有機會需要用到嘅report啦呢個係好感咧跟住誒呢個呢個呢1度OK買到呢個誒使我唔使特別detail講呢啲個案啦係嘛。
+
+Chan, Arthur Man Him   1:18:58
+OK。
+
+Chan, Woody Hing Lok   1:19:01
+嚇。
+
+Chan, Arthur Man Him   1:19:02
+誒唔使喇唔使啦。
+
+Sa, Kelvin Yat Sing   1:19:02
+誒唔使驚，唔好意思呀hoodie，我想問你即係意思係你export出去就係你menu做calculation㗎嘛，係咪你而死度你會有CSP。
+
+Chan, Woody Hing Lok   1:19:04
+嚇。
+系好系好咁好係好好咁下一步我再講啦咁，正嘅點計咧？其實我就啱啱講緊PMS之外咧，我哋仲有睇第二臺system啦，叫PUDA啦，係一啲誒你當一個誒誒誒哋唞library咧，係一個IP咧，就儲住嗰啲historical data嘅咁咧，我哋平時計開數咧就誒叫做sofie呀嘛佢哋就有呢個啲呢個係統咧就有叫做S，即係呢個叫sunny嘅一個誒I function啦咁就誒誒可能要時間會好感咧咁我哋咧誒平時用開report咧譬如話我又又誒瓷遲少少啦劈使月1號咁去到。
+唉，11月30號咁樣啦咁，我哋就成日睇誒，有我哋有唔同艇平嘅呢啲係咁譬如我撳伊誒誒2025年啦咁樣咁咧一，即係我哋撳咗之后咧就可以搵到咧誒，我哋喺啱啱個市咧嗰個一11月裏面咧？究竟個沙士嘅數值係幾多？係咪譬如啱啱嘅啱啱講過唔同表啦，有好多唔同嘅錶嘅喺度咁我哋就其實咧，係有，即係我哋有list曬所有唔同嘅錶感覺字喺裏面record到Curtis嘅event係幾多單喇，同埋噶相關各每一單嘅一啲誒生指數係幾多？
+咁total，你想要咩咧就系可能要一個全個即系，可能我哋因為我哋有睇唔同嘅SUV又唔同嘅即系有個criteria嘅咁，我哋就可能睇誒主打通常就睇70啦譬如70啦咁我哋就會睇，可能我誒11月咧？我哋3月70嘅contribution係幾多咧，就係0.21啦咁就係有啲質素係會感誒誒啱啱。我之前講，誒，我哋講緊每一隻錶咧，可能孭住一堆客嘅啱啱講過啦，翻啲誒香港機場A有一堆唔知幾多客啦，跟住可能喺誒呢個喺誒誒間街咁樣咧就有一對嚇咁樣嘅咁，我哋各自就有個我地。
+
+Chan, Arthur Man Him   1:20:33
+嗯。
+
+Chan, Woody Hing Lok   1:20:46
+又叫waiting father啲嘢咁代表waiting嘅意思，就係咩呢？就係代表緊哦呢隻錶戰誒，我哋ICOP誒，即係誒誒，即係total，可能唔知幾多晚幾百萬個客戶喇咁裡面嘅其中幾幾多嘅factor咧咁就個字母隻錶就有一個factor出現嘅會咁，我呢個啱啱講到就係每年咧，就會要一次嘅呢個factor就叫做可能每年就係咦嬲啦，有啲人就即係咁樣就會有有輕微嘅change啦，叫做咁啦咁，我哋就會有update咗個waiting father，從而咧去計到誒，究竟呢一鏢相關佢呢個曬呢個數量？
+
+Li, Crystal Ngong Yung   1:21:03
+呀。
+
+Chan, Woody Hing Lok   1:21:18
+影響幾大咁樣咯咁就出到咧誒譬如話，我可能A機場A咁樣咯，即系每一誒呢一單係咩嚟嘅呢單一娛樂係哦11月29定有一單嘅目的出現啦咁，而呢一呢一單咧？究竟個相關個size幾多咧？就可能我都有另一邊就有cable再計啦要咁呀咁但系total咧通常咧就睇啲級數嘅就可能誒，我哋就誒誒今個月又譯11月咧？我哋襯到0.21嘅嗮70嘅數啦咁樣囉，好跟住咧誒誒仲有嘅就係咧愛嚟仲會啱啱講啦，因為呢個database嘅啫。
+咁我想睇耐少少嘅啲啲下跌咧就要喺誒誒，即係有有叫events啦，其實就係誒誒你當其實同啱啱PMS個個個PayPal就好似嘅咁，但係咧就誒就呢個就系在export多啲，因為啱啱講historical吖嘛咁PMS可能儲咗淨係最近嗰3個月嗰啲數量嘅數數誒，會會哋睇字係咁誒PA就可以攞到3年嘅一啲data嘅會咁，所以我哋就即可能搵啲historical，有啲叫record咧，就要靠呢個events咧。
+Effectiveness咧，就會誒去做一啲I access嘅會咁啊X嗰度咧誒，我究竟有幾多單即係有啲誒可能1月2號21號咁呀，有單400協議嘅僕啲出現喎嚇跟住誒。9月8號有單嘅目的喎咁樣咁相關，每一單Curtis碟嘅confirmation幾多咧？就系呢度睇啦，可以咁你嗱呢個就係我哋平時素做開Asus嘅一啲誒誒叫和嘅data都係叫一啲係啦咁誒。
+誒，去到呢度先呢？我因為再講就都仲有嘅，不過我就睇下大家啲去呢度，你哋又冇乜嘢，仲想問。
+和號。
+係啦。
+
+Li, Crystal Ngong Yung   1:22:56
+同埋咧誒有少少補充啦，就系誒，好似啱啱見到其實都係得啲數字嘅，但系就好難去I1眼就睇得到可能個trend呀，或者刷呀呢啲治療咯。
+
+Chan, Woody Hing Lok   1:23:08
+系啦唉呀special你會可以有個誒喺我哋supplier BB好一定要meeting，你係咪有啲策嘅，即係嚟掃一掃愛嚟誒誒，真係用啲data嚟做啲咩？圖出嚟咧咁樣，我哋即系我哋，我哋畀個成果就我哋，我哋或者我哋要睇啲乜嘢即系得DD user即翻嚟睇呢啲嘅嘢係乜嘢你好，你幫我開開個size size size嗰個bingo回個。
+
+Li, Crystal Ngong Yung   1:23:09
+係？
+咁？
+嗯，好呀。
+
+Chan, Arthur Man Him   1:23:35
+我想問少少咧唔好寫buddy，想問少少咧？關於頭先嗰啲數字咧，其實係譬如PMS佢入邊，佢自己會有啲logic去幫你計咗出嚟㗎啦嘛咁，即係誒，即係所所有你所有你出即系，譬如你X播出嚟做Excel啲咧都系，因為你可能上面啲要砌一啲所謂唔同嘅dogland呀，或者去睇翻啲拆去睇翻個trend誒，但系唔需要話特別export個Excel，而你再要做一啲meaning去計數㗎嘛。
+
+Chan, Woody Hing Lok   1:23:37
+係？
+嗯。
+係冇錯，係。
+誒有㗎我哋，因為咧誒誒係都有嘅，因為咧誒我哋誒，即係呢個呢個就再就好detail啦，再講就會因為咧，我哋叫做誒，我哋誒誒誒誒一嚟我哋啱啱靠套system啦，都有啲誒嘅reason嘅感另一邊廂咧，因為我哋習慣咧，就係誒，都會man了再Q其一次嘅會咁，所以咧呀即係我哋呢就好辛苦就每個月咧都會誒誒一嚟單靠system啦X貨啦，第二就愛嚟menu，Kelly多一次過曬，即系啱啱濕曬嗰粒做，咁就去做perfectly寄信嘅會感誒誒誒有任。
+
+Chan, Arthur Man Him   1:24:03
+都有嘅。
+係明白。
+
+Chan, Woody Hing Lok   1:24:36
+我I discrepancy咧，我亦都會再誒，即係個photo再掩飾落去啦噉樣，咁所以咧誒誒奧尼係有一個menu嘅reason嘅嘅，工作會做嘅會感誒，貨咩咧呢個呀Twitter又數緊啲cable就係愛嚟誒誒其中一個啦，其中一個一啲係噉樣就係我啱啱講話我，我哋可能每個月咧就有個粒數咧，可能就誒，繼返我哋究竟受影響客戶幾多，咁樣咁呢個就係要嘥71 index我哋個description幾多啦咁樣咁誒，你見到譬如可能係死啊，我哋誒9月份誒，又同8月份分別好大鑊咁樣。
+
+Chan, Arthur Man Him   1:24:50
+嗯系。
+
+Chan, Woody Hing Lok   1:25:07
+咁啲老細就會睇呢啲change啦，就即係呢個change，嘩，突然急升咁多嘢。
+因為呢，入數反映緊就係究竟嚇受影后幾多咁譬如話誒誒誒誒eclass拉低少少我哋咁咧誒誒我哋呢啲咧嚇呢只我哋誒貝底我哋，我哋真係啲老細想都想知嘅嘢就系咧，我可能會有月究竟邊一單起實，但系特別多人受影響啦，跟住就可能跌翻出嚟可能誒即系講翻唔同嘅時間呀咁呀有啲邊條誒，我哋想去circle係乜嘢呀咁樣咁各自嘅新70嘅concept有幾多咁譬如話死only 9月份打風㗎嘛我哋超級颱風咁咧就有誒就開呢個通常有四單。
+
+Chan, Arthur Man Him   1:25:15
+嗯。
+
+Chan, Woody Hing Lok   1:25:45
+誒陳奕迅嘅一fill啲啦咁啊各自係曲好多個數字，就係代表嗰單Instagram嘅confirmation幾多咁，但係一就係代表誒，即係一咯，再初出一路係有0.59就0點唔夠咯咁fashion啦咁誒呢個係誒誒，當係呢個呢個cable唔係掃曬所啦呢啲係啲key都可能即係誒誒，即係highlight，直接係一啲咁樣咁誒呢個就係table，就係我哋係每個月都會需要做一啲嘅寄信嚟嘅呢啲係咁就誒。
+仲應該仲有冇啊佢喺屬，好似仲有冇或者我數睇下先，我望一望，睇下有冇第二啲圖畀你望下啦。
+
+Chan, Arthur Man Him   1:26:21
+係？
+誒，另外嗰啲又想問就住頭先係問還是係誒唔好意思，因為頭先咪話咧誒嗱，我見你傻咗啲report啦，大概我即係我我我嘅嘅其實講咩意思喇咁OK嘅，但我想問咧，你你話有啲嘅duration要人手做咧誒要做啲workstation係係因為個system計出條數係有啲唔啱定係因為有其他嘅譬如話其他factor你會計算埋在內先至反映到真實嗰個情況咧？
+
+Chan, Woody Hing Lok   1:26:23
+係係好，你嘅鰻魚先係嗯。
+係？
+呀。
+
+Li, Crystal Ngong Yung   1:26:49
+誒，其實就問唔啱嘅APP，因為誒，而家嘅PUDA咧佢嘅I function就係夠計到某誒，某幾嘅誒誒eclass啦咁，但係咧誒，我哋仲有一批要計嘅咁就本身誒，我哋就未做attachment或者佢未support啦，所以我哋就額外誒用第其他Excel呀或者formula嘅方法去搵返嗰啲數出嚟咯？
+
+Chan, Arthur Man Him   1:26:54
+係？
+哦哦系。
+呀。
+明白明白。
+
+Li, Crystal Ngong Yung   1:27:19
+係純粹係誒，MA有呢個功能。
+
+Chan, Arthur Man Him   1:27:23
+係OK咁咁耐先剔個六先。
+
+Sa, Kelvin Yat Sing   1:27:26
+我意思係唔好意思呀，即係little，咁即係咁嘅意思，如果我哋嚟緊P叫咩咧，有咗你依個I index嘅calculation你就唔需要，即係經常要做呢個menu F去medeco囉，依個諗法啱唔啱嘅。
+
+Li, Crystal Ngong Yung   1:27:28
+係？
+嗯。
+系啊，阿嫲阿嫲。
+
+Sa, Kelvin Yat Sing   1:27:38
+嗯，OK，好好咁解。
+
+Chan, Woody Hing Lok   1:27:39
+嗯好咁我又補充少少啦，I件事又冇多啦，好咁咧誒佢成日冇去每一年咧，都會有一個叫做interviu嘅performance review啦咁誒我一數呢個table其實就係我zb咧，就係泡point度誒抌出嚟嘅screen呢啲系咁咧誒我指定佢有Excel儲住咧，每一單嘅intern啦咁啊可能要做啲咁嘅嘅拆出嚟嘅咁都比真係management睇嘅咁，例如識啲咩咧就係話哦，我哋由中間識翻誒誒由左邊開始講起啦咁啊左邊盡快蚊咧我哋Woodstock嘅數字有幾大啦，幾多單啦咁呀擺我哋即係可能。
+
+Li, Crystal Ngong Yung   1:27:40
+依家。
+
+Chan, Woody Hing Lok   1:28:10
+02202304咁樣各自每個即係見到個個都係個change，係做啲乜嘢啦咁樣咧？見到哇，我仍生意特別多嘅咁樣繼續瞓咁樣咁呢呢就係愛嚟老細想睇嘅嘢啦，其實都之一啦咁誒咗下角呢個咧就系講誒，因為我哋每一天線咧都有誒，即係有啲唔同嘅after school嘅叫做咁咧誒咁誒咁，老細就好想知有冇啲啲eye線路啦shekel啦，即係我哋見到咧，但系第日都出事嘅咁嗰啲代表係咩咧，可能特別脆弱咯就系咁就可能put多啲唔同嘅M嗰啲I ever咧會喺呢啲咁樣唔同嘅線路上面嘅佢費事佢。
+即係跌跌一次果單，原因係可能五啲咩原因？咁樣呀咁咁你一唔mentality佢咧Keep住做有啲㗎就有福有尤寶琪住啲㗎咁，所以佢哋就會可能睇呢啲，即係想誒，從而去安排好啲嘅人手呢，去處理一啲M嘅嘅嘅嘢啦嚇K咁著再有誒都有唔同嘅ielts嘅一啲情況砌啦就會，譬如哦，究竟誒邊啲係成日出事咧，可能係係係overly cable呀，定係啲頒嘅degree問咧成日出事咧佢又想睇多啲啦咁樣，譬如話呢個就咁睇。
+淺藍色嘅係代表成的abo嘅電纜成日出事啦咁，見到個pattern係咁樣啦，跟住仲有拜誒我哋貨course嘅，或者佢擺component嘅咁咧誒誒誒，即係咁講咧，好似想睇咩即系？譬如我對cable錦祥邊一part成日出事呀，可能有啲cable在哪跑time reason呀，或者係installation呀佢有啲，即係我唔覺得我太多啦，總之就系想睇邊啲component嘅成日出事嘢會咁樣咁誒？第3個可能啦就系講我哋啱啱嗰個期Pi came呢幅圖咧就係誒啲老細都都好想幫成日睇嘅呢個就係咧講緊誒誒誒究竟邊一年？
+或者邊一個月係特別多嘅咧S記得好特別快咧咁樣，咁所以咧，其實就呢個圖咁樣講下啫，可能睇翻I last 3年或者4年啦咁個pattern係幾多？咁其實見到可能呢個死我，你202生意特別多喎咁樣你特別高啦咁呢個就係其實啲agree嘅數嚟嘅咁咧代表我哋見到10月咧就可能誒，去到舊年九一呀咁樣，呢個就係誒贏三而家一粒數啦咁樣咁就見到哦咁我就即係叫做誒誒即眼睇到誒邊一年特別衰法蓮特別好或者係邊有月特別差嘅啦咁樣咁誒呢個都係啦呢個其實對上面。
+啲不但只就係講哦，邊一即系可能誒？見到誒誒邊啲誒誒贊邊啲誒六啲three DDI voltage啲嗰啲資料啦咁，其實係啱啱我喺PUDAI數嘅類似一啲資訊嘅淨係咁啊？有一個summary咁俾翻啲老細睇咁樣嘅咁，有邊係咩咧就係啱啱係Palmetto map咧，就系由類似咁樣咁樣個即係叫做識字啦咁樣就系講緊話我係I would究竟啲睇咩地方度邊間站度咧咁喺個地圖上咧就可以見到嘅咁譬如話呢個你放大師咧見到錦田咧係成日碟嘅就叫個紅色圈特別大呢個係。
+因為講緊少少誒，其實啲圖咧，有部分係圖咧係其實我用緊power BI鞋咧嚟砌出嚟嘅咁誒誒，當然都係XL Excel Excel作用炮兵就誒叫做誒，有個好少喺度睇少少textbook咧就可以幫到我砌啲它噴出嚟啦咁樣咁誒咁誒當然啦咁有批郵票咩咁？我梗係即係希望票咩可以有埋呢個即係呢啲咁嘅function俾我啦咁，我就可以做到呢啲咁嘅誒叫做連analogue啦咁樣好我去翻有線咁就係啱啱講I地圖啦咁樣就誒，即係見到邊一間站成日出事嘢，其實我哋見到啲錦田呢個咧左邊咧其實係箱啲呼應其實呀錦田成日。
+結果咁樣可能頭4位都會即系都系錦田嘅King，即係錦田啦咁就叫做特別多嘅咁咧就缺陷嘅，因為誒，可能有啲同事啦咁唔係delica嘅同事，嘅咁，可能係嚇Angel呀，或者係啲誒即系可能誒時嘅同事咧佢唔知道可能唔知邊度係叫做福順街㗎喎咁樣，咁可能就會靠呢幅地圖咧。去sport到個位置邊度點解咧？因為佢就想知究竟誒佢哋之間責任咁樣，就因為佢相關對落咧就有分唔同嘅vision啦，分唔同嘅客戶啦就有啲唔同嘅誒靠manager去去臭嚇叫做咁樣佢哋就會誒誒睇地圖咧去即系。
+叫做可以知道多少少資訊咧叫做咁樣係啦咁，同埋另一邊廂最后咧就系講誒，因為半呀，仲有啲database係儲住咧，究竟誒誒邊啲地方有誒誒一啲key嘅Kama，即係叫做咁樣，或者喺一啲誒誒叫bookcase distinctive啲嘅customer啦咁，我就會喺list埋喺便即係譬如咪搏啦即我非米埔咁有間叫ABC mall嘅咁樣嚇咁咁究竟誒，即係可能個商場嘅喺呢個呢個地方度咁呀。成日都出即系成日投訴嘅咁我就會喺叫highlight咗呢頭啲客戶咧咁就叫當以後有米埔跌有屋，好似跌嘅時候咧咁呢單。
+阿叔咧，就出事下就會，阿叔就由投訴噶啦咁就叫做快啲可能誒，叫啲accounting又好，或者叫我哋咧，可能有啲有啲有啲OM嘅同事咧，就會去誒誒誒做一啲即係fill嘅信會咁樣咯係啦咁呢個就係誒，我哋即係玩啲我每年啦做嘅performance嘅需要做一啲測圖表嚟嘅咁樣敢呢啲圖表都誒，都即係真係用緊都係plan咗啦。已經咁所以我亦我expect your map咧誒eclass咧都會有呢啲呢啲table當然學科技唔一樣啦唔緊要嘅，但系誒相關政策得到咯要希望咁樣咯。
+係我唔知大家即勁頭太快，可能覺得係啊。
+
+Chan, Arthur Man Him   1:33:17
+嗯唔緊要壓Canon有問題有問題㗎。
+
+Chan, Woody Hing Lok   1:33:18
+嗯。
+Sorry睇唔到縮返先。
+
+Sa, Kelvin Yat Sing   1:33:21
+誒喂首先有杯碟真系好好多謝你先，我想問咧，首先咧，今日個市本身個時間就3點半咯，我唔知大家再坐個同事咧系咪誒要誒？及依個活動開aspirin少少，例如30分鐘因為啱先火警，主要就狂出咗啲時間即系。首先我想第一樣嘢大家想繼續一定係想約時間再傾嘅，即係在座嘅各位。
+
+Chan, Arthur Man Him   1:33:25
+嗯。
+
+Chan, Woody Hing Lok   1:33:25
+係？
+係啦，係啦。
+哈。
+
+Sa, Kelvin Yat Sing   1:33:42
+可唔可以，即係Stay都嚟誒，我哋就去到4點，咁樣就得傢。
+
+Chan, Woody Hing Lok   1:33:46
+我。
+
+Fung, Kam Tim   1:33:48
+我哋Fender呢邊OK嘅。
+
+Chan, Arthur Man Him   1:33:48
+誒，主要都係睇下Woody你哋。
+
+Fung, Kam Tim   1:33:50
+係啦。
+
+Sa, Kelvin Yat Sing   1:33:52
+Sorry，即係聽唔聽到，聽到即即系即系想SN定係想再約呀係？
+
+Chan, Arthur Man Him   1:33:58
+或者睇下Woody，你哋其實誒會？
+
+Lau, Wilson Yiu Ming   1:33:59
+蝴蝶你有冇屋企啊？
+
+Chan, Woody Hing Lok   1:34:02
+誒，我，我，我我我OK呀，我係呀，係呀，係呀。
+
+Li, Crystal Ngong Yung   1:34:04
+我哋屋企啦。
+
+Lau, Wilson Yiu Ming   1:34:06
+咁我哋extend。
+
+Sa, Kelvin Yat Sing   1:34:07
+好咁我哋friend去到4點啦，好唔好呀好好Thank you咁去翻先？喂rowdy呀我我聽你講咧，你我見你去Richard好好啦，即系已經已經好清楚自己要啲咩嘅誒誒攞boarding啊dashboard嗰啲嘢啦，但我想請問一樣嘢咧，因為pq咩咧我哋依個新嘅platform咧，你到時你咪expect，例如啱啱先你講嗰啲comment eager呀，或者可能manage management嗰啲同事咧，即係老細自己上嚟睇嘢噶，即佢係一個user嚟嘅一個platform。
+
+Lau, Wilson Yiu Ming   1:34:09
+好好，唔該？
+
+Chan, Woody Hing Lok   1:34:35
+誒佢哋亦都係potential，或者咁講係啦咁佢地想睇個自己決定了一會嚇我哋都會，即係個system係會歐珀俾佢哋睇嘅會係啦。
+
+Sa, Kelvin Yat Sing   1:34:43
+我敢敢哦OK，首先第一啦，即係你想佢哋係user咁第二咧，你有冇諗住咧？依個platform有啲LOL嘅定義嚟即系可能佢係一個誒誒靠manager帶佢即睇到某一個page咁，可能佢係老細睇哂所有嘢，即係有冇呢啲咁嘅諗法嘅，因為都想問你。
+
+Chan, Woody Hing Lok   1:34:53
+誒。
+誒誒都有㗎係呀梗係有啦，即係有誒誒，但係呢個未呢一刻就未有idea，即係未必單獨去咁樣擺翻上跟著拜user咁樣嘅呢一刻就未有嘅，係喇，我Excel係會有咯？係啊。
+
+Sa, Kelvin Yat Sing   1:35:11
+OK，好好，咁我交返畀offer先你行翻個mirror係Thank you啲。
+
+Chan, Woody Hing Lok   1:35:16
+嗯唔該。
+
+Chan, Arthur Man Him   1:35:16
+嗯。
+好。
+
+Fung, Kam Tim   1:35:18
+貝葉佩詩，喂，我話添呀喂。好似我有少少想問咧喂嗱，因為其實我見有一啲已經係誒部分仔嘅data啦，甚至係嘅誒一啲I Anders嗰啲result咧，其實已經喺PQ啲A同埋PQMS裏邊handle咗咧咁，其實PQ map個定位係諗住cover埋佢哋啦，定係用佢哋個結果再再做咧即系即系其實係。
+
+Chan, Woody Hing Lok   1:35:20
+嗯。
+嗯。
+嗯嗯嗯。
+嗯。
+係我答你係啦。
+唔系我哋將來就希望飄咩去取代到飄哋，係啦，我即係個我哋個高希望就係即係商量餘地就會。
+
+Fung, Kam Tim   1:35:47
+哦PQ啲A但TMS咧？
+CPTS即系3部㗎嘛而家，我見到應該有三嚿係啦。
+
+Chan, Woody Hing Lok   1:35:51
+誒。
+OKIPQMS同試嚇就依然就即係我哋叫做boarding傷，但依然係繼續喺度營運，叫啦，繼續啦咁誒個票面係一個誒，你當一個platform係係收窄呢啲唔同嘅system嘅一啲I data咁啊郵編有咩去做分析做造影ISIS嘅咁誒啱啱講嗰啲圖表啦I data呀起酥data嗰啲嘅basic呀誒啱啱嗰啲即系嗰啲知嗰啲資訊性嘅嘢全部都會喺飄咩都會做到嘅咁呀，所以啱啱我啱啱誒，即係我我聽expect同埋嘅話咧票面係可以取代到票嘅，我想咁樣嘅，你話係係一啲。
+
+Fung, Kam Tim   1:36:28
+係？
+
+Chan, Woody Hing Lok   1:36:28
+啲都見到嗰啲嗰啲U。
+
+Fung, Kam Tim   1:36:28
+即係純粹PQ啲A嗰part，即係我，我見就其他都會照留喺度嘅PMS同埋CPS都women繼續會send data喺OK，佢就會收集曬佢哋啲嘢OK。
+
+Chan, Woody Hing Lok   1:36:31
+系系。
+係啊冇錯嗯嗯嗯嗯？
+
+Chan, Arthur Man Him   1:36:37
+嗯。
+
+Chan, Woody Hing Lok   1:36:39
+嗯，係係分成上係係咁㗎冇錯係啱嘅冇錯係。
+
+Fung, Kam Tim   1:36:43
+好好明白誒咁樣，仲要清楚啲係。
+
+Sa, Kelvin Yat Sing   1:36:43
+Sorry hoodie依度，武士我，我我想聽咧，你啱先講咧。另外，Ivan你介唔介意show翻個mirror出嚟呀。
+
+Chan, Arthur Man Him   1:36:45
+佢。
+
+Chan, Woody Hing Lok   1:36:47
+你。
+
+Fung, Kam Tim   1:36:50
+誒。
+
+Chan, Arthur Man Him   1:36:51
+嗯。
+
+Sa, Kelvin Yat Sing   1:36:52
+因為你哋啱先講咧，PQ啲嘢就會塌啦咁你Keep另外2個I system，但係我想問下你Keep幾時係淨係back驚嗰個server做Commission嘅白kit呀，定係你連訓練都會Keep埋呀，定係你想考想聽下呢樣係啊。
+
+Chan, Woody Hing Lok   1:36:56
+呀。
+誒，我我，但我消化有冇錯啊？敢PMS咧。其實依然誒一樣一直一直喺度喺度啦咁呀佢，繼續係誒誒結緊我哋PU即系誒PMS嗰啲錶電錶嗰啲即系癲癲，即係PU錶嘅一啲data啦繼續跟住誒，CPI依然係要誒攞緊佢de啲data嘅呢個係一直變嘅呢個，就即係各自都有自己個system制咧，叫做儲住各自嘅data但係咧誒誒，因為其實我哋future咧，仲想有第三季甚第4間嘅誒譬如meter嘅brand咧？
+引入嘅咁，到時咁誒就我哋避免咗唔想再有幾，即係PMS有嚿雲，跟住試有個環跟住可能band three有第2個，第3日暈低，跟住第4日玩，咁樣我唔想有呢啲嘢咁，所以我就想誒誒叫做你當係誒一嘅一個飄咩嘅云咧係儲曬所有呢啲咁嘅誒嚟㗎咁誒，然後再喺呢個雲道上面咧就有一啲唔同嘅aastocks咧，係係做曬咁樣就唔使話誒，每個每個system每個病都有自己一套Overture咁樣即系咁樣就唔使即係煩嘅咁樣。
+所以即所以啱啱先答你，問題就係PMS誒，系咪依然存在，會存在書PS之前都會存在嘅市都會存在，嘅咁誒PUS係一個再叫做係level一級一級嘅地方呢，係儲住letter，同埋做Nas都會係啦。
+
+Fung, Kam Tim   1:38:24
+喂佢哋會唔會坐埋一齊㗎，有冇plan係？
+
+Sa, Kelvin Yat Sing   1:38:26
+係囉，我想問。
+
+Chan, Woody Hing Lok   1:38:28
+A你先係邊邊邊啲坐埋一齊歲？
+
+Sa, Kelvin Yat Sing   1:38:28
+我坐埋一齊㗎？
+從同一個group咯，同一嚿雲啦，係囉。
+
+Fung, Kam Tim   1:38:30
+即係同一嚿云。
+係啦，同一個雲係啦。
+
+Chan, Woody Hing Lok   1:38:33
+誒行。
+
+Tang, Samuel Tian En   1:38:34
+喂呢度講，呢度我講啦嗱，大家唔好太過介意個system叫PQS，定係叫CPS定係點？今天呢2個係統咧佢，除咗收集data之外，佢仲要做埋啲NS school，咁啱都講咗幾個痛點啦，直直接喺果度做，咁未來pq map咧佢會係一個集中做曬所有value added功能嘅function嘅一個地方，咁而P，咁今天嘅bigbang同小姐咧？即使佢留返個名喺度咧，其實佢佢唯獨嘅function時候作為一個later。
+
+Chan, Woody Hing Lok   1:38:40
+呀。
+嗯嗯嗯嗯。
+
+Tang, Samuel Tian En   1:39:02
+跟住就將嗰啲方入邊翻PQ TIF呀，同埋嗰啲誒誒寫report嗰啲contract format就統一番啲format咁令咁就會令到business，以後如果想加啲唔同牌子嘅freecommander咧，都可以用一個standard咧去加上去咁所有人ISIS同埋所有嘅value function咧，都喺雲裏邊嘅pip度做，咁而CS同埋PMS咧佢應該就唔會或者佢喺唔喺雲裏邊唔係個重點個重點，就係佢係佢只係會單行瞓一啲proprietor嘅嘅一個工作咁樣樣。
+
+Chan, Woody Hing Lok   1:39:02
+嗯嗯。
+嗯嗯。
+嗯。
+系啊唔該Samuel，你講得好好呀，好啦唔該你。
+
+Fung, Kam Tim   1:39:37
+好明白嘅呢個理解，係啦。
+
+Chan, Arthur Man Him   1:39:41
+嗯K好誒冇成日我我想我想講返齋即係suppose，其實所有logical即係logic嘅嘢啦即系會照樣由翻個PMS呀CDs果邊去做介紹，只不過係飄math support可能係一啲份M嘅display，即係數番曬所有嘅I analyze啦，同埋一啲dashboard呀，或者叫telegram嗰啲俾同事去睇嘅啫。
+
+Chan, Woody Hing Lok   1:40:04
+嗯嗯嗯冇錯，冇錯，冇錯。
+
+Chan, Arthur Man Him   1:40:06
+嗯，明白好。
+得。
+誒好咁我哋剩翻啲少少時間咧咁。我簡單講一講support後邊應該仲有啲咩功能？啦咁，我見到RP入邊咧，其實佢應該有一排咧。繼續location嘅咁誒以我所知啦，即係suppose，如果有啲所謂叫做pq E fintv啦咁誒呢個或者咁講我哋應該有邊一啲event係需要certification咧？係全副defend都要send定係某一啲可能去到某一個level。
+誒即系可能擺Walters可能唔知去到幾多percent或者幾高嘅時候，先至需要send喺度vacation，有冇話大概諗住做法點做嘅咧？
+
+Chan, Woody Hing Lok   1:40:45
+有誒，我概括講啦，即係唔係講曬列曬所有啦咁啊誒，包括咩咧包括誒，我哋啲屋Pooh啲嘅一啲誒路機場啦，跟住仲有我哋譬如因為各自meter嘅，如果佢演職disconnect咗呢，我亦都有啲壓力出現，嘅咁就誒即誒叫通知返我哋誒邊或者有DDI operator就知有啲即系可能有啲誒細wor要做啦咁樣。
+
+Chan, Arthur Man Him   1:40:50
+嗯嗯，係啊，但係大大都得㗎啦。
+嗯。
+
+Chan, Woody Hing Lok   1:41:13
+跟住仲有可能誒，我哋希望尚有咧，就系可能啲system，可能本身有啲watch度嘅嘅嘅嘅壓力啦，可能就系佢誒呢點樣誒誒咩事喎，發生喎咁樣，所以就就有啲有壓力，即系server上或者interview上有啲問題咧？都會誒上有啲咁嘅六kason俾我哋自己係啦咁誒咯系啦咁先咯嚇大致上係咁樣咯係啊。
+
+Chan, Arthur Man Him   1:41:36
+嗯。
+
+Fung, Kam Tim   1:41:36
+誒。
+
+Chan, Arthur Man Him   1:41:37
+冇問題，咁我想問，如好似嗰啲碟嗰嗰部份咧？Suppose係咪應該會有可能有啲setting喺背後，即係config儲咗背後即系可能可能去到某一個level，我先會先度Asian，因為Buddhist我之前睇過阿Wilson俾我過哦，嗰個大個anodize可能大概去到每1日daily可以成百5個咁多嘅suppose點都唔會，每一個百5個都要收㗎喇，應該部分先至需要收嘅啫嘛。
+
+Chan, Woody Hing Lok   1:42:01
+誒唔。
+明買太明所以咧誒，因為因為依啲instant咧就誒一誒佢扮演shatin㗎嘛咁啊誒誒。
+
+Li, Crystal Ngong Yung   1:42:05
+嗯。
+
+Chan, Arthur Man Him   1:42:06
+嗯。
+係？
+
+Chan, Woody Hing Lok   1:42:12
+就即係你有話多唔多即系可能幾單咪幾單咯，可能幾百單咪幾百單囉咁，所以就誒誒誒系咯咁屋企stipulation就就喺個range嚟嘅咁SN我應該阿阿Wilson嗰粒數咧係講我哋應該之前畀喺打風期間發生嘅嘅呢啲數字嘅咁就誒誒係啦咁咯係嘛。
+
+Chan, Arthur Man Him   1:42:19
+嗯。
+嗯。
+即時post咬住你嘅express，可能係每一單都要通知你哋嘅。
+
+Chan, Woody Hing Lok   1:42:37
+喂，但系係梗係啦梗係啦，當然啦呢個係啦。
+
+Chan, Arthur Man Him   1:42:38
+嗯，明白係唔好意思，Kevin。
+
+Chan, Woody Hing Lok   1:42:40
+嚇。
+
+Sa, Kelvin Yat Sing   1:42:42
+想請問下vd你依度咧？即係話信寫到deviation啦首先你想咩形式啦，依個第一即系email Tim曬定睛email OK咁第二咧你有mention唔同嘅notification啦。例如呢套播碟喇meter disconnect啦咁，依個meter嗰啲watch dog本身嘅一啲event啦。你因為咦扎series呢？扎律師片即係呢啲唔同type嘅誒誒嘅notification，你特別想同一批人收呀，定係各自有唔同嘅target國家？
+
+Chan, Woody Hing Lok   1:42:48
+你email email email嗯。
+誒有個字體group咁美帝Disco咧呢啲梗係得入面先睇到啦，WhatsApp一定要先睇到啦咁，你return可能係有多思多翻啲嘅人啦。即系除咗呢啲之外，仲可以某啲user都會睇到嘅，但系咧我想講誒誒真真正正最多人修讀fashion嘅咧其實係由A啲咩send出嚟嘅，因為你啲咩先真真正正係對，即係對曬所有即系我哋誒可能誒唔同IPSP group或者其他group嘅同事咧，都會係用EDM嚟收啲目地真正目哋一啲嘅location嘅會係啦咁，所以咧誒係啦咁所以咧？
+
+Sa, Kelvin Yat Sing   1:43:19
+嗯。
+
+Chan, Arthur Man Him   1:43:27
+呀。
+
+Sa, Kelvin Yat Sing   1:43:36
+我。
+我。
+咁你呢度仲使唔使㗎？
+
+Chan, Woody Hing Lok   1:43:39
+嗯。
+誒呢個咧？因為其實係因為咧，因為誒本身誒，我哋自己PMS咧都有呢個誒誒錄duration嘅，就可能就係我哋收到，譬如話我哋有誒有領衫單四單嘅嘅誒跌誒嘅printer咧，係會誒Twitter到咁我哋就其實修會收到幾個誒呢種六寄信嘅咁啱啱講到話我PS係會有啲logic咧係會叫good返即係隔咗㗎嘛係咪咁呢？我哋就會將夾咗隻真係真係嗌得佢排到去真係有啲gay嘅case咧，就會掉俾EDS先會咁我啱啱講呢度咧PUS就係講我收緊三四個嘢。
+
+Sa, Kelvin Yat Sing   1:43:41
+呢個navigation？
+
+Chan, Woody Hing Lok   1:44:14
+咁誒可能生咗，可能book咗喇，或者係fill咗之後得返一單果隻，結果一單咧就先叫ABMS先再出被他人嘅咁，但係我嚟邊咧搵啲外賣啲同事就係想知道三四單嘅嘢其實係會係你明我明呀，即係所以咧誒誒誒PM at年都係會有呢個短訊咧，係比我哋某一啲同事咧，只係咁係for咩係for我哋可能我哋M啦，可能係我哋自己誒，即係我哋啲同事喇咁就會收一啲咁嘅誒讀fashion嘅會有嚇咁囉？
+
+Chan, Arthur Man Him   1:44:41
+咁咧就番頭先。
+
+Sa, Kelvin Yat Sing   1:44:41
+但我睇下有冇理解有冇錯呀？即係你應該話係PQ咩呢度就會send多啲嘅UN出去嘅即係fill出去嘅咁你有啲咧係比你哋誒你哋呢度target括啦，你都自己整target啦咁，你俾啲Ms嗰邊因為咧佢有fill喺度edition啦咁佢再send嗰啲應該係誒斯崙嚟講咧even嚟講少啲嘅係消化咗冇錯冇錯，但可能等他結果就大啲多啲人嘅咁嗰啲就ADS去處理咧就唔係一個project會處理啦咁，依個project要處理嘅就係呢一紮嘅動力通常都係要嘅，同埋你可能要系咪要喺個要分N度config到啲。
+
+Chan, Woody Hing Lok   1:44:49
+俾係啦。
+係啦嗯？
+嗯。
+要消化個成真嘅嘢，係啦，係啦冇錯嗯。
+係啦冇錯正確係啦冇錯冇錯。
+嗯冇錯？
+
+Sa, Kelvin Yat Sing   1:45:14
+他的國家即例如你可以加減人家嘛，係咪到時會飛咗呢封信噶係喇，OK依個SS即PQMS同埋CPS系咪冇噶呢個叫，其實依個翻呢個function。
+
+Chan, Woody Hing Lok   1:45:16
+係芥蘭，冇錯，正確。
+誒醫唔係而家都有嘅而家都有嘅，不過係誒誒我亦都有user group係瞓嘅，我哋都有嘅咁誒誒譬如4TMSN就有誒。
+
+Sa, Kelvin Yat Sing   1:45:25
+係咪新嘢嚟傢？
+
+Chan, Woody Hing Lok   1:45:38
+誒，係囉，有都有有有有個user group咯咁樣咯，我知我咁講嚇係喇噉樣嚇。
+
+Sa, Kelvin Yat Sing   1:45:41
+OK，好好哦唔該好交番畀阿凡，唔該你buddy。
+
+Chan, Arthur Man Him   1:45:44
+明白。
+誒冇社會就出再confirm嘢食實鋪咗假設啦P，咁有啲有呢個vacation嘅功能啦咁喺big Max個B support就唔再需要呢樣嘢冇disable咗佢㗎啦。
+
+Chan, Woody Hing Lok   1:45:46
+唔該。
+誒。
+誒係啊冇錯直頭啱啦冇錯係可以，噉樣嘅係。
+
+Chan, Arthur Man Him   1:45:59
+嗯，得明白好咁啊？後續繼續後續原本個數啦就系講，其實我哋誒即係PSPIN啲同事啦咁，可能會睇翻啲誒？Sorry data呀佢會睇翻啲，即係如果假設有order碟呢個問題嘅話，咁可能會自己會睇翻airlines，佢會Titus會判斷返究竟係啲咩問題咁啊然之后會update返個system嘅咁誒，如果假設想問下冇跌你哋咧，如果真係見到有啲Wallace帖嘅人，你個別需要跟進的話咧，你誒，你睇完之后你會大概判斷到佢係嚇可能係咩問題。
+咁你係咪會suggest翻個客會有啲所謂嘅collective嘅action㗎？
+
+Chan, Woody Hing Lok   1:46:37
+好誒，好咁呢個就further呢個就呢個就誒，應該誒都有蟹少少嘅pool就會點咧，因為咧誒P誒，我哋聽，啱啱可能我數過個screen咧。其實我part係講誒唔同有唔同客嘅咁唔同地區有唔同客嘅咁誒，我哋係有zp有第2條team咧，係會做一啲customer ice嘅一啲decor service嘅會感誒呢個就誒，都有一啲我哋都希望係fill度咧，可以儲到一啲誒叫I cut service嘅record啦，叫做咁啊叫做誒，叫做落低我哋都睇緊過呢啲咁嘅service俾啲同埋客戶。
+
+Chan, Arthur Man Him   1:46:51
+嗯嗯嗯。
+
+Chan, Woody Hing Lok   1:47:12
+哦咁樣嘅嚇咁，所以就有啦，但系你有嘅，可以有背後有提其他誒？分析同埋大家誒誒嘅誒大學亦都係啦冇錯嚇。
+
+Chan, Arthur Man Him   1:47:21
+明白即系可能其實誒，即係大家揀定個就可能decor service team果邊喇support，其實佢可能就會入翻一啲gimmick睇誒，即係或者咁講又同時可以analyze咗，究竟係咩問題喇？會suggest翻可能會點樣去改善啦咁可能decor service team咧就會入翻個system睇翻我有啲咁嘅需要嘅，于是佢哋可能就會搵番，真係搵翻個customer去通知返喂你不如建議你哋咁樣做啦，可以改善呢個碟嘅問題，大概做法係噉樣做嘅佢咁佢哋，可能甚至會將呢啲佢哋所做嘅呢啲嘅action咧佢哋會唔會需要落翻落去嗰個bitcomet個system度方便之後睇番哂所有record咧。
+
+Chan, Woody Hing Lok   1:47:31
+嗯。
+嗯嗯嗯。
+嗯嗯。
+嗯嗯。
+嗯嗯，係啊。
+誒，都都我，我expect係要噉樣做囉，係冇錯係呀嗯。
+
+Chan, Arthur Man Him   1:47:54
+會唔會覺得佢哋咁做咧？
+嗯，明白。
+咁啊update個action落啦，可能當係。
+禁如果成條Jenny啦家一直去到呢一個位啦誒，即係撇除佢嗰啲reporting咗先啦咁我。
+周誒打開photos睇完個睇完個問題啦咁啊之後亦都I service team已經通知咗個客喇。
+咁去到嚇誒唔好意思阿Kevin有問題。
+
+Sa, Kelvin Yat Sing   1:48:22
+唔好意思，我想請問你哋，即係你依度咧？又expect有一條team嘅同事會入黎update個落啦，你有冇諗住個貨尾係點呀？定一個落已經係SS已經有嗰啲，定係你想有個新嘢噶，即係喺attachment定係即係係咯？係咯。
+
+Chan, Woody Hing Lok   1:48:33
+誒，有我哋有第，即係個仲有一啲誒誒誒誒地方咧？係儲住一個呢啲咁嘅誒即系service嘅record嘅有係啦咁誒誒？依家已經有類似label啦咁樣，咁將來咧？都即係誒睇下會P and hot都係會有一個誒地方咧？係儲到我哋依家savic offline叫做offline啦儲緊嘅一啲record，就算I hibor埋落去呢個fill裏面咁咯係啦，想咁樣嘅係啦。
+
+Sa, Kelvin Yat Sing   1:49:01
+哦即sorry import嘅意思，你想做埋klagen噶系咪，即系你依家嗰啲落嚟你。
+
+Chan, Arthur Man Him   1:49:02
+嗯。
+
+Chan, Woody Hing Lok   1:49:05
+阿咪咪咪咪咪咪仲有依家依家誒即系嗰啲談可以叫做以誒誒做一次，可能誒誒擺落去Pat度咁啊，將來我哋you即系可能啲我哋啲誒誒叫operator啦誒就會唔再用我地過另外一邊嘅一啲誒I cable就再再直去Powell度做一個誒即做做做呢個maintains咁咯即系做呢啲即係加減嗰個改呀咁，就喺依個bill度做咁囉會係啊。
+
+Sa, Kelvin Yat Sing   1:49:28
+我。
+好呀，跟住我哋of lovely，可能仲要搵搵你傾返呢個落係點樣係食番落去Big Mac度係即係點樣merge埋一齊等啲同事OK Thank you唔該。
+
+Chan, Woody Hing Lok   1:49:33
+嗯。
+嗯。
+
+Chan, Arthur Man Him   1:49:39
+嗯。
+股市啦，等我打埋先得。
+好咁樣好啦誒好啦咁啊，假設已經做埋呢個落之後咧咁，我想問成條將於係咪應該就完咗咧？仲有冇咩要做咧？其實post。
+
+Chan, Woody Hing Lok   1:50:00
+嗯，都冇咩咯誒，應該冇乜特別咯？係*，*不多囉係呀咁你fill即係你後面後續嗰啲都都都即系系咯，我覺得唔係話已經其實件事就已經完咗囉，即係如果我想qas同埋都有睇同埋service嘅話，其實都諗住就已經都冇乜冇乜特別嘅荔景係係哦，係囉嗯。
+
+Chan, Arthur Man Him   1:50:20
+嗯明白好OK好咁誒大概係咩企穩講啦成個章子大概好明白啦誒成個flow會點樣走先啦咁當然入面可能有啲細節嘅即係譬如要啲乜嘢report睇咩資料方我哋就要再高鐵咧咁咧陣間咧阿阿固定微博你咪有條link嘅呢即係輸入啲資料嘅頭先嗰啲report咧如果你方便嘅話咧你都可能幫我X botw一下出嚟就感抌曬上去得㗎你唔使做任何快令或者你有乜就揼上去就俾我睇一睇就OK㗎啦
+
+Chan, Woody Hing Lok   1:50:37
+嗯。
+哦哦，好好好好好。
+
+Chan, Arthur Man Him   1:50:49
+係啦呢個可能要麻煩你呀，即係頭先你嗰啲做嗰啲task都幫你撳撳一等上去咁方便我睇咁，如果而家個時間呀，其實都冇乜幾多時間，即係誒咁嗱？我想誒，其實原本上一part咧就想睇一睇咧，其實我就主要想defer翻咧喺成個system入邊咧，應該有啲乜嘢叫做man嘅component咁啊？即係簡單嚟講咩叫meta半咧，即係喺我嘅理解啦。即係假設到時個system啦咁個P咩system咧？最基本咧，我哋會教咗啲所有嘅唔同嘅model出嚟先嘅咁。
+
+Chan, Woody Hing Lok   1:50:53
+嗯嗯嗯嗯。
+嗯。
+
+Chan, Arthur Man Him   1:51:20
+當然呢個係上一個MK啦誒睇完就算啦，即系可能平時左手邊啲所謂嘅細胞咧，就係呢個所謂嘅model嘅嘢啦咁譬如可能有睇過dashboard啦，有一頁係專題，一啲report可以俾你X播出嚟揀fill，即係頭先好似斷誒誒PDS咁fill啲你嗰啲蟲嘅做法啦咁呀有板可能SS management會提一啲所謂叫meter嘅資料啦咁啊用一啲我impact analyze啦，會頭先睇一啲唔同誒譬如serve嗰啲嘅。
+
+Chan, Woody Hing Lok   1:51:42
+嗯。
+
+Chan, Arthur Man Him   1:51:49
+I數字啦咁，當然個誒，你又會再執，咁呢啲就係所有我哋叫做唔同model殺，咁如果有時間的話咧，我又想再解一解，翻得大家覺得成個system應該可以解到幾多街，同埋每一屆入邊大概有啲乜嘢嘅main compartment嘅咁啊。
+客戶啲可唔可以用淨翻幾分鐘時間，我哋大概去解一解下呢啲嘢。
+
+Chan, Woody Hing Lok   1:52:10
+哇嗨呢個。
+
+Chan, Arthur Man Him   1:52:12
+好大工程呀呢個，我諗都因為原先我諗住起碼都有15至20分鐘時間去做呢樣嘢嘅。
+
+Chan, Woody Hing Lok   1:52:13
+哦哦哦。
+呃搭喂誒。
+哇，我得望下先呀。而家係有general function events management in band啦。Sis哇gem。
+
+Chan, Arthur Man Him   1:52:25
+會。
+你可以話係。
+係啦。
+係啦，所以係啦。
+
+Chan, Woody Hing Lok   1:52:34
+快。
+
+Chan, Arthur Man Him   1:52:34
+因為其實入邊係有好多啓，或者我先講啦譬如誒，將將來function有啲咩咧我嘅理解就係我，因為我見到RP其實好重視一樣，就係話suppose咧好多嘅data咧都要export出嚟，可能肥皂CSV呀咁嗰啲嘢咁，所以我理解將啲function就係哦，我有啲起碼即係大部分嘅list大部分report都係可以export出去做CSB嘅咁呀，有啲所謂嘅advanced嘅功能，咁應該我哋亦都見到Argo people需要有啦咁呀，而fill management就係講緊大概去誒貝每一個PQE flat回落咗個list度咁呀，然後係譬如有啲Maldives喇chairlift grouping啦。
+呢一啲嘢大概就係要搵management，佢有嘅嘢嘅咁，可能我哋或者今日未必高呼得曬㗎啦咁，可能先睇睇，其實佢哋理解你哋覺得應該有幾多假嘢喺背後。
+大牌先唔好講明function算，即係正如頭先去到一啲咩誒叫做Martha even the truth booking嗰啲，暫時去到一個level應該都未必夠時間高呼㗎。
+
+Chan, Woody Hing Lok   1:53:30
+譬如呢個就under even management，係咪意思咁樣即系譬如話誒，即系咁樣即系哦，即係睇下我我我因為我冇驚，因為即係我都我我驚我誤會你設施就係即係呢啲，其實誒馬懿fill嘅更加嗰啲嘅，跟住做啲cooking啦咁樣即系你想撳樣咁樣解我。
+
+Chan, Arthur Man Him   1:53:33
+係啦，係啦，係啦，即係係啦，即係譬如喺譬如頭先。
+係啦，係啦，係啦，即係睇下係啦。大概隔一屆開先，因為咧誒係啦，即係方便就誒。或者呀，Krystal其他。
+
+Chan, Woody Hing Lok   1:53:48
+即係仲有？
+
+Chan, Arthur Man Him   1:53:54
+你巖咩錶呀咩fill喺度係啦，或者阿Krystal其他同事呀都可以幫手睇下你想像中有啲乜嘢嘅你朝方曬落去先咁呀？最緊要我大概戒咗啲乜嘢，出嚟咁啊做法就係咁，我哋可以攞住呢一個framework，咁我哋下次再真係去高啲啲，去到workshop嘅時候咧咁，我哋可以續啟足球嚟講緊再detail喺入邊有啲需要啲乜嘢嘅咁同埋方便咧就系，譬如可能我做啲簡單嘅layout啦，Frederick睇嘅時候咧都會比較structure一啲。
+咁啊可能大家幫手仲淨翻幾分鐘，得像是盡量執啲嘢出嚟啦，執咗幾多就幾多啦。
+唔需要話打得好detail嘅，有啲簡簡單嘅字都OK啦，即系譬如davinche嗄咁都OK㗎就冇問題㗎啦。
+純粹提一提啦咁，不過唔一定喺個RFP入邊嗰啲嘢咧先可以寫落去嘅，甚至頭先講緊喇，如果有啲function啦即系例如一路用嘅時候咧？我覺得誒，其實我都想加翻，其實可能對即系我瞓緊，我prefer有幫助嘅都可以照寫落去嘅。
+呀。
+好。
+我驚係咪？大部份應該都諗到會閘住都寫出嚟先啦。
+
+Chan, Woody Hing Lok   2:00:38
+誒，我諗插座都list曬㗎好多，嗯？
+
+Chan, Arthur Man Him   2:00:42
+但系我，我明白啦唔緊要呀。總之，誒，盡量想睇下打大家list到幾多嘢出黎啦咁，當然我哋都到時都我都可能都會剩翻一個，即係console翻一個Excel啦，即係再拉翻誒RP嗰邊啦，再睇一睇，其實再call check返有冇啲咩要再打更新嘅咁，所以暫時呢出嚟就係大家都諗到啲咩比較重要嘅擺出嚟先。
+咁誒哦睇下先咯，因為而家咧其實已經4點啦，我驚我哋都未必高呼得曬啦咁，可能我揀一啲咧誒，有未必太過清楚嘅話咧？可能我想問少少先嘅咁譬如我想問一問啦。關於呢一個咧誒CSV import from other system係關個transformer嘅relationship，首先我想問下呢個呢一個function係咪？而家個system已經有㗎？
+
+Li, Crystal Ngong Yung   2:01:32
+誒。
+而家呢個system就冇嘅，但系如果做一啲and Alice嘅話咧，就需要多啲嘅治療。例如我哋未必有interface做到啦咁，可能就喺一啲import嘅功能咁樣。
+
+Chan, Arthur Man Him   2:01:37
+哦OK。
+
+Li, Crystal Ngong Yung   2:01:48
+囉。
+
+Chan, Arthur Man Him   2:01:48
+嗯，我想問下可唔可以誒，可唔可以講多少少咧？關於呢一個transformer嘅reason葉咧佢係同嗰個咩？Reason係同個cut同埋little啲乜嘢relationship呀。
+
+Li, Crystal Ngong Yung   2:02:02
+I customer嘅transformer同埋我哋嘅transformer嘅relationship咯咁，應該係cheese或者ATMs會有嘅。
+
+Chan, Arthur Man Him   2:02:07
+嗯。
+嗯咁呢就想呢個reason葉就喺誒即系可能Barbie middle level啦就可能睇到，其實佢係同customer個transformer係嗰個關係係點樣嘅？
+
+Li, Crystal Ngong Yung   2:02:23
+嗯冇錯？
+
+Chan, Arthur Man Him   2:02:25
+明白，咁你啲data其實喺APMS度係應該會有嘅。
+
+Li, Crystal Ngong Yung   2:02:30
+係啦。
+
+Chan, Arthur Man Him   2:02:31
+咁你你哋誒而家嘅做法就係可以喺個MCX box過，類似係誒XL啦，跟住到時import落去，因為而家因為而家ATMX係升唔到過去住嗱。
+
+Li, Crystal Ngong Yung   2:02:37
+嗯。
+
+Chan, Arthur Man Him   2:02:45
+明白。
+Ann呀，大概function我就了解啦，即係大概知道要做啲咩啦咁誒而家呢一刻咧？可能變咗做法就真係有機會要用X box嘅形式嚟做，因為始終我哋唔係一個two way synchronized啦咁呀，他打我當呢隻抹咗佢，可唔可以換一隻喎咩item就可能four之後會唔會可以直接由ADMS度上翻上嚟？
+
+Sa, Kelvin Yat Sing   2:03:11
+唔好意思呀，我想carry誒咩你哋一次Krystal，你依個意思應該係話因為咧，我哋依家pick咩咧就唔會同ATMs同埋傑GS咧做完depletion，咁你所有個menu嘅方法就喺APMSGS嗰啲X破咗一個set出嚟啦，跟著你喺度噏囉上去依個pq咩入邊系咪呀？
+
+Li, Crystal Ngong Yung   2:03:30
+係啊，係啊。
+
+Sa, Kelvin Yat Sing   2:03:31
+系呀，所以呢個唔係一個reminder嚟嘅化，即佢意思係別府我哋同你啲Ms同埋係嘛？
+
+Chan, Arthur Man Him   2:03:34
+嗯。
+
+Li, Crystal Ngong Yung   2:03:35
+誒。
+8月interface就係roadmap，但係如果man呢個係一個menu嘅做法，應該就想喺度嘅。
+
+Sa, Kelvin Yat Sing   2:03:40
+冇錯啦。
+係啦，係啦，係啦，即係你interview咩？但系依家咧before我哋同EDMS同只做ex之前你有個menu嘅方法就可以upload啲file上去衣個system度向你complain哂所有data啦，跟住喺度做緊ISIS咁樣。
+
+Chan, Arthur Man Him   2:03:43
+嗯嗯。
+嗯，明白。
+
+Li, Crystal Ngong Yung   2:03:56
+唉。
+
+Sa, Kelvin Yat Sing   2:03:58
+OK好Thank you。
+
+Chan, Arthur Man Him   2:03:59
+各自。
+好睇下先有冇啲咩拍特別啲meter connection between pantry。
+誒嗱呢個我想問一問咧呢啲event大概係指啲乜嘢呀？
+呀。
+
+Chan, Woody Hing Lok   2:04:26
+係誒？
+
+Chan, Arthur Man Him   2:04:36
+嗯。
+嗯。
+係？
+
+Chan, Woody Hing Lok   2:04:53
+屋企中間咗發生咗又你咩，或者係誒，話可能就係我哋PMS本身指引問題喇，或好過喺世界邊咧咁佢就就會可能有啲地理出現咗咁，可能話可能啲隔咗唔知幾分鐘，或者十幾分鐘20分鐘，咁樣咧咁先可以收到和先收到咁樣咁咧咁呢啲情況咧咁可能係呢啲又係呢次咧，有機會係Dom嘅時候出現啦，可能係譬如話我我我我我我我誒因為而家而家我可能我郁佢隻錶咁樣郁隻錶咁樣係咁郁隻錶咧可能我蚊即系我連線得咗嘅咁樣甩咗咧四咁樣郁跟住咧，但系咧就好快拆翻條標就標落去就係靚線度。
+
+Chan, Arthur Man Him   2:05:03
+嗯。
+
+Chan, Woody Hing Lok   2:05:28
+咁咧隻錶就有個分類嘅，就係叫我，你突然見到有有event，佢就hold咗攬住咗喺度啦，跟住然后咧就一通咧佢，就再即刻先掟埋出去。咁樣咁呢一只咧類似received咧咁，我就想叫做誒嘅，消化咗佢係一啲誒，即係阿可能有啲誒，即係誒，有啲好奇怪喎咁樣嗰啲錶係，係咪真係得㗎，係咪真係有用㗎係咪啲誒誒誒？即係誒？即係要識得去研究下呢啲event嚟嘅咁樣，咁所以咧就誒即我哋就扯會有啲咁樣咁啊誒地方咧？係儲住一啲restraint咁呢啲咧其實係誒誒將來。
+For咩咧即系儲起咗佢又唔係話真係做啲process咩㗎喎，可能又唔係要掉出嚟喎咁樣，咁你係for咩就可能貨誒，將來即係之後啦，我哋做可能再婚，可能佢其實喺啲誒誒喺安達某一單event里邊誒嘅一啲誒誒一啲抄嚟嘅咁樣，咁就我就將佢咧就塞返落去某一啲地方度咁樣咁就叫圓圓翻個故事就系佢就系想係啦咁就有啲咁樣即系我哋而家黑夜仲有啲咁樣咁嘅嘢II function咧係會做焗有啲嘢做囉嚇咁。
+
+Chan, Arthur Man Him   2:06:30
+嗯，明白我想問咧誒叫做呢個呢呢個利Dun咧？Suppose係去到誒，即係叫做PMS嗰時咧，其實嗰一下已經係出㗎，即係叫做係blackgold到，其實佢係一只嚟divine嚟㗎嘛即系講下個撇係個meter嗰個即係有有啲乜有啲某特別原因喇connect唔到啦咁，可能是個哥PS個八就已經誒叫做Fred咗佢喺個live defender。
+
+Chan, Woody Hing Lok   2:06:46
+誒。
+係？
+係啦，係啦誒佢有即系佢啦。即係騰訊同埋個list噶唔係生太遠嘅話，咪可以睇到咯。
+
+Chan, Arthur Man Him   2:06:53
+個technician咁解係？
+嗯，明白，我想問咧誒佢爭太，佢即系我敢suppose，如果係咁咧即系後其實係一個PS我其實我哋唔需要handle好多logic咩叫做reissuing㗎喇喺個PMPS其實都。
+
+Chan, Woody Hing Lok   2:07:10
+唉，PQMS會唔會friend咗咧好似冇冇咁吖嘛咁又又嘅有有誒有咁油嘅喺遊遊遊遊遊遊遊遊嘅嗯。
+
+Li, Crystal Ngong Yung   2:07:13
+呀。
+有機會飲。
+
+Chan, Arthur Man Him   2:07:20
+咁？
+哦即系佢而家自己而家fax咗咁，我，其實我都系純粹接收明白，即係我都係接受翻佢個logic話哦，你check咗呢隻叫received啦咁，我就可能喺個event度咧，我就可能誒下呢個啦或者個category啦，我就叫ladybird就純粹方便你哋睇翻啫。
+
+Chan, Woody Hing Lok   2:07:24
+夠嘅都有friend做嘅，好似OK，係呀，係咁。
+嗯嗯。
+
+Li, Crystal Ngong Yung   2:07:38
+有機會可能我哋會誒，可能個腹叼發生咗之后誒，但可能過咗一兩日，我哋先收到個利Griffin，但係原來可能係可以同前2日嘅event埋一齊嘅，可能我哋會上誒誒將佢指番去啱嘅位置咯。
+
+Chan, Arthur Man Him   2:07:43
+嗯。
+嗯，即系可能誒，我明白即係首先我哋係會發咗個李芷芬啦，而呢個李芷芬咧？我哋亦都有機會，可能係人手將佢再map翻去叫做DI money fill嗰度嘅。
+
+Li, Crystal Ngong Yung   2:07:58
+係？
+誒冇錯？
+
+Chan, Arthur Man Him   2:08:08
+嗯，明白我，我想問咧誒啊實首先嚇就問一問啦，因為而家其實已經over Run咗㗎44點㗎啦，我想問大家個時間係咪做誒？係咪？
+
+Chan, Woody Hing Lok   2:08:16
+系呀。
+
+Chan, Arthur Man Him   2:08:20
+我唔OK先定係冇K，我哋可以下一次先至繼續都得嘅。
+
+Chan, Woody Hing Lok   2:08:21
+即係你誒誒，係啊，因為我係誒好誒，其實我應該要離開嘅本身就係啦，不過我見係啦咁誒誒係誒，因為可都仲得嘅一陣間咁，所以咧誒誒，我想問有冇啲誒，即係誒，有咩功課要交俾我咁樣咖系呀。
+
+Chan, Arthur Man Him   2:08:28
+明白。
+明白明白。
+嗯嗱暫時其實老實講就無咩特別嘢要跟阿，咁純粹就可能阿阿胡迪嚟幫手喇。Organize翻啦，即係頭先你數過一啲嘅report啦，同埋得post嗰啲咧咁可能就要麻煩你相信幫手擺翻上個I share point度咁方便我哋去睇睇翻先。
+
+Chan, Woody Hing Lok   2:08:48
+嚇。
+OK，可以呀，可以好好嗯唔得可以呀。
+
+Chan, Arthur Man Him   2:08:59
+係啦，應該應該揸住就得呢個task嘅咁誒，后續我就點解會再安排返另外seatrade嘅workshop啦咁呀，因為收今日收集啲意見喇咁呀睇咗啲拼盤啦睇咗一啲，你哋認為有一個component啦咁，我應該會再refer翻一啲可能譬如有啲requirement嘅I Excel啦，同埋執一執啲product啦咁啊再失跌咗你哋資料之後咧咁我就會再開啲真係正式嘅workshop，即系可能逐逐下逐嘅model入邊個琴譜能幫你哋傾detail啲，究竟入邊有冇有啲咩咯只喺背後呀個display想點樣做呀？
+會係噉樣做嘅咁呀，我之後會有詳細啲嗰個LOL map點樣做個workshop就講出嚟嘅咁啊，如果Woody嚟比較今日趕時間，就我哋暫時可以今日去到呢個地方先。
+
+Chan, Woody Hing Lok   2:09:43
+好呀，好呀唔好意思可能好，嗯。
+
+Chan, Arthur Man Him   2:09:43
+咁呀或者阿係啦，weekly哋仲有冇其他問題，或者阿Wilson你哋嚇SN？
+
+Li, Crystal Ngong Yung   2:09:44
+好呀唔該。
+
+Sa, Kelvin Yat Sing   2:09:52
+我，我有個小問題咧，Woody想問咧而家嗰個誒片依家個咩事？PS，同埋嗰啲嗰啲嗰啲platform，你有冇Q and Ryan噶依家有冇QA加？
+
+Li, Crystal Ngong Yung   2:10:01
+又有人。
+
+Chan, Woody Hing Lok   2:10:02
+有嘅，有嘅。
+
+Sa, Kelvin Yat Sing   2:10:03
+哦，可唔可以畀QA媽問我哋嘅account，我哋入去睇啲嘢家？
+
+Li, Crystal Ngong Yung   2:10:08
+可以呀。
+
+Chan, Woody Hing Lok   2:10:09
+可以嘅，可以嘅，其實可以㗎，係呀。
+
+Chan, Arthur Man Him   2:10:10
+嗯。
+
+Li, Crystal Ngong Yung   2:10:11
+你。
+
+Sa, Kelvin Yat Sing   2:10:11
+呀系啦系啦咁，我哋即係同比ova比較靠我哋，我哋入去望咯咁就變咗唔使成日都問你哋，我哋自己入去了解下先。
+
+Chan, Arthur Man Him   2:10:12
+嗯哦咁又啱好添。
+
+Li, Jason Chit Yeung   2:10:18
+阿仔仔西班牙咩？
+
+Chan, Woody Hing Lok   2:10:19
+哦，可以呀，好呀好呀係咯，你有冇哂大點解唔曬黑嘅應該因為我畀阿咩呀咩呀我地俾我諗俾U鞋俾佢哋再比個webpage睇噶咋係呀畀喺喺UM度申請跟住唔使唔俾亞莎白啦沙伯即係入咗個server啦唔我就俾個UI佢睇咋諗住喺雅。
+
+Sa, Kelvin Yat Sing   2:10:20
+係啦。
+有有有我哋搞得掂啦，我哋搞得到嘅。
+
+Li, Jason Chit Yeung   2:10:25
+而唔係呀，你要申請㗎喎入server梗係要。
+
+Li, Crystal Ngong Yung   2:10:29
+入qm咯？
+
+Sa, Kelvin Yat Sing   2:10:29
+和號。
+
+Li, Crystal Ngong Yung   2:10:32
+Webpage都夠啦。
+
+Li, Jason Chit Yeung   2:10:33
+嗯。
+
+Sa, Kelvin Yat Sing   2:10:34
+嗯。
+
+Li, Jason Chit Yeung   2:10:37
+嗯嘅連OK。
+
+Sa, Kelvin Yat Sing   2:10:40
+係啊，好。
+
+Chan, Arthur Man Him   2:10:43
+係you I都OK嘅咁，當然你如果真係可以有啲叫Tammy data睇嘅更加好喇。
+
+Chan, Woody Hing Lok   2:10:48
+誒。
+
+Chan, Arthur Man Him   2:10:50
+唔緊要，唔緊要睇肉先睇UI，先睇住先睇住先。
+
+Chan, Woody Hing Lok   2:10:50
+誒，你睇住先，你睇下U鞋先係個優先，係啦，係啦。
+
+Chan, Arthur Man Him   2:10:54
+冇問題，嘅咁可能呢呢邊要幫阿Ruby幫手去準備下喇唔該哂你嘅。
+
+Chan, Woody Hing Lok   2:10:55
+係啊，係啊。
+哦，好好得好。
+
+Chan, Arthur Man Him   2:10:59
+好咁可能今日就暫時係咁先啦，好咁啊唔該曬咁多位真係？
+
+Sa, Kelvin Yat Sing   2:11:03
+嗯，果首大家哦，拜拜。
+
+Chan, Woody Hing Lok   2:11:04
+好好好唔該曬唔該曬嗯拜拜拜拜拜拜拜拜拜拜嗯。
+
+Chow, Chun Chung   2:11:06
+好唔該曬拜拜好唔該曬好拜拜？
+
+Chan, Arthur Man Him   2:11:06
+該好唔該曬唔該曬好拜拜。
+
+Li, Crystal Ngong Yung   2:11:07
+拜拜，唔該拜拜。
+
+Simon Yu(JKTech) - Mobile   2:11:10
+係？
+
+Lau, Wilson Yiu Ming stopped transcription

@@ -1,0 +1,135 @@
+Reportor (name),Topic,Area (category),Description,Discussion,Decision (If any),Action Item (if any)
+Arthur Chan,Meeting objectives and workshop format,Process,Define workshop objectives for PQMAP design discussion and establish collaborative format,"• Three main objectives: identify pain points, map business as-is processes, define WBS components
+• Workshop format using Miro collaborative board
+• Participants encouraged to share ideas and comments openly
+• Color coding for different teams to track contributions
+• Series of 3-4 workshops planned for detailed requirements",PQMAP design will follow collaborative workshop format with detailed functional design sessions,"• Schedule follow-up workshops at Hung Hom or Kai Tak office
+• Prepare detailed agenda for subsequent sessions
+• Share Miro board link with all participants"
+Crystal Li,Time-consuming PQ data analysis across systems,Pain Point,Difficulty analyzing PQ data when same event appears in both PQMS and CPDS systems,"• Manual correlation needed between PQMS and CPDS data for same events
+• Time consuming to merge data from different systems
+• Human judgment required to determine correct data values
+• Need for unified on-screen analysis rather than report export",PQMAP will provide single source of truth with unified on-screen data analysis,"• Design unified data analysis interface
+• Implement data correlation logic between PQMS and CPDS"
+Crystal Li,Meter inventory management challenges,Data/Monitoring,Difficulty managing meter information spread across PQMS and CPDS with incomplete data,"• Different meters in different systems (customer vs CLP meters)
+• Missing meter details like addresses and customer data
+• Manual Excel tracking for backup transformers
+• Need for centralized meter inventory with complete information
+• Requirement specification already includes meter inventory feature",PQMAP will integrate meter information from both systems into unified inventory,"• Create unified meter inventory page with all details
+• Include backup transformer information
+• Integrate data from both PQMS and CPDS"
+Woody Chan,Manual report generation and dashboard requirements,Reporting/BI,Time-consuming manual process to create custom reports and charts for management,"• Current process requires exporting from PQMS and CPDS to Excel
+• Manual work to create charts and analysis for management
+• Need for quick dashboard access with flexible date ranges
+• Management requests for historical comparisons (year-over-year)
+• Fixed table formats limit flexibility for different reporting needs",PQMAP will implement both dashboard and flexible reporting modules,"• Design interactive dashboard with real-time data
+• Build flexible reporting with date range selection
+• Enable Excel export capabilities for management reports"
+Crystal Li,KPI calculation and trend visualization,Reporting/BI,Need for automated KPI calculation and visualization instead of manual incident-by-incident review,"• Current KPI calculation is manual per incident
+• Two types: standard PQ indices (EN50160, IEEE 2519) and service-related KPIs
+• Need for trend visualization over selected time periods
+• Requirement for diagram/chart visualization rather than raw numbers",PQMAP will provide automated KPI calculation with trend visualization,"• Implement automated index calculations
+• Create trend charts and visualization tools
+• Support both standard compliance and custom KPI definitions"
+Calvin Wong,Single source of truth for data integrity,Data/Monitoring,Address data consistency issues across PQMS and CPDS creating confusion,"• Multiple systems storing similar data creates confusion
+• Risk of data inconsistency and conflicting information
+• Need for unified data governance approach
+• PQMAP should consolidate data from both systems",PQMAP will serve as single source of truth for all PQ data,"• Define data governance policies
+• Implement data validation and consistency checks"
+Woody Chan,System integration and data flow architecture,Architect,Define data flow from PQMS/CPDS to PQMAP and eventual integration with ADMS,"• Phase 1: PQMS and CPDS continue sending data to ADMS while also feeding PQMAP
+• PQMAP receives data from both PQMS and CPDS
+• Phase 2 (future): PQMAP will send processed data to ADMS, replacing direct PQMS feed
+• False positive filtering logic already exists in current PQMS
+• PQMAP will inherit and enhance filtering capabilities",PQMAP will implement phased integration with existing data filtering logic preserved,"• Design data ingestion interfaces for PQMS/CPDS
+• Plan Phase 2 ADMS integration architecture
+• Implement and enhance false positive filtering"
+Woody Chan,Business as-is: Event handling workflow,Process,Current operational workflow for handling PQ events from detection to resolution,"• PQMS receives meter data and performs initial filtering
+• False positive detection using device logic at PQMS level
+• CPDS also receives events and performs independent filtering
+• Both systems store events separately with own filtering rules
+• True events proceed to analysis and notification workflow
+• Manual verification still required for quality assurance",PQMAP will maintain existing workflow patterns while centralizing data,"• Document complete event handling workflow
+• Map all filtering rules from both systems
+• Define consolidation strategy"
+Woody Chan,Event analysis with waveform data and PQ-DIF files,Data/Monitoring,Processing and analysis of PQ events including detailed waveform data,"• Events include both statistical data and waveform patterns
+• PQ-DIF files contain detailed event information in standard format
+• Current systems support waveform analysis
+• Need for automated pattern recognition in waveforms
+• Integration with existing event validation workflows",PQMAP will support comprehensive event analysis including waveform visualization,"• Implement waveform visualization tools
+• Support PQ-DIF file format processing
+• Design event analysis workflows with waveform access"
+Woody Chan,Historical data access and SARFI calculations,Data/Monitoring,Access to historical PQ data through PQDA for index calculations and trend analysis,"• PQDA provides 3-year historical data vs PQMS 3-month limit
+• SARFI and other indices require historical context for calculation
+• Weighting factors updated annually for customer impact calculations
+• Each meter has weighting factor based on customer count
+• Manual Excel calculations currently supplement system calculations
+• Need for flexible time period selection for analysis",PQMAP will integrate with historical data sources for comprehensive analysis,"• Design historical data access interfaces
+• Implement SARFI and index calculation engines
+• Support flexible date range queries
+• Automate weighting factor management"
+Woody Chan,Performance review reporting and analytics,Reporting/BI,Annual and monthly performance review reports with various analytical views,"• Year-over-year trend analysis for event counts and impact
+• Circuit-level analysis to identify problematic feeders
+• Geographical distribution mapping showing event concentration
+• Component analysis (cables, transformers) for failure patterns
+• Power BI currently used to create custom visualizations
+• Excel-based consolidation of multiple data sources
+• Management dashboard requirements for key metrics",PQMAP will include comprehensive performance reporting with visualization capabilities,"• Design performance review templates
+• Implement geographical mapping features
+• Build trend analysis and comparison tools
+• Create management dashboard with key metrics"
+Samuel Tang,PQMAP role as platform vs meter interface,Architect,Clarify that PQMAP will replace PQDA while PQMS/CPDS remain as meter interfaces,"• PQMS and CPDS continue as proprietary meter interface layers
+• PQMAP becomes centralized platform for value-added functions
+• All analysis, reporting, and visualization moves to PQMAP
+• PQMS/CPDS standardize data format into PQ-DIF before sending to PQMAP
+• Future: additional meter brands can be added through standard interface
+• PQMAP will be cloud-based for scalability",PQMAP will serve as cloud platform for all analysis functions while PQMS/CPDS remain as meter interfaces,"• Define clear scope boundaries between PQMAP and meter systems
+• Design standard data interface format
+• Plan cloud deployment architecture"
+Woody Chan,Notification system requirements,Notification,Configure notification strategy for PQ events and system alerts to operators,"• Notification types: PQ events, meter disconnect events, watchdog/server anomalies
+• Primary recipient: operators who need to see all events
+• Secondary recipients: management for selected summaries
+• Email as primary notification channel
+• Current PQMS has notification capabilities that need migration
+• ADMS notifications will continue separately with broader user base
+• Need for configurable thresholds and recipient groups",PQMAP will implement email notification system with configurable settings for operators,"• Build notification admin interface for configuration
+• Define threshold settings for different event types
+• Create recipient group management
+• Plan cut-over to disable overlapping PQMS notifications"
+Kelvin Sa,User interface and usability improvements,UI/UX,"Need for modern, user-friendly interface compared to legacy systems","• Current PQMS UI considered not visually appealing
+• Need for intuitive navigation and improved user experience
+• Requirement for access to both QA and production environments
+• Team requests demo access to current PQMS UI for reference",PQMAP will prioritize modern UI/UX design,"• Provide QA environment access to vendor team
+• Design mockups for key interfaces
+• Conduct usability review sessions"
+Crystal Li,CSV import for transformer relationship data,Integration,Manual data import requirement for transformer relationships until ADMS integration,"• Transformer relationship data exists in ADMS
+• Shows connection between customer transformers and CLP transformers
+• Phase 1: Manual CSV import as workaround
+• Phase 2: Direct integration with ADMS for automated sync
+• Needed for comprehensive analysis of meter relationships",PQMAP will support CSV import for transformer data as interim solution,"• Design CSV import interface with validation
+• Define data format specifications
+• Plan future ADMS integration for automated sync"
+Woody Chan,Meter disconnection event handling,Operations,Special handling for meter disconnection events requiring investigation,"• Disconnection events stored separately for analysis
+• May indicate communication issues rather than power quality problems
+• Need to distinguish between genuine PQ events and meter issues
+• Reconnection events should be linked to disconnection for complete picture
+• Operators need notification of disconnection events",PQMAP will track and correlate meter disconnection/reconnection events,"• Design disconnection event tracking
+• Implement event correlation logic
+• Add to notification system"
+Woody Chan,Customer service record integration,Integration,Integration of PQ customer service records for comprehensive case management,"• Second team handles customer service for PQ issues
+• Service records currently maintained separately
+• Need to link service actions to PQ events
+• Operators may suggest corrective actions to customers
+• Service team needs to document interactions and recommendations
+• Historical service record import required",PQMAP will integrate customer service record management,"• Design service record data model
+• Build interface for service team data entry
+• Implement historical data import capability
+• Link service records to PQ events"
+Wilson Lau,Project timeline and vendor engagement,Governance,Clarify project timeline expectations and vendor participation readiness,"• Official project start expected mid-December 2025
+• Vendor team eager to accelerate delivery
+• Functional design phase must complete before technical design
+• Series of workshops needed to gather detailed requirements
+• 3-4 workshop sessions anticipated
+• Requirement specifications need refinement to implementation-ready detail","Project will follow structured approach: functional design workshops, then technical design","• Confirm official project start date
+• Schedule remaining workshop sessions
+• Prepare detailed requirement specifications
+• Set up collaboration tools and document sharing"

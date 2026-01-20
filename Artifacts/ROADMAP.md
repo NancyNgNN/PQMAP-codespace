@@ -1,7 +1,7 @@
 # Product Roadmap
 
 **Document Purpose:** Capture planned features and future development initiatives  
-**Last Updated:** January 7, 2026  
+**Last Updated:** January 20, 2026  
 **Status:** In Progress
 
 ---
@@ -205,6 +205,38 @@
      - IDRUploadModal with file upload and mapping preview
      - Event detail page with IDR management (add/remove)
    - **Estimated Effort:** 1 week
+
+8. **Erxi-Reporting Merge Plan** (Jan 20) ⭐ **NEW**
+  - **Purpose:** Safely migrate reporting features from #Erxi-Reporting into the main PQMAP application
+  - **Current Status:** Planning / dependency audit
+  - **Known Conflicts (from initial review):**
+    - **New reporting tables:** Erxi-Reporting adds `voltage_profiles` + `meter_voltage_readings` (migration `20251229000000_create_voltage_profiles.sql`) not present in main
+    - **Report UI divergence:** Erxi-Reporting replaces Reports page with a 4,000-line, multi-tab UI (PQ Summary, Benchmarking, Profiles, Data Maintenance, Meter Communication)
+    - **Overlap with existing modules:**
+      - Benchmarking overlaps with existing `pq_benchmark_standards`/`pq_benchmark_thresholds`
+      - Meter Communication overlaps with Meter Availability module
+    - **Mock-heavy implementation:** Many report tabs use mock datasets and placeholders (service logs, affected customers, benchmarking scatter, verification data)
+    - **Report Builder gap:** Erxi-Reporting lacks the interactive Report Builder widget and saved report flow (`saved_reports` table)
+  - **Merge Approach:**
+    1. **Inventory & Diff** (1 day)
+      - Compare `src/components`, `src/services`, `src/types`, and `supabase/migrations` between root and #Erxi-Reporting
+      - Identify which report tabs are worth migrating vs replacing with existing modules
+    2. **Database Alignment** (1 day)
+      - Decide if `meter_voltage_readings` + `voltage_profiles` are required
+      - If required, add migration + RLS policies to main app and define ingestion strategy
+    3. **Code Integration** (2-3 days)
+      - Use main app as source of truth
+      - Cherry-pick only unique report tabs/logic from #Erxi-Reporting
+      - Refactor monolith `Reports.tsx` into smaller components aligned with existing UI patterns
+      - Ensure reporting permissions remain in `userManagementService`
+    4. **Dependency Reconciliation** (0.5 day)
+      - Keep main `package.json` dependencies; only add if new reporting features require it
+    5. **QA & Regression** (2 days)
+      - Verify report builder save/share, exports, benchmarking, and availability reports
+      - Run TypeScript check + smoke tests
+    6. **De-duplication** (0.5 day)
+      - Archive or remove #Erxi-Reporting after merge approval
+  - **Estimated Effort:** 1 week
 
 ---
 

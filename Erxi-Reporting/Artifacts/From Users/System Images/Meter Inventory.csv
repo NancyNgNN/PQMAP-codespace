@@ -1,0 +1,5 @@
+"Name","SiteID","Volt Level","Substation","Circuit","Location","Region","OC","Brand","Model","Nominal","CT","Asset#","Serial#","IPAddress","Firmware","Framework","Active"
+"PQMS_11KV.APA0042_H3","42","11KV","APA","H3"," ","WE","LT","Schneider","ION7550","6350","3-PH"," ","MI-1511A781-04","172.20.210.26","7550V373e","7550_FAC-61850_V3.6.0.0.0","Y"
+"PQMS_11KV.APA0043_H1","43","11KV","APA","H1"," ","WE","LT","Schneider","ION7550","6350","3-PH"," ","MI-1603A290-04","172.20.210.21","7550V373e","7550_FAC-61850_V3.6.0.0.0","Y"
+"PQMS_11KV.APA0044_H4","44","11KV","APA","H4"," ","WE","LT","Schneider","ION7550","6350","3-PH"," ","MI-1603A291-04","172.20.210.22","7550V373e","7550_FAC-61850_V3.6.0.0.0","Y"
+"PQMS_400KV.YUE0266_TPE2","266","400KV","YUE","TPE2"," ","NR"," ","Schneider","ION7550","230940","3-PH","4132789","MI-1404A779-04","172.20.15.59","7550V373e","7550_FAC-61850_V3.6.0.0.0","Y"

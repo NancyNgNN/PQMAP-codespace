@@ -1,0 +1,288 @@
+          {activeTab === 'profile' && (
+            <div className="space-y-6">
+              {/* Header with Actions */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Voltage Profile</h2>
+                  <p className="text-slate-600">Analyze historical voltage/current data by meter.</p>
+                </div>
+                <div className="flex gap-2">
+                  {savedProfiles.length > 0 && (
+                    <button
+                      onClick={() => setShowLoadProfileModal(true)}
+                      className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all text-sm flex items-center gap-2"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                      Load Profile
+                    </button>
+                  )}
+                  {showProfileResults && (
+                    <button
+                      onClick={() => setShowSaveProfileModal(true)}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm flex items-center gap-2"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save Profile
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filters Panel */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Left Panel - Selection Criteria */}
+                <div className="bg-slate-50 rounded-lg p-6 border border-slate-200 space-y-6">
+                  {/* Step 1: Data Type Toggle */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      1. Select data (Raw data will take time):
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          checked={profileValueType === 'average'}
+                          onChange={() => setProfileValueType('average')}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <span className="text-sm text-slate-700">Daily Average</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          checked={profileValueType === 'raw'}
+                          onChange={() => setProfileValueType('raw')}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <span className="text-sm text-slate-700">Raw Data</span>
+                      </label>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2 italic">* Max. of 1 year and 10 meters only</p>
+                  </div>
+
+                  {/* Step 2: Voltage Level */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      2. Select meter(s) from the list:
+                    </label>
+                    <div className="space-y-2">
+                      {['All', '400KV', '132KV', '33KV', '11KV', '380V'].map(level => (
+                        <label key={level} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            checked={profileVoltageLevel === level}
+                            onChange={() => setProfileVoltageLevel(level)}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span className="text-sm text-slate-700">{level}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Step 3: Time Range */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      3. Set time range:
+                    </label>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs text-slate-600 mb-1">From:</label>
+                        <input
+                          type="date"
+                          value={profileDateRange.start}
+                          onChange={(e) => setProfileDateRange({ ...profileDateRange, start: e.target.value })}
+                          className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-slate-600 mb-1">To:</label>
+                        <input
+                          type="date"
+                          value={profileDateRange.end}
+                          onChange={(e) => setProfileDateRange({ ...profileDateRange, end: e.target.value })}
+                          className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Get Profile Button */}
+                  <button
+                    onClick={handleGetProfileResult}
+                    className="w-full py-3 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg font-bold hover:shadow-lg transition-all text-sm uppercase"
+                  >
+                    GET PROFILE RESULT
+                  </button>
+                </div>
+
+                {/* Center Panel - Meter Selection */}
+                <div className="lg:col-span-2 space-y-4">
+                  {/* Data Type Toggle */}
+                  <div className="bg-white rounded-lg border border-slate-200 p-4">
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      Type of Data:
+                    </label>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => {
+                          setProfileDataType('voltage');
+                          setProfileParameters(['V1', 'V2', 'V3']);
+                        }}
+                        className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                          profileDataType === 'voltage'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        Voltage
+                      </button>
+                      <button
+                        onClick={() => {
+                          setProfileDataType('current');
+                          setProfileParameters(['I1', 'I2', 'I3']);
+                        }}
+                        className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                          profileDataType === 'current'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        Current
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Meter List */}
+                  <div className="bg-white rounded-lg border border-slate-200">
+                    <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                      <span className="font-semibold text-slate-700">{filteredMeters.length}</span>
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="px-3 py-1 border border-slate-300 rounded text-sm w-48"
+                      />
+                    </div>
+                    <div className="h-96 overflow-y-auto p-2">
+                      {filteredMeters.slice(0, 50).map(meter => (
+                        <label
+                          key={meter.id}
+                          className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 rounded cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={profileSelectedMeters.includes(meter.id)}
+                            onChange={() => toggleMeterSelection(meter.id)}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span className="text-sm text-slate-700">{meter.id}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Panel - Selected Meters */}
+                <div className="bg-white rounded-lg border border-slate-200">
+                  <div className="p-4 border-b border-slate-200 bg-slate-50">
+                    <span className="font-semibold text-slate-700">Selected Meters: {profileSelectedMeters.length}</span>
+                  </div>
+                  <div className="h-96 overflow-y-auto p-2">
+                    {profileSelectedMeters.length === 0 ? (
+                      <div className="p-4 text-center text-slate-400 text-sm">
+                        No meters selected
+                      </div>
+                    ) : (
+                      profileSelectedMeters.map((meterId) => (
+                        <div
+                          key={meterId}
+                          className="flex items-center justify-between px-3 py-2 hover:bg-slate-50 rounded"
+                        >
+                          <span className="text-sm text-slate-700">{meterId}</span>
+                          <button
+                            onClick={() => toggleMeterSelection(meterId)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Results Section */}
+              {showProfileResults && (
+                <div className="space-y-6">
+                  {/* Chart Controls */}
+                  <div className="bg-white rounded-lg border border-slate-200 p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <span className="text-sm font-semibold text-slate-700 mr-4">
+                          Type of Data: {profileDataType === 'voltage' ? 'Voltage' : 'Current'}, {profileValueType === 'average' ? 'AVG' : 'RAW'}
+                        </span>
+                        <span className="text-sm text-slate-600 mr-4">
+                          From: {profileDateRange.start}
+                        </span>
+                        <span className="text-sm text-slate-600">
+                          To: {profileDateRange.end}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-slate-700">Select parameter:</span>
+                          {(profileDataType === 'voltage' ? ['V1', 'V2', 'V3'] : ['I1', 'I2', 'I3']).map(param => (
+                            <label key={param} className="flex items-center gap-1">
+                              <input
+                                type="checkbox"
+                                checked={profileParameters.includes(param)}
+                                onChange={() => handleToggleParameter(param)}
+                                className="w-4 h-4 text-blue-600"
+                              />
+                              <span className="text-sm text-slate-700">{param}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => alert('Copy chart to clipboard')}
+                          className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition-all text-sm flex items-center gap-1"
+                        >
+                          <Copy className="w-4 h-4" />
+                          Copy
+                        </button>
+                        <button
+                          onClick={handleExportProfileCSV}
+                          className="px-3 py-1.5 bg-green-600 text-white rounded hover:shadow-lg transition-all text-sm flex items-center gap-1"
+                        >
+                          <Download className="w-4 h-4" />
+                          CSV
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Charts - Placeholder for now, showing mock representation */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {profileSelectedMeters.slice(0, 4).map((meterId) => (
+                      <div key={meterId} className="bg-white rounded-lg border border-slate-200 p-6">
+                        <h3 className="text-sm font-semibold text-slate-900 mb-4 text-center">{meterId}</h3>
+                        <div className="h-64 bg-slate-50 rounded border border-slate-200 flex items-center justify-center">
+                          <div className="text-center">
+                            <TrendingUp className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                            <p className="text-sm text-slate-500">Chart visualization would appear here</p>
+                            <p className="text-xs text-slate-400 mt-1">Showing {profileParameters.join(', ')} over time</p>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex items-center justify-center gap-4 text-xs">
+                          {profileParameters.includes('V1') && <span className="flex items-center gap-1"><div className="w-3 h-3 bg-black"></div>V1</span>}
+                          {profileParameters.includes('V2') && <span className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500"></div>V2</span>}
+                          {profileParameters.includes('V3') && <span className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500"></div>V3</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}

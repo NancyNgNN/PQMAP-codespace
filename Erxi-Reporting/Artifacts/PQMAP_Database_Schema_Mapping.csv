@@ -1,0 +1,193 @@
+Table Name,Column,Type,Description,Example
+profiles,id,uuid,Links to auth.users,550e8400-e29b-41d4-a716-446655440000
+profiles,email,text,User email address,john.doe@clp.com.hk
+profiles,full_name,text,User's full name,John Doe
+profiles,role,user_role,"admin, operator, viewer",operator
+profiles,department,text,Department name,Power Quality
+profiles,created_at,timestamptz,Profile creation time,2025-01-15 08:30:00+00
+profiles,updated_at,timestamptz,Last update time,2025-12-19 10:45:00+00
+substations,id,uuid,Unique identifier,7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3
+substations,name,text,Substation name,Ap Lei Chau Substation A
+substations,code,text,"Substation code (e.g., APA, APB, CHS)",APA
+substations,voltage_level,text,"e.g., ""132kV"", ""11kV"", ""400kV"", ""380V""",132kV
+substations,latitude,decimal(10,6),GPS latitude,22.240000
+substations,longitude,decimal(10,6),GPS longitude,114.150000
+substations,region,text,"WE=West, NR=North, CN=Central",WE
+substations,status,substation_status,"operational, maintenance, offline",operational
+substations,created_at,timestamptz,Creation timestamp,2024-11-03 12:00:00+00
+pq_meters,id,uuid,Unique identifier,a1b2c3d4-e5f6-7890-abcd-ef1234567890
+pq_meters,meter_id,text,Meter serial number,PQM-APA-001
+pq_meters,substation_id,uuid,Associated substation,7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3
+pq_meters,location,text,Location within substation,11kV Switchboard Room
+pq_meters,status,meter_status,"active, abnormal, inactive",active
+pq_meters,last_communication,timestamptz,Last successful comm,2025-12-19 03:00:00+00
+pq_meters,firmware_version,text,Firmware version,v2.5.3
+pq_meters,installed_date,timestamptz,Installation date,2023-06-15 09:00:00+00
+pq_meters,created_at,timestamptz,Creation timestamp,2024-11-03 12:00:00+00
+pq_meters,meter_type,text,Type of meter,Fluke 1760
+pq_meters,voltage_level,text,Operating voltage level,132kV
+pq_meters,site_id,text,Site identifier,SITE-APA-01
+pq_meters,circuit_id,text,Circuit reference,CKT-132-01
+pq_meters,region,text,Geographic region,WE
+pq_meters,oc,text,Operating center,West OC
+pq_meters,brand,text,Meter manufacturer,Fluke
+pq_meters,model,text,Meter model number,1760
+pq_meters,nominal_voltage,numeric,Nominal voltage rating,132.00
+pq_meters,ct_type,text,Current transformer type,800/5A
+pq_meters,asset_number,text,Asset tracking number,ASSET-PQM-2023-001
+pq_meters,serial_number,text,Serial number,SN-1760-2023-001
+pq_meters,ip_address,text,Network IP address,10.20.30.45
+pq_meters,framework_version,text,Framework version,v1.2.0
+pq_meters,active,boolean,Active status flag,true
+pq_events,id,uuid,Unique identifier,e1f2a3b4-c5d6-7890-efab-cd1234567890
+pq_events,event_type,event_type,"voltage_dip, voltage_swell, harmonic, etc.",voltage_dip
+pq_events,substation_id,uuid,Affected substation,7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3
+pq_events,meter_id,uuid,Recording meter,a1b2c3d4-e5f6-7890-abcd-ef1234567890
+pq_events,timestamp,timestamptz,Event occurrence time,2025-12-18 14:32:15+00
+pq_events,duration_ms,integer,Event duration in milliseconds,350
+pq_events,magnitude,decimal(10,3),"Event magnitude (voltage %, THD%)",72.5
+pq_events,severity,severity_level,"critical, high, medium, low",high
+pq_events,status,event_status,"new, acknowledged, investigating, resolved, false",acknowledged
+pq_events,is_mother_event,boolean,Is this a mother event?,true
+pq_events,parent_event_id,uuid,Links to mother event,null (for mother) / e1f2a3b4-... (for child)
+pq_events,affected_phases,text[],Affected phases,"{A,B,C}"
+pq_events,waveform_data,jsonb,Waveform data for visualization,"{""voltage"": [...], ""current"": [...]}"
+pq_events,created_at,timestamptz,Creation timestamp,2025-12-18 14:32:20+00
+pq_events,resolved_at,timestamptz,Resolution timestamp,2025-12-18 16:45:00+00
+pq_events,voltage_level,text,"Voltage level (400kV, 132kV, 11kV, 380V)",132kV
+pq_events,circuit_id,text,Circuit identifier,H2
+pq_events,customer_count,integer,Number of affected customers,56
+pq_events,remaining_voltage,decimal(5,2),Remaining voltage percentage,72.50
+pq_events,validated_by_adms,boolean,ADMS validation flag,true
+pq_events,is_special_event,boolean,Special event (exclude from SARFI),false
+pq_events,is_child_event,boolean,Is this a child event?,false
+pq_events,grouping_type,text,"automatic, manual",automatic
+pq_events,grouped_at,timestamptz,When grouped,2025-12-18 14:33:00+00
+pq_events,false_event,boolean,Flagged as false positive/measurement anomaly,false
+pq_events,oc,text,Operating center,West OC
+pq_events,remarks,text,Additional notes,Event investigated and resolved
+pq_events,idr_no,text,Incident Data Record number,IDR-2025-001234
+pq_events,address,text,Event location address,123 Industrial Road
+pq_events,equipment_type,text,Equipment involved,Transformer
+pq_events,cause_group,text,High-level cause category,Equipment
+pq_events,cause,text,Specific root cause (migrated from root_cause),Equipment Failure
+pq_events,description,text,Detailed event description,Voltage dip due to transformer overload
+pq_events,object_part_group,text,Equipment part category,Transformer
+pq_events,object_part_code,text,Specific part code,TX-132-01
+pq_events,damage_group,text,Damage category,Electrical
+pq_events,damage_code,text,Specific damage code,OVLD
+pq_events,outage_type,text,Type of outage,Partial
+pq_events,weather,text,Weather conditions,Clear
+pq_events,total_cmi,numeric,Total Customer Minutes Interrupted,156.50
+pq_events,v1,numeric,Phase 1 voltage,130.5
+pq_events,v2,numeric,Phase 2 voltage,131.2
+pq_events,v3,numeric,Phase 3 voltage,129.8
+pq_events,sarfi_10,numeric,SARFI-10 index (sags below 10% of nominal),0.001
+pq_events,sarfi_20,numeric,SARFI-20 index (sags below 20% of nominal),0.005
+pq_events,sarfi_30,numeric,SARFI-30 index (sags below 30% of nominal),0.010
+pq_events,sarfi_40,numeric,SARFI-40 index (sags below 40% of nominal),0.015
+pq_events,sarfi_50,numeric,SARFI-50 index (sags below 50% of nominal),0.020
+pq_events,sarfi_60,numeric,SARFI-60 index (sags below 60% of nominal),0.025
+pq_events,sarfi_70,numeric,SARFI-70 index (sags below 70% of nominal),0.030
+pq_events,sarfi_80,numeric,SARFI-80 index,0.035
+pq_events,sarfi_90,numeric,SARFI-90 index,0.040
+customers,id,uuid,Unique identifier,c1d2e3f4-a5b6-7890-cdef-ab1234567890
+customers,account_number,text,Customer account number,ACC-2025-001234
+customers,name,text,Customer name,ABC Manufacturing Ltd
+customers,address,text,Service address,"123 Industrial Road, Kowloon"
+customers,substation_id,uuid,Serving substation,7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3
+customers,contract_demand_kva,decimal(10,2),Contract demand,500.00
+customers,customer_type,customer_type,"residential, commercial, industrial",industrial
+customers,critical_customer,boolean,Is critical customer?,true
+customers,created_at,timestamptz,Creation timestamp,2024-01-10 08:00:00+00
+customer_transformer_matching,id,uuid,Unique identifier,d1e2f3a4-b5c6-7890-defg-bc1234567890
+customer_transformer_matching,customer_id,uuid,Customer account,c1d2e3f4-a5b6-7890-cdef-ab1234567890
+customer_transformer_matching,substation_id,uuid,Substation,7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3
+customer_transformer_matching,circuit_id,text,"Transformer ID (H1, H2, or H3)",H2
+customer_transformer_matching,active,boolean,Is mapping active?,true
+customer_transformer_matching,created_at,timestamptz,Creation timestamp,2025-12-15 10:00:00+00
+customer_transformer_matching,updated_at,timestamptz,Last update timestamp,2025-12-15 10:00:00+00
+customer_transformer_matching,updated_by,uuid,Last updated by user,550e8400-e29b-41d4-a716-446655440000
+event_customer_impact,id,uuid,Unique identifier,f1a2b3c4-d5e6-7890-fghi-de1234567890
+event_customer_impact,event_id,uuid,PQ event,e1f2a3b4-c5d6-7890-efab-cd1234567890
+event_customer_impact,customer_id,uuid,Affected customer,c1d2e3f4-a5b6-7890-cdef-ab1234567890
+event_customer_impact,impact_level,text,"severe, moderate, minor",moderate
+event_customer_impact,estimated_downtime_min,numeric(10,2),Estimated downtime (from duration_ms),5.83
+event_customer_impact,created_at,timestamptz,Creation timestamp,2025-12-18 14:32:20+00
+notifications,id,uuid,Unique identifier,g1h2i3j4-k5l6-7890-ghij-ef1234567890
+notifications,event_id,uuid,Related event,e1f2a3b4-c5d6-7890-efab-cd1234567890
+notifications,recipient_email,text,Email address,operator@clp.com.hk
+notifications,recipient_phone,text,SMS number,+852-9123-4567
+notifications,notification_type,text,"email, sms, both",email
+notifications,subject,text,Notification subject,Critical Voltage Dip at APA
+notifications,message,text,Notification message,A critical voltage dip event occurred...
+notifications,status,text,"pending, sent, failed",sent
+notifications,sent_at,timestamptz,Send timestamp,2025-12-18 14:35:00+00
+notifications,created_at,timestamptz,Creation timestamp,2025-12-18 14:32:25+00
+notification_rules,id,uuid,Unique identifier,h1i2j3k4-l5m6-7890-hijk-fg1234567890
+notification_rules,name,text,Rule name,Critical Events Alert
+notification_rules,event_type,event_type,Specific event type filter,voltage_dip
+notification_rules,severity_threshold,severity_level,Minimum severity,high
+notification_rules,recipients,text[],Recipient list,"{operator1@clp.com.hk,operator2@clp.com.hk}"
+notification_rules,include_waveform,boolean,Include waveform?,true
+notification_rules,typhoon_mode_enabled,boolean,Typhoon mode?,false
+notification_rules,active,boolean,Is rule active?,true
+notification_rules,created_at,timestamptz,Creation timestamp,2024-06-01 10:00:00+00
+pq_service_records,id,uuid,Unique identifier,i1j2k3l4-m5n6-7890-ijkl-gh1234567890
+pq_service_records,customer_id,uuid,Customer,c1d2e3f4-a5b6-7890-cdef-ab1234567890
+pq_service_records,service_date,date,Service date,2025-11-15
+pq_service_records,service_type,service_type,"site_survey, harmonic_analysis, etc.",harmonic_analysis
+pq_service_records,findings,text,Service findings,High THD levels detected at 5th and 7th harmonics
+pq_service_records,recommendations,text,Recommendations,Install harmonic filters
+pq_service_records,benchmark_standard,text,Standard reference,IEEE 519-2014
+pq_service_records,engineer_id,uuid,Assigned engineer,550e8400-e29b-41d4-a716-446655440000
+pq_service_records,created_at,timestamptz,Creation timestamp,2025-11-16 09:00:00+00
+pq_service_records,event_id,uuid,Related event (optional),e1f2a3b4-c5d6-7890-efab-cd1234567890
+pq_service_records,content,text,Service notes (TipTap rich text),<p>Detailed service report...</p>
+reports,id,uuid,Unique identifier,j1k2l3m4-n5o6-7890-jklm-hi1234567890
+reports,report_type,report_type,Report type,annual_pq
+reports,title,text,Report title,Annual Power Quality Report 2025
+reports,period_start,date,Report period start,2025-01-01
+reports,period_end,date,Report period end,2025-12-31
+reports,generated_by,uuid,Generator user,550e8400-e29b-41d4-a716-446655440000
+reports,file_path,text,File storage path,reports/2025/annual_pq_2025.pdf
+reports,status,text,"generating, completed, failed",completed
+reports,created_at,timestamptz,Creation timestamp,2025-12-19 08:00:00+00
+system_health,id,uuid,Unique identifier,k1l2m3n4-o5p6-7890-klmn-ij1234567890
+system_health,component,text,Component name,Database
+system_health,status,text,"healthy, degraded, down",healthy
+system_health,message,text,Status message,All systems operational
+system_health,metrics,jsonb,Component metrics,"{""cpu"": 45, ""memory"": 62, ""disk"": 38}"
+system_health,checked_at,timestamptz,Check timestamp,2025-12-19 10:30:00+00
+sarfi_metrics,id,uuid,Unique identifier,l1m2n3o4-p5q6-7890-lmno-jk1234567890
+sarfi_metrics,substation_id,uuid,Associated substation,7a3f2c1d-8e9b-4f5a-b6c7-d8e9f0a1b2c3
+sarfi_metrics,period_year,integer,Year,2025
+sarfi_metrics,period_month,integer,Month (1-12),12
+sarfi_metrics,sarfi_70,decimal(10,2),SARFI-70 value,0.03
+sarfi_metrics,sarfi_80,decimal(10,2),SARFI-80 value,0.05
+sarfi_metrics,sarfi_90,decimal(10,2),SARFI-90 value,0.08
+sarfi_metrics,total_events,integer,Total event count,15
+sarfi_metrics,created_at,timestamptz,Creation timestamp,2025-12-19 10:00:00+00
+sarfi_profiles,id,uuid,Unique identifier,m1n2o3p4-q5r6-7890-mnop-kl1234567890
+sarfi_profiles,name,text,Profile name,CLP Standard 2025
+sarfi_profiles,description,text,Profile description,Standard SARFI calculation weights for 2025
+sarfi_profiles,year,integer,Applicable year,2025
+sarfi_profiles,is_active,boolean,Is profile active?,true
+sarfi_profiles,created_by,uuid,Creator user,550e8400-e29b-41d4-a716-446655440000
+sarfi_profiles,created_at,timestamptz,Creation timestamp,2025-01-01 08:00:00+00
+sarfi_profiles,updated_at,timestamptz,Update timestamp,2025-01-01 08:00:00+00
+sarfi_profile_weights,id,uuid,Unique identifier,n1o2p3q4-r5s6-7890-nopq-lm1234567890
+sarfi_profile_weights,profile_id,uuid,Profile,m1n2o3p4-q5r6-7890-mnop-kl1234567890
+sarfi_profile_weights,meter_id,uuid,Meter,a1b2c3d4-e5f6-7890-abcd-ef1234567890
+sarfi_profile_weights,weight_factor,decimal(5,2),"Weight factor (e.g., 1.0, 1.2, 1.5)",1.2
+sarfi_profile_weights,notes,text,Weight justification,Critical industrial area
+sarfi_profile_weights,created_at,timestamptz,Creation timestamp,2025-01-01 08:30:00+00
+sarfi_profile_weights,updated_at,timestamptz,Update timestamp,2025-01-01 08:30:00+00
+filter_profiles,id,uuid,Unique identifier,o1p2q3r4-s5t6-7890-opqr-mn1234567890
+filter_profiles,user_id,uuid,Profile owner,550e8400-e29b-41d4-a716-446655440000
+filter_profiles,name,text,Profile name,My Critical Events
+filter_profiles,description,text,Optional description,Filter for critical voltage dips in West region
+filter_profiles,filters,jsonb,EventFilter configuration (JSON),"{""severity"": ""critical"", ""region"": ""WE""}"
+filter_profiles,is_default,boolean,Auto-load on page open,true
+filter_profiles,created_at,timestamptz,Creation timestamp,2025-06-10 14:00:00+00
+filter_profiles,updated_at,timestamptz,Update timestamp,2025-12-15 09:30:00+00

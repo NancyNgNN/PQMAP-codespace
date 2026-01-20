@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>20251218_PQMAP - Workshop#1_minutes.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="pqmap---workshop-1-summary">PQMAP - Workshop #1 Summary</h1>
+<p><strong>Date:</strong> December 18, 2025<br>
+<strong>Duration:</strong> 1 hour 4 minutes<br>
+<strong>Attendees:</strong> Development Team (Erxi Xu, Kam Tim Fung, Matthew Hok Pun Kung, Ruby), Operations Team (Woody)</p>
+<hr>
+<h2 id="key-decisions">Key Decisions</h2>
+<h3 id="event-management-architecture">Event Management Architecture</h3>
+<ul>
+<li><strong>Event as Central Component</strong>: Event list will be the primary interface with filter, search, and export capabilities (CSV/PDF)</li>
+<li><strong>Event Detail Consolidation</strong>: All event-related information (waveforms, customer impacts, IDR) will be displayed in single view using tabs instead of separate pages</li>
+<li><strong>False Event Handling</strong>: PQMAP will receive all events from PQMS including false events, with ability to toggle between normal and false event status</li>
+<li><strong>Event Grouping Logic</strong>: System will automatically group events within 15 seconds at same location; manual group/ungroup functionality will be provided</li>
+</ul>
+<h3 id="data-integration-strategy">Data Integration Strategy</h3>
+<ul>
+<li><strong>IDR Data Source</strong>: Short-term manual input via Excel upload due to missing ADMS interface; plan to implement automated import when interface becomes available</li>
+<li><strong>CIPDS 380V Events</strong>: Will use same grouping logic as 11kV/132kV events; separate handling for standalone 380V events under consideration</li>
+<li><strong>Notification System</strong>: Implement from PQMS false event logic but with additional validation layer before sending notifications</li>
+</ul>
+<h3 id="system-logic-migration">System Logic Migration</h3>
+<ul>
+<li><strong>PQMS Logic Replication</strong>: Migrate existing PQMS false event detection rules to PQMAP while keeping rule parameters configurable</li>
+<li><strong>Rule Configuration</strong>: Enable/disable individual rules for testing; parameters (voltage %, duration seconds) adjustable via system settings</li>
+<li><strong>Permission-Based Features</strong>: Notification and false event handling features accessible only to admin/specific user groups in Phase 1</li>
+</ul>
+<h3 id="reporting-philosophy">Reporting Philosophy</h3>
+<ul>
+<li><strong>Report vs Dashboard Separation</strong>: Dashboards show frequently-used KPIs; reports require criteria selection and data export</li>
+<li><strong>Priority Reports</strong>: Focus on critical reports needed during typhoon events; deprioritize low-frequency reports</li>
+<li><strong>Data Processing</strong>: Prefer implementing calculations in PQMAP over receiving pre-processed results from PQDA where feasible</li>
+</ul>
+<hr>
+<h2 id="pain-points-identified">Pain Points Identified</h2>
+<table>
+<thead>
+<tr>
+<th>Pain Point</th>
+<th>Current Impact</th>
+<th>PQMAP Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Manual IDR Entry</strong></td>
+<td>All IDR data manually entered after ADMS interface discontinued</td>
+<td>Excel upload feature; automated interface when available</td>
+</tr>
+<tr>
+<td><strong>PQDA Dependency</strong></td>
+<td>Will be discontinued; reports currently only in PQDA</td>
+<td>Migrate voltage dip benchmarking and other reports to PQMAP</td>
+</tr>
+<tr>
+<td><strong>Report Maintenance Effort</strong></td>
+<td>Manual Excel assembly for performance reports</td>
+<td>Automated report generation with export functionality</td>
+</tr>
+<tr>
+<td><strong>380V Event Handling</strong></td>
+<td>Unclear grouping logic for distribution-level events</td>
+<td>Study and define specific logic based on actual event data samples</td>
+</tr>
+<tr>
+<td><strong>Communication Monitoring</strong></td>
+<td>Need to track meter data availability and communication health</td>
+<td>Implement communication availability dashboard/report</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="priority-action-items">Priority Action Items</h2>
+<h3 id="immediate-next-1-2-weeks">Immediate (Next 1-2 Weeks)</h3>
+<ul>
+<li>Woody to provide IDR export format/samples from ADMS for interface design</li>
+<li>Woody to provide voltage dip event samples with voltage%, duration, transformer mapping for benchmarking logic study</li>
+<li>Woody to provide 380V event samples to determine grouping logic requirements</li>
+<li>Woody to provide harmonic calculation specifications and CPDS report samples</li>
+<li>Team to review and comment on Excel requirements document</li>
+<li>Woody to mark report priorities (critical vs. non-critical during typhoon events)</li>
+</ul>
+<h3 id="design-phase-january-2025">Design Phase (January 2025)</h3>
+<ul>
+<li>Schedule follow-up workshop with Krystal and team (week of Dec 23) for UI/layout review</li>
+<li>Schedule technical workshop with Woody (after Dec 24) for detailed requirements and logic clarification</li>
+<li>Break down Excel requirements into detailed user stories for development (mid-January)</li>
+<li>Define dashboard KPIs vs. report criteria clearly</li>
+<li>Study feasibility of implementing voltage dip benchmarking calculations in PQMAP</li>
+</ul>
+<h3 id="planning-items">Planning Items</h3>
+<ul>
+<li>Determine if PQMAP should pull 10-minute interval data from PQMS vs. PQDA</li>
+<li>Design communication availability monitoring approach (dashboard vs. report vs. both)</li>
+<li>Clarify overcurrent monitoring feature scope (future phase - meters support but PQMS doesn't handle yet)</li>
+<li>Review duplicate/overlapping reports for consolidation opportunities</li>
+</ul>
+<hr>
+<h2 id="technical-requirements-discussion">Technical Requirements Discussion</h2>
+<h3 id="voltage-dip-benchmarking">Voltage Dip Benchmarking</h3>
+<ul>
+<li>Three international standards: IEC 61000, SEMI F47, ITIC</li>
+<li>Requires plotting voltage dip magnitude vs. duration with color-coded zones (green=compliant, white=non-compliant)</li>
+<li>Currently available in PQDA; needs migration to PQMAP with support for all voltage levels (not just 380V)</li>
+<li>Calculation formulas may differ by voltage level; requires specification documentation</li>
+</ul>
+<h3 id="event-grouping-logic">Event Grouping Logic</h3>
+<ul>
+<li><strong>Time Threshold</strong>: 5 seconds between events at same location</li>
+<li><strong>Location-Based</strong>: Must occur at same feeder/location</li>
+<li><strong>380V Special Case</strong>: Standalone 380V events vs. cascading from 11kV/132kV events needs distinct handling</li>
+<li><strong>Configurable Parameters</strong>: Duration and voltage thresholds for false event detection should be adjustable</li>
+</ul>
+<h3 id="meter-management">Meter Management</h3>
+<ul>
+<li><strong>Data Availability</strong>: Monitor 10-minute interval data completeness (144 records/day expected)</li>
+<li><strong>Communication Health</strong>: Track communication status separately from data availability</li>
+<li><strong>Dashboard vs. Report</strong>: Dashboard for quick health check (active meters, problem meters); report for detailed analysis</li>
+<li><strong>Data Format</strong>: PQMS sends data packages every 10 minutes; need to confirm if PQDA can export same format</li>
+</ul>
+<h3 id="pq-service-logging">PQ Service Logging</h3>
+<ul>
+<li>Track PQ investigation services provided to customers (on-site visits, education, voltage dip history provision)</li>
+<li>Link services to related PQ events for impact analysis</li>
+<li>Support customer-level view to show all services provided to specific customers</li>
+<li>Historical data: 10+ years of service records need migration</li>
+</ul>
+<hr>
+<h2 id="next-steps">Next Steps</h2>
+<ol>
+<li><strong>Immediate</strong>: Woody to provide data samples and specifications for IDR, voltage dip, 380V events, harmonic calculations (by next meeting)</li>
+<li><strong>Week of Dec 23</strong>: UI/layout review workshop with Krystal and design team (Woody on leave)</li>
+<li><strong>After Dec 24</strong>: Technical requirements workshop with Woody for detailed logic discussion (event grouping, false event rules, report specifications)</li>
+<li><strong>Mid-January</strong>: Begin converting Excel requirements into detailed user stories for sprint planning</li>
+<li><strong>Technical Design</strong>: Await project start confirmation and technical design schedule from PM (Wilson returns Dec 24)</li>
+</ol>
+<hr>
+<h2 id="function-design-updates">Function Design Updates</h2>
+<h3 id="event-management-module">Event Management Module</h3>
+<h4 id="features-addedupdated">Features Added/Updated</h4>
+<ul>
+<li>
+<p><strong>Event List View</strong></p>
+<ul>
+<li>Filter panel with multiple criteria (category, date range, feeder, etc.)</li>
+<li>Search functionality</li>
+<li>Export to CSV/PDF</li>
+<li>Default view excludes false events; toggle filter to view false events</li>
+</ul>
+</li>
+<li>
+<p><strong>Event Detail View (Multi-Tab Layout)</strong></p>
+<ul>
+<li><strong>Main Tab</strong>: Event metadata (category, timestamp, location, magnitude, duration)</li>
+<li><strong>Waveform Tab</strong>: Voltage dip waveform visualization</li>
+<li><strong>Customer Impact Tab</strong>: List of affected customers and transformers</li>
+<li><strong>IDR Tab</strong>: Interruption Detail Records with upload capability</li>
+<li><strong>Actions</strong>: Mark as false event / revert to normal event</li>
+</ul>
+</li>
+<li>
+<p><strong>Event Grouping</strong></p>
+<ul>
+<li>Automatic grouping: Events within 5 seconds at same location</li>
+<li>Manual operations: Create group, add to group, ungroup</li>
+<li>Group visualization in event list</li>
+</ul>
+</li>
+</ul>
+<h4 id="data-model-changes">Data Model Changes</h4>
+<ul>
+<li>
+<p><strong>Event Entity</strong></p>
+<ul>
+<li>Add <code>is_false_event</code> boolean flag</li>
+<li>Add <code>group_id</code> for event grouping</li>
+<li>Add <code>event_category</code> (voltage dip, swell, interruption, etc.)</li>
+<li>Add <code>notification_sent</code> flag</li>
+</ul>
+</li>
+<li>
+<p><strong>IDR Entity (New)</strong></p>
+<ul>
+<li>IDR number</li>
+<li>Related event_id</li>
+<li>Cause/root cause</li>
+<li>Duration</li>
+<li>Affected customers</li>
+<li>Source: Manual upload or future ADMS interface</li>
+</ul>
+</li>
+<li>
+<p><strong>Event-Customer Relationship</strong></p>
+<ul>
+<li>Many-to-many relationship</li>
+<li>Include transformer mapping</li>
+<li>Track customer impact severity</li>
+</ul>
+</li>
+</ul>
+<h4 id="uiux-changes">UI/UX Changes</h4>
+<ul>
+<li>Consolidate all event-related information in single page with tabs (avoid navigation between pages)</li>
+<li>Event list supports quick filtering and sorting</li>
+<li>Visual indicators for grouped events, false events</li>
+<li>Export functionality available at both list and detail levels</li>
+</ul>
+<hr>
+<h3 id="notification-system-module">Notification System Module</h3>
+<h4 id="features-addedupdated">Features Added/Updated</h4>
+<ul>
+<li>
+<p><strong>False Event Detection Rules</strong></p>
+<ul>
+<li>Migrate PQMS rule logic (duration thresholds, voltage % thresholds)</li>
+<li>Configurable rule parameters via system settings</li>
+<li>Individual rule enable/disable for testing</li>
+<li>Admin-only access in Phase 1</li>
+</ul>
+</li>
+<li>
+<p><strong>Notification Flow</strong></p>
+<ul>
+<li>Receive events from PQMS (including false events flagged by PQMS)</li>
+<li>Apply additional validation rules in PQMAP before notification</li>
+<li>Send email notifications only after passing both PQMS and PQMAP validation</li>
+</ul>
+</li>
+</ul>
+<h4 id="data-model-changes">Data Model Changes</h4>
+<ul>
+<li>
+<p><strong>Notification Rules Table</strong></p>
+<ul>
+<li>Rule name</li>
+<li>Rule type (duration threshold, voltage threshold, etc.)</li>
+<li>Parameters (configurable values)</li>
+<li>Enabled/disabled status</li>
+</ul>
+</li>
+<li>
+<p><strong>Notification Log</strong></p>
+<ul>
+<li>Event_id</li>
+<li>Notification timestamp</li>
+<li>Recipients</li>
+<li>Rule results (which rules triggered/blocked notification)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="reporting-module">Reporting Module</h3>
+<h4 id="features-addedupdated">Features Added/Updated</h4>
+<p><strong>High Priority Reports (Typhoon-Critical)</strong></p>
+<ul>
+<li><strong>PQ Event Summary Report</strong>: Aggregated event statistics by time period, location, type</li>
+<li><strong>Voltage Dip Benchmarking Report</strong>: Scatter plot with IEC/SEMI/ITIC standards comparison
+<ul>
+<li>Support all voltage levels (380V, 11kV, 132kV, 400kV)</li>
+<li>Color-coded zones (compliant/non-compliant)</li>
+<li>Clickable points to drill down to event details</li>
+<li>Export chart and underlying data table</li>
+</ul>
+</li>
+</ul>
+<p><strong>Medium Priority Reports</strong></p>
+<ul>
+<li>
+<p><strong>Communication Availability Report</strong>: Meter data completeness (10-min interval) and communication health</p>
+<ul>
+<li>Time-based analysis (daily/weekly/monthly)</li>
+<li>Meter-level details showing missing data periods</li>
+<li>Percentage calculations for data/communication availability</li>
+</ul>
+</li>
+<li>
+<p><strong>Harmonic Analysis Report</strong>: THD, flicker analysis across voltage levels</p>
+<ul>
+<li>Requires specification for calculation formulas</li>
+<li>Different factors/standards per voltage level</li>
+</ul>
+</li>
+</ul>
+<p><strong>Lower Priority Reports (To Be Specified)</strong></p>
+<ul>
+<li>Data maintenance reports (voltage, flicker, harmonics - 10-min intervals)</li>
+<li>INU performance reports (manual Excel assembly currently)</li>
+<li>PQ service reports (by customer, by event)</li>
+</ul>
+<h4 id="data-model-changes">Data Model Changes</h4>
+<ul>
+<li>
+<p><strong>Report Definition Table</strong></p>
+<ul>
+<li>Report name, category</li>
+<li>Default parameters</li>
+<li>User permissions</li>
+<li>Priority level (for resource management during peak times)</li>
+</ul>
+</li>
+<li>
+<p><strong>Report Schedule Table</strong> (Future)</p>
+<ul>
+<li>Automated report generation schedule</li>
+<li>Email distribution lists</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="dashboard-module">Dashboard Module</h3>
+<h4 id="features-addedupdated">Features Added/Updated</h4>
+<ul>
+<li><strong>KPI Dashboard</strong>: Real-time metrics (event counts by severity, recent events, notification status)</li>
+<li><strong>Meter Health Dashboard</strong>: Active meters count, problem meters list, data availability quick view</li>
+<li><strong>System Monitor Dashboard</strong>: False event detection activity, notification queue status</li>
+</ul>
+<h4 id="uiux-changes">UI/UX Changes</h4>
+<ul>
+<li>Separate dashboard from reports (no criteria selection needed)</li>
+<li>Frequently-viewed metrics always visible</li>
+<li>Quick links to detailed reports from dashboard widgets</li>
+</ul>
+<hr>
+<h3 id="data-integration-requirements">Data Integration Requirements</h3>
+<h4 id="pqms-interface">PQMS Interface</h4>
+<ul>
+<li><strong>Event Data</strong>: Real-time event feed including false event flags</li>
+<li><strong>10-Minute Interval Data</strong>: Voltage, current, power quality parameters</li>
+<li><strong>Export Format</strong>: Need to confirm if PQMS can provide same format as current PQDA exports</li>
+</ul>
+<h4 id="adms-interface-future">ADMS Interface (Future)</h4>
+<ul>
+<li><strong>IDR Data</strong>: Automated import of interruption detail records (currently unavailable)</li>
+<li><strong>Expected Volume</strong>: 20-30 records/month normal; higher during typhoons</li>
+</ul>
+<h4 id="cpds-interface">CPDS Interface</h4>
+<ul>
+<li><strong>380V Event Data</strong>: Distribution-level voltage dip events</li>
+<li><strong>Data Format</strong>: Similar to PQMS events but different field names/structure</li>
+<li><strong>Grouping Challenge</strong>: Determine if 380V events cascade from higher voltage levels or are independent</li>
+</ul>
+<h4 id="pqda-migration">PQDA Migration</h4>
+<ul>
+<li><strong>Historical Data</strong>: Voltage dip historical records for benchmarking reports</li>
+<li><strong>Report Templates</strong>: Migrate report formatting and calculation logic</li>
+</ul>
+<hr>
+<h3 id="system-configuration-module">System Configuration Module</h3>
+<h4 id="features-addedupdated">Features Added/Updated</h4>
+<ul>
+<li>
+<p><strong>False Event Rule Configuration</strong></p>
+<ul>
+<li>Parameter adjustment interface (voltage %, duration seconds)</li>
+<li>Rule testing mode</li>
+<li>Rule priority/sequence management</li>
+</ul>
+</li>
+<li>
+<p><strong>Notification Configuration</strong></p>
+<ul>
+<li>Email recipient management by user group</li>
+<li>Notification templates</li>
+<li>Throttling rules (prevent notification spam during typhoons)</li>
+</ul>
+</li>
+<li>
+<p><strong>Meter Management</strong></p>
+<ul>
+<li>Meter registration and metadata</li>
+<li>Transformer mapping</li>
+<li>Customer assignment</li>
+<li>Communication monitoring settings</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="new-requirements-identified">New Requirements Identified</h3>
+<ol>
+<li><strong>Excel Upload Functionality</strong>: Support IDR data import via Excel template until ADMS interface available</li>
+<li><strong>Configurable Detection Rules</strong>: All false event detection thresholds must be configurable without code changes</li>
+<li><strong>Permission-Based Feature Access</strong>: Notification system and false event management restricted to admin users in Phase 1</li>
+<li><strong>Historical Data Migration</strong>: 10+ years of PQ service records need import from legacy system</li>
+<li><strong>Multi-Standard Support</strong>: Voltage dip benchmarking must support IEC 61000, SEMI F47, ITIC with configurable profiles</li>
+<li><strong>380V Event Handling</strong>: Dedicated logic study required based on actual CPDS event data samples</li>
+<li><strong>Performance Optimization</strong>: Report generation must handle peak loads during typhoon events without degrading system performance</li>
+<li><strong>Overcurrent Monitoring (Future)</strong>: Meters support overcurrent monitoring; prepare data model but no UI implementation in Phase 1</li>
+</ol>
+<hr>
+<h3 id="dataspecification-needs-for-prototype-development">Data/Specification Needs for Prototype Development</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Purpose</th>
+<th>Provider</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDR Export Format</td>
+<td>Design upload interface</td>
+<td>Woody</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Voltage Dip Event Samples</td>
+<td>Validate benchmarking logic</td>
+<td>Woody</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>380V Event Samples</td>
+<td>Define grouping logic</td>
+<td>Woody</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Harmonic Calculation Specs</td>
+<td>Implement calculation formulas</td>
+<td>Woody</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>INU Performance Report Samples</td>
+<td>Design report format</td>
+<td>Woody/Matthew</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>CPDS Report Examples</td>
+<td>Understand data structure</td>
+<td>Woody</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>PQMS 10-Min Data Format</td>
+<td>Design data import</td>
+<td>Woody</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Communication Monitoring Spec</td>
+<td>Clarify calculation logic</td>
+<td>Woody</td>
+<td>Pending</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Meeting conducted as first technical workshop to review functional requirements</li>
+<li>Prototype development using VS Code with plan to share code for team review</li>
+<li>Some reports from PQDA may be deprioritized or consolidated to reduce redundancy</li>
+<li>Technical design phase expected to start mid-January 2025 after PM returns from leave</li>
+<li>UI/layout review scheduled for next week (Woody on leave)</li>
+<li>Detailed logic and requirements workshop scheduled after December 24</li>
+<li>Development approach: Excel requirements → User stories → Sprint planning (mid-January)</li>
+<li>Team expressed confidence that prototype approach aligns well with final requirements</li>
+</ul>
+
+</body>
+</html>
