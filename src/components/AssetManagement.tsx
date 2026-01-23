@@ -20,6 +20,16 @@ interface AssetManagementProps {
   onClearSelectedMeter?: () => void;
 }
 
+interface LatestMeterReading {
+  timestamp: string;
+  v1: number | null;
+  v2: number | null;
+  v3: number | null;
+  i1: number | null;
+  i2: number | null;
+  i3: number | null;
+}
+
 export default function AssetManagement({ selectedMeterId, onClearSelectedMeter }: AssetManagementProps = {}) {
   const [meters, setMeters] = useState<PQMeter[]>([]);
   const [substations, setSubstations] = useState<Substation[]>([]);
@@ -49,6 +59,9 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
   // Realtime PQ data states
   const [realtimeData, setRealtimeData] = useState<RealtimePQData | null>(null);
   const [loadingRealtime, setLoadingRealtime] = useState(false);
+  const [latestReading, setLatestReading] = useState<LatestMeterReading | null>(null);
+  const [loadingLatestReading, setLoadingLatestReading] = useState(false);
+  const [latestReadingError, setLatestReadingError] = useState<string | null>(null);
   
   // Filter states
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -127,6 +140,12 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
       }
     }
   }, [selectedMeterId, meters]);
+
+  useEffect(() => {
+    if (selectedMeter && activeTab === 'realtime') {
+      loadLatestReading(selectedMeter.id);
+    }
+  }, [selectedMeter, activeTab]);
 
   const loadData = async () => {
     try {
@@ -340,6 +359,37 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
       setRealtimeData(generateRealtimeData());
       setLoadingRealtime(false);
     }, 500);
+  };
+
+  const loadLatestReading = async (meterId: string) => {
+    setLoadingLatestReading(true);
+    setLatestReadingError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('meter_voltage_readings')
+        .select('timestamp, v1, v2, v3, i1, i2, i3')
+        .eq('meter_id', meterId)
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        setLatestReading(data as LatestMeterReading);
+      } else {
+        setLatestReading(null);
+      }
+    } catch (error: any) {
+      console.error('Error loading latest meter reading:', error);
+      setLatestReading(null);
+      setLatestReadingError(error?.message || 'Failed to load latest reading');
+    } finally {
+      setLoadingLatestReading(false);
+    }
   };
 
   // Generate mock hourly communication records for past 30 days
@@ -1458,6 +1508,9 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
                   onClick={() => {
                     setActiveTab('realtime');
                     loadRealtimeData(); // Refresh data when switching to realtime tab
+                    if (selectedMeter) {
+                      loadLatestReading(selectedMeter.id);
+                    }
                   }}
                   className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors ${
                     activeTab === 'realtime'
@@ -2085,7 +2138,12 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
                       </p>
                     </div>
                     <button
-                      onClick={loadRealtimeData}
+                      onClick={() => {
+                        loadRealtimeData();
+                        if (selectedMeter) {
+                          loadLatestReading(selectedMeter.id);
+                        }
+                      }}
                       disabled={loadingRealtime}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
                     >
@@ -2099,6 +2157,71 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
                     </div>
                   ) : realtimeData ? (
                     <div className="space-y-6">
+                      {/* Latest Reading (DB) */}
+                      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                        <div className="bg-slate-800 text-white px-4 py-2 font-semibold flex items-center justify-between">
+                          <span>Latest Voltage/Current Reading (DB)</span>
+                          {loadingLatestReading && (
+                            <span className="text-xs text-slate-200">Loading...</span>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          {latestReadingError && (
+                            <div className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                              {latestReadingError}
+                            </div>
+                          )}
+
+                          {latestReading ? (
+                            <div className="space-y-3">
+                              <div className="text-xs text-slate-500 text-right">
+                                Timestamp: {new Date(latestReading.timestamp).toLocaleString()}
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                  <p className="text-xs font-semibold text-slate-600 mb-2">Voltage (V)</p>
+                                  <div className="grid grid-cols-3 gap-3 text-sm">
+                                    <div className="text-center">
+                                      <p className="text-xs text-slate-500">V1</p>
+                                      <p className="font-bold text-slate-900">{latestReading.v1 ?? '-'} </p>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-xs text-slate-500">V2</p>
+                                      <p className="font-bold text-slate-900">{latestReading.v2 ?? '-'} </p>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-xs text-slate-500">V3</p>
+                                      <p className="font-bold text-slate-900">{latestReading.v3 ?? '-'} </p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                  <p className="text-xs font-semibold text-slate-600 mb-2">Current (A)</p>
+                                  <div className="grid grid-cols-3 gap-3 text-sm">
+                                    <div className="text-center">
+                                      <p className="text-xs text-slate-500">I1</p>
+                                      <p className="font-bold text-slate-900">{latestReading.i1 ?? '-'} </p>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-xs text-slate-500">I2</p>
+                                      <p className="font-bold text-slate-900">{latestReading.i2 ?? '-'} </p>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-xs text-slate-500">I3</p>
+                                      <p className="font-bold text-slate-900">{latestReading.i3 ?? '-'} </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-slate-600">
+                              No database readings available yet. Latest values will appear after server-side ingestion.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Timestamp */}
                       <div className="text-xs text-slate-500 text-right">
                         Last updated: {new Date(realtimeData.timestamp).toLocaleString()}

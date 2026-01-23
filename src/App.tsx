@@ -8,6 +8,7 @@ import EventManagement from './components/EventManagement/EventManagement';
 import ImpactAnalysis from './components/ImpactAnalysis';
 import AssetManagement from './components/AssetManagement';
 import Reports from './components/Reports';
+import ReportingPreview from './components/ReportingPreview';
 import Notifications from './components/Notifications';
 import TemplateManagement from './components/Notifications/TemplateManagement';
 import PQServices from './components/PQServices';
@@ -61,6 +62,7 @@ function AppContent() {
         {currentView === 'analytics' && <ImpactAnalysis />}
         {currentView === 'assets' && <AssetManagement selectedMeterId={selectedMeterId} onClearSelectedMeter={() => setSelectedMeterId(null)} />}
         {currentView === 'reports' && <Reports />}
+        {currentView === 'reportingPreview' && <ReportingPreview />}
         {currentView === 'notifications' && <Notifications />}
         {currentView === 'templates' && <TemplateManagement />}
         {currentView === 'services' && <PQServices />}

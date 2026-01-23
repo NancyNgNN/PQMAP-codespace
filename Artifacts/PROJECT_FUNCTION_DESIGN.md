@@ -1117,6 +1117,25 @@ interface ReportConfig {
 
 ---
 
+#### Reporting (Preview) ✨ NEW (January 2026)
+
+**Location**: Navigation → Reporting (Preview)
+
+**Purpose**: Phased rollout of selected reporting features from Erxi-Reporting without disrupting the existing Report Builder.
+
+**Phase 1 Scope**:
+- Scaffold page with Meter Communication preview
+- Uses existing `reports` permission module (no new module ID)
+
+**Future Data Source**:
+- `meter_voltage_readings` (server-side ingestion from PQMS/CPDIS scheduler)
+- `voltage_profiles` for saved profile configurations (phase-dependent)
+
+**Component File**:
+- `src/components/ReportingPreview.tsx`
+
+---
+
 ### 6. Data Maintenance Module
 
 **Purpose**: Master data management for SARFI profiles and PQ benchmarking standards

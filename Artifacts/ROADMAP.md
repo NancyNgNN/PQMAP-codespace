@@ -218,25 +218,47 @@
     - **Mock-heavy implementation:** Many report tabs use mock datasets and placeholders (service logs, affected customers, benchmarking scatter, verification data)
     - **Report Builder gap:** Erxi-Reporting lacks the interactive Report Builder widget and saved report flow (`saved_reports` table)
   - **Merge Approach:**
-    1. **Inventory & Diff** (1 day)
-      - Compare `src/components`, `src/services`, `src/types`, and `supabase/migrations` between root and #Erxi-Reporting
-      - Identify which report tabs are worth migrating vs replacing with existing modules
-    2. **Database Alignment** (1 day)
-      - Decide if `meter_voltage_readings` + `voltage_profiles` are required
-      - If required, add migration + RLS policies to main app and define ingestion strategy
-    3. **Code Integration** (2-3 days)
-      - Use main app as source of truth
-      - Cherry-pick only unique report tabs/logic from #Erxi-Reporting
-      - Refactor monolith `Reports.tsx` into smaller components aligned with existing UI patterns
-      - Ensure reporting permissions remain in `userManagementService`
-    4. **Dependency Reconciliation** (0.5 day)
-      - Keep main `package.json` dependencies; only add if new reporting features require it
-    5. **QA & Regression** (2 days)
-      - Verify report builder save/share, exports, benchmarking, and availability reports
-      - Run TypeScript check + smoke tests
-    6. **De-duplication** (0.5 day)
-      - Archive or remove #Erxi-Reporting after merge approval
-  - **Estimated Effort:** 1 week
+      - **Phase 1 — Inventory + Scaffolding (1 day)**
+        - Diff `src/components`, `src/services`, `src/types`, and `supabase/migrations` between main and #Erxi-Reporting
+        - Decide which Erxi tabs are truly unique (candidate list) vs. duplicates of existing PQMAP modules
+        - Add minimal scaffolding in main app for the target reporting pages (routes/navigation/permission entry) without changing production data paths
+        - Define acceptance criteria per chosen tab (data source, filters, export outputs)
+        - **Test/Checkpoint:**
+          - App builds and runs; navigation loads the new scaffolding page(s)
+          - Permissions enforce access via `userManagementService`
+          - No database migration required yet; no regressions to existing Report Builder
+
+      - **Phase 2 — Database Decision + Ingestion Spike (1 day)**
+        - Make an explicit go/no-go decision on adopting `meter_voltage_readings` + `voltage_profiles`
+        - If adopted: port the migration into main app (including RLS policies) and document the intended ingestion strategy (batch backfill, scheduled job, upstream feed)
+        - Source AssetManagement realtime readings from `meter_voltage_readings` (keep mock fallback until ingestion is live)
+        - Implement a thin service layer in main app that can read the new tables (no UI dependence on mock data)
+        - **Test/Checkpoint:**
+          - Migration applies cleanly in a dev environment
+          - Basic read queries work under expected roles (viewer/operator/admin) per RLS
+          - Service functions return data and handle empty-state gracefully
+
+      - **Phase 3 — Migrate 1–2 High-Value Tabs End-to-End (2–3 days)**
+        - Cherry-pick only the selected, unique tab logic from #Erxi-Reporting (start with the most data-backed tab, e.g., Meter Communication)
+        - Refactor the monolithic Erxi `Reports.tsx` into smaller components aligned with PQMAP patterns (modal/layout/export/dropdowns)
+        - Replace mock datasets with real Supabase queries or existing services in main app
+        - Keep the existing Report Builder as-is (do not downgrade `saved_reports` workflows)
+        - **Test/Checkpoint:**
+          - Each migrated tab loads real data (or clearly-defined empty state)
+          - Filters and export (CSV/Excel/PDF if applicable) work and match expected columns
+          - TypeScript check passes; basic smoke test around Reports + Report Builder
+
+      - **Phase 4 — Expand, QA, and De-duplication (1–2 days)**
+        - Migrate remaining agreed tabs (or explicitly drop them if redundant)
+        - Consolidate overlaps with existing modules (Benchmarking / Meter Availability) instead of duplicating logic
+        - Run regression checks focused on reporting, exports, and permissions
+        - Archive/remove #Erxi-Reporting after approval, and update documentation to reflect the new reporting architecture
+        - **Test/Checkpoint:**
+          - Full reporting area passes regression (Report Builder save/share + new tabs)
+          - No duplicated navigation/modules; permissions remain consistent
+          - Documentation updated; merge is ready for stakeholder sign-off
+
+    - **Estimated Effort:** 5–7 working days (4 phases, testable checkpoints)
 
 ---
 
