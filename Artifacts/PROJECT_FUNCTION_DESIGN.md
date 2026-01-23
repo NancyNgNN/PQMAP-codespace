@@ -100,6 +100,13 @@ src/
 
 ### January 2026
 
+#### Reporting Preview & Meter Communication (Jan 23, 2026)
+**Features Added:**
+- **Reporting (Preview) page** with Meter Communication summary + table, filters, sorting, and export (Excel/CSV)
+- **Database support** for `meter_voltage_readings` and `voltage_profiles` (UUID FK to `pq_meters`)
+- **Asset Management enhancement**: latest voltage/current reading panel sourced from database (mock fallback preserved)
+- **Shared availability utilities** for consistent time-range and availability calculations
+
 #### Harmonic Events Table (Jan 9, 2026)
 **Features Added:**
 - **Separate Table for Harmonic Measurements**
@@ -1130,6 +1137,7 @@ interface ReportConfig {
 **Future Data Source**:
 - `meter_voltage_readings` (server-side ingestion from PQMS/CPDIS scheduler)
 - `voltage_profiles` for saved profile configurations (phase-dependent)
+ - Ingestion job design: **TBD** (server-side only, no client import)
 
 **Component File**:
 - `src/components/ReportingPreview.tsx`

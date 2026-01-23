@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { PQMeter, Substation, PQEvent, EventType, EventStatus, PQServiceRecord, RealtimePQData } from '../types/database';
+import { getLatestMeterReading } from '../services/meterReadingsService';
 import { Database, Activity, X, Check, Info, Filter, Download, Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, BarChart3, Clock, Zap, AlertCircle, Wrench, Radio, Network } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import TreeViewModal from './MeterHierarchy/TreeViewModal';
+import { calculateAvailabilityPercent, getExpectedCount, getTimeRangeDates } from '../utils/availability';
 
 interface FilterState {
   status: string;
@@ -366,20 +368,17 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
     setLatestReadingError(null);
 
     try {
-      const { data, error } = await supabase
-        .from('meter_voltage_readings')
-        .select('timestamp, v1, v2, v3, i1, i2, i3')
-        .eq('meter_id', meterId)
-        .order('timestamp', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        throw error;
-      }
-
+      const data = await getLatestMeterReading(meterId);
       if (data) {
-        setLatestReading(data as LatestMeterReading);
+        setLatestReading({
+          timestamp: data.timestamp,
+          v1: data.v1,
+          v2: data.v2,
+          v3: data.v3,
+          i1: data.i1,
+          i2: data.i2,
+          i3: data.i3,
+        });
       } else {
         setLatestReading(null);
       }
@@ -504,34 +503,8 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
     (filters.searchText ? 1 : 0);
 
   // Availability Report Functions
-  const getTimeRangeDates = (): { startDate: Date; endDate: Date } => {
-    const now = new Date();
-    let endDate = new Date(now);
-    let startDate = new Date(now);
-
-    switch (timeRange) {
-      case '24h':
-        startDate.setHours(startDate.getHours() - 24);
-        break;
-      case '7d':
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case '30d':
-        startDate.setDate(startDate.getDate() - 30);
-        break;
-      case 'custom':
-        if (customStartDate && customEndDate) {
-          startDate = new Date(customStartDate);
-          endDate = new Date(customEndDate);
-        }
-        break;
-    }
-
-    return { startDate, endDate };
-  };
-
   const calculateAvailability = (meterId: string): { count: number; expectedCount: number; availability: number } => {
-    const { startDate, endDate } = getTimeRangeDates();
+    const { startDate, endDate } = getTimeRangeDates(timeRange, customStartDate, customEndDate);
     const communications = communicationData[meterId] || [];
     
     // Count communications within time range
@@ -540,11 +513,10 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
     ).length;
 
     // Calculate expected count (1 per hour)
-    const hoursDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
-    const expectedCount = Math.max(1, hoursDiff);
+    const expectedCount = getExpectedCount(startDate, endDate);
 
     // Calculate availability percentage
-    const availability = expectedCount > 0 ? (count / expectedCount) * 100 : 0;
+    const availability = calculateAvailabilityPercent(count, expectedCount);
 
     return { count, expectedCount, availability };
   };
@@ -2517,7 +2489,7 @@ export default function AssetManagement({ selectedMeterId, onClearSelectedMeter 
                   <p className="text-xs font-medium text-slate-600 mb-1">Time Range</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {(() => {
-                      const { startDate, endDate } = getTimeRangeDates();
+                      const { startDate, endDate } = getTimeRangeDates(timeRange, customStartDate, customEndDate);
                       return `${startDate.toLocaleString('en-GB', { 
                         year: 'numeric', 
                         month: '2-digit', 

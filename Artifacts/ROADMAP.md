@@ -1,7 +1,7 @@
 # Product Roadmap
 
 **Document Purpose:** Capture planned features and future development initiatives  
-**Last Updated:** January 20, 2026  
+**Last Updated:** January 23, 2026  
 **Status:** In Progress
 
 ---
@@ -208,7 +208,7 @@
 
 8. **Erxi-Reporting Merge Plan** (Jan 20) ⭐ **NEW**
   - **Purpose:** Safely migrate reporting features from #Erxi-Reporting into the main PQMAP application
-  - **Current Status:** Planning / dependency audit
+  - **Current Status:** Phase 4 completed (Jan 23)
   - **Known Conflicts (from initial review):**
     - **New reporting tables:** Erxi-Reporting adds `voltage_profiles` + `meter_voltage_readings` (migration `20251229000000_create_voltage_profiles.sql`) not present in main
     - **Report UI divergence:** Erxi-Reporting replaces Reports page with a 4,000-line, multi-tab UI (PQ Summary, Benchmarking, Profiles, Data Maintenance, Meter Communication)
@@ -258,6 +258,7 @@
           - No duplicated navigation/modules; permissions remain consistent
           - Documentation updated; merge is ready for stakeholder sign-off
 
+    - **Remaining Items:** Deferred by request (server-side aggregation, profiles CRUD, ingestion spec)
     - **Estimated Effort:** 5–7 working days (4 phases, testable checkpoints)
 
 ---
@@ -736,6 +737,7 @@ Real Notification Integrations ⭐ **NEW**
 | 2026-01-07 | Power BI | Consolidated QA document, added decision criteria | System |
 | 2026-01-08 | Q1 2026 Planned | Added System Parameters module with placeholder UI | System |
 | 2026-01-19 | Q1 2026 Planned | Added Event Management restructure, Advanced Filter button, and Special IDR Upload features after requirement workshop | System |
+| 2026-01-23 | Q1 2026 Planned | Updated Erxi-Reporting Merge Plan to Phase 4 completed and deferred remaining items | System |
 
 ---
 

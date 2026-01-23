@@ -109,6 +109,35 @@ export interface PQMeter {
   substation?: Substation;
 }
 
+export type VoltageProfileDataType = 'voltage' | 'current';
+export type VoltageProfileValueType = 'average' | 'raw';
+
+export interface VoltageProfile {
+  id: string;
+  user_id: string;
+  profile_name: string;
+  data_type: VoltageProfileDataType;
+  value_type: VoltageProfileValueType;
+  voltage_level: string | null;
+  selected_meters: string[] | null;
+  parameters: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MeterVoltageReading {
+  id: string;
+  meter_id: string;
+  timestamp: string;
+  v1: number | null;
+  v2: number | null;
+  v3: number | null;
+  i1: number | null;
+  i2: number | null;
+  i3: number | null;
+  created_at: string;
+}
+
 export interface Customer {
   id: string;
   account_number: string;
