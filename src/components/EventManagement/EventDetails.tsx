@@ -1263,92 +1263,287 @@ export default function EventDetails({ event: initialEvent, substation: initialS
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Basic Info Cards - 2 Column Layout */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Location Card */}
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-600 mb-2">
-                  <MapPin className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Location</span>
-                </div>
-                <p className="text-slate-900 font-medium">
-                  {currentSubstation?.code} • {currentSubstation?.name}
-                </p>
-                {currentMeter?.site_id && (
-                  <p className="text-xs text-slate-600 mt-1">Site ID: {currentMeter.site_id}</p>
-                )}
-                {currentMeter?.region && (
-                  <p className="text-xs text-slate-600 mt-1">Region: {currentMeter.region}</p>
-                )}
-                {currentMeter?.oc && (
-                  <p className="text-xs text-slate-600 mt-1">OC: {currentMeter.oc}</p>
-                )}
+            {/* AC1 - Core Event Data Card */}
+            <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  Core Event Data
+                </h3>
               </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Incident Time */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Incident Time</label>
+                    <p className="text-base font-semibold text-slate-900 mt-1">
+                      {new Date(currentEvent.timestamp).toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric' 
+                      })} {new Date(currentEvent.timestamp).toLocaleTimeString('en-GB', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit',
+                        hour12: false 
+                      })}
+                    </p>
+                  </div>
 
-              {/* Timestamp Card */}
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-600 mb-2">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Timestamp</span>
-                </div>
-                <p className="text-slate-900 font-medium">
-                  {new Date(currentEvent.timestamp).toLocaleDateString()} {new Date(currentEvent.timestamp).toLocaleTimeString()}
-                </p>
-              </div>
+                  {/* Voltage Level */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Voltage Level</label>
+                    <p className="text-base font-semibold text-slate-900 mt-1">
+                      {currentMeter?.voltage_level || 'N/A'}
+                    </p>
+                  </div>
 
-              {/* Asset Card */}
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-600 mb-2">
-                  <Zap className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Asset</span>
-                </div>
-                {currentMeter ? (
-                  <>
-                    <p className="text-xs text-slate-600 mt-1">Meter ID: <span className="font-semibold text-slate-900">{currentMeter.meter_id}</span></p>
-                    {currentMeter.circuit_id && (
-                      <p className="text-xs text-slate-600 mt-1">Circuit ID: <span className="font-semibold text-slate-900">{currentMeter.circuit_id}</span></p>
+                  {/* Source Substation */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Source Substation</label>
+                    <p className="text-base font-semibold text-slate-900 mt-1">
+                      {currentSubstation ? `${currentSubstation.code} - ${currentSubstation.name}` : 'N/A'}
+                    </p>
+                    {currentMeter?.site_id && (
+                      <p className="text-xs text-slate-500 mt-0.5">Site ID: {currentMeter.site_id}</p>
                     )}
-                    {currentMeter.voltage_level && (
-                      <p className="text-xs text-slate-600 mt-1">Voltage Level: <span className="font-semibold text-slate-900">{currentMeter.voltage_level}</span></p>
-                    )}
-                    <p className="text-xs text-slate-400 mt-1">Ring Number: <span className="italic">TBD</span></p>
-                  </>
-                ) : (
-                  <p className="text-xs text-slate-400 italic">No meter data</p>
-                )}
-              </div>
+                  </div>
 
-              {/* Event Information Card */}
-              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg">
-                <div className="flex items-center gap-2 text-slate-600 mb-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Event Information</span>
+                  {/* Transformer No. & Ring Number */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Transformer No. & Ring Number</label>
+                    <p className="text-base font-semibold text-slate-900 mt-1">
+                      {currentMeter?.circuit_id || 'N/A'} • TTNR0003
+                    </p>
+                    {currentMeter?.meter_id && (
+                      <p className="text-xs text-slate-500 mt-0.5">Meter: {currentMeter.meter_id}</p>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-1 text-xs">
-                  <p className="text-slate-600">Event ID: <span className="font-mono text-slate-900">{currentEvent.id.slice(0, 8)}...</span></p>
-                  <p className="text-slate-600">Type: <span className="font-semibold text-slate-900 capitalize">{currentEvent.event_type.replace('_', ' ')}</span></p>
-                  <p className="text-slate-600">Severity: <span className={`font-semibold capitalize ${
-                    currentEvent.severity === 'critical' ? 'text-red-700' :
-                    currentEvent.severity === 'high' ? 'text-orange-700' :
-                    currentEvent.severity === 'medium' ? 'text-yellow-700' :
-                    'text-green-700'
-                  }`}>{currentEvent.severity}</span></p>
-                  <p className="text-slate-600">Duration: <span className="font-semibold text-slate-900">
-                    {currentEvent.duration_ms && currentEvent.duration_ms < 1000
-                      ? `${currentEvent.duration_ms}ms`
-                      : `${((currentEvent.duration_ms || 0) / 1000).toFixed(2)}s`
-                    }
-                  </span></p>
-                  <p className="text-slate-600">Magnitude: <span className="font-semibold text-slate-900">{currentEvent.magnitude !== null && currentEvent.magnitude !== undefined ? `${currentEvent.magnitude.toFixed(2)}%` : 'N/A'}</span></p>
-                  {currentEvent.event_type !== 'harmonic' && (
-                    <>
-                      <p className="text-slate-600">V1: <span className="font-semibold text-slate-900">{currentEvent.v1 !== null && currentEvent.v1 !== undefined ? `${currentEvent.v1.toFixed(2)}%` : 'N/A'}</span></p>
-                      <p className="text-slate-600">V2: <span className="font-semibold text-slate-900">{currentEvent.v2 !== null && currentEvent.v2 !== undefined ? `${currentEvent.v2.toFixed(2)}%` : 'N/A'}</span></p>
-                      <p className="text-slate-600">V3: <span className="font-semibold text-slate-900">{currentEvent.v3 !== null && currentEvent.v3 !== undefined ? `${currentEvent.v3.toFixed(2)}%` : 'N/A'}</span></p>
-                    </>
-                  )}
-                  <p className="text-slate-600">Affected Phases: <span className="font-semibold text-slate-900">{currentEvent.affected_phases.join(', ')}</span></p>
+              </div>
+            </div>
+
+            {/* AC2 - Magnitude & Duration Card */}
+            <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  Magnitude & Duration
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-4 gap-4">
+                  {/* Phase Percentages */}
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <label className="text-xs font-semibold text-purple-700 uppercase tracking-wide block mb-1">VL1 (%)</label>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {currentEvent.v1 !== null && currentEvent.v1 !== undefined ? currentEvent.v1.toFixed(2) : 'N/A'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">Phase A</p>
+                  </div>
+
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <label className="text-xs font-semibold text-purple-700 uppercase tracking-wide block mb-1">VL2 (%)</label>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {currentEvent.v2 !== null && currentEvent.v2 !== undefined ? currentEvent.v2.toFixed(2) : 'N/A'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">Phase B</p>
+                  </div>
+
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <label className="text-xs font-semibold text-purple-700 uppercase tracking-wide block mb-1">VL3 (%)</label>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {currentEvent.v3 !== null && currentEvent.v3 !== undefined ? currentEvent.v3.toFixed(2) : 'N/A'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">Phase C</p>
+                  </div>
+
+                  {/* Duration */}
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <label className="text-xs font-semibold text-purple-700 uppercase tracking-wide block mb-1">Duration</label>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {currentEvent.duration_ms !== null && currentEvent.duration_ms !== undefined
+                        ? currentEvent.duration_ms < 1000
+                          ? `${currentEvent.duration_ms}ms`
+                          : `${(currentEvent.duration_ms / 1000).toFixed(2)}s`
+                        : 'N/A'
+                      }
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">Total time</p>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            {/* AC3 - Binary Indicators Row */}
+            <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  Event Indicators
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Min Volt Indicator */}
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide block mb-2">Min Volt (Below 70%)</label>
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const hasMinVoltage = 
+                          (currentEvent.v1 !== null && currentEvent.v1 < 70) ||
+                          (currentEvent.v2 !== null && currentEvent.v2 < 70) ||
+                          (currentEvent.v3 !== null && currentEvent.v3 < 70);
+                        return hasMinVoltage ? (
+                          <>
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">Yes</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-5 h-5 text-red-600" />
+                            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">No</span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* FR (Fault Recorder Trigger) */}
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide block mb-2">FR (Fault Recorder)</label>
+                    <div className="flex items-center gap-2">
+                      {currentEvent.false_event ? (
+                        <>
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">Yes</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-5 h-5 text-red-600" />
+                          <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">No</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* False Alarm */}
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide block mb-2">False Alarm</label>
+                    <div className="flex items-center gap-2">
+                      {currentEvent.false_event ? (
+                        <>
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">Yes</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-5 h-5 text-red-600" />
+                          <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">No</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AC4 - Classification & Workflow Card */}
+            <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-500 to-slate-600 px-4 py-3">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Classification & Workflow
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Event Type & Severity */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Event Type</label>
+                    <p className="text-base font-semibold text-slate-900 mt-1 capitalize">
+                      {currentEvent.event_type.replace('_', ' ')}
+                    </p>
+                    <div className="mt-2">
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Severity</label>
+                      <span className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-semibold capitalize ${
+                        currentEvent.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                        currentEvent.severity === 'high' ? 'bg-orange-100 text-orange-700' :
+                        currentEvent.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {currentEvent.severity}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</label>
+                    <div className="mt-1">
+                      <span className={`inline-block px-4 py-2 rounded-lg text-base font-semibold ${
+                        currentEvent.status === 'open' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                        currentEvent.status === 'investigating' ? 'bg-blue-100 text-blue-800 border border-blue-300' :
+                        currentEvent.status === 'closed' || currentEvent.status === 'resolved' ? 'bg-green-100 text-green-800 border border-green-300' :
+                        'bg-slate-100 text-slate-800 border border-slate-300'
+                      }`}>
+                        {currentEvent.status === 'open' ? 'New' : 
+                         currentEvent.status === 'investigating' ? 'Investigating' : 
+                         currentEvent.status === 'closed' || currentEvent.status === 'resolved' ? 'Closed' : 
+                         currentEvent.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Event ID: <span className="font-mono text-slate-700">{currentEvent.id.slice(0, 8)}...</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Additional Information Row */}
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600">Magnitude</label>
+                      <p className="text-slate-900 font-medium mt-0.5">
+                        {currentEvent.magnitude !== null && currentEvent.magnitude !== undefined 
+                          ? `${currentEvent.magnitude.toFixed(2)}%` 
+                          : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600">Affected Phases</label>
+                      <p className="text-slate-900 font-medium mt-0.5">
+                        {currentEvent.affected_phases.join(', ')}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-600">Customer Count</label>
+                      <p className="text-slate-900 font-medium mt-0.5">
+                        {currentEvent.customer_count !== null ? currentEvent.customer_count : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Region & OC Information */}
+                {(currentMeter?.region || currentMeter?.oc) && (
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {currentMeter.region && (
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600">Region</label>
+                          <p className="text-slate-900 font-medium mt-0.5">{currentMeter.region}</p>
+                        </div>
+                      )}
+                      {currentMeter.oc && (
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600">Operating Center (OC)</label>
+                          <p className="text-slate-900 font-medium mt-0.5">{currentMeter.oc}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -199,6 +199,28 @@
      - IDR partial match implemented using existing idr_no field
    - **Estimated Effort:** 3 days → **Actual: 1 day**
 
+6.1. **Event Details - Overview Tab Update** ✅ **COMPLETED** (Jan 28, 2026)
+   - **Purpose:** Restructure Event Details Overview tab with standardized data presentation
+   - **Completed Features:**
+     - ✅ AC1 - Core Event Data card: Incident Time (DD/MM/YYYY HH:mm:ss), Voltage Level, Source Substation, Transformer No. & Ring Number
+     - ✅ AC2 - Magnitude & Duration card: VL1/VL2/VL3 phase percentages with large display, Duration with units
+     - ✅ AC3 - Binary Indicators row: Min Volt (<70% threshold), FR (Fault Recorder from false_event), False Alarm status
+     - ✅ AC4 - Classification & Workflow card: Event Type, Severity badges, Status (New/Investigating/Closed mapping)
+     - ✅ Icon design: Green checkmark ✅ / Red X ❌ with color-coded badges
+     - ✅ Additional info: Magnitude, Affected Phases, Customer Count, Region, OC
+   - **UI Components:**
+     - 4 main cards with gradient headers (blue, purple, orange, slate)
+     - Grid layouts for organized data presentation
+     - Status badges with color coding (yellow=New, blue=Investigating, green=Closed)
+     - Purple-themed phase percentage displays with centered values
+   - **Implementation Notes:**
+     - Transformer No. displays circuit_id from pq_meters table
+     - Ring Number uses "TTNR0003" placeholder (pending database field)
+     - Min Volt checks any phase (v1, v2, v3) < 70%
+     - FR (Fault Recorder) uses false_event boolean field
+     - Status mapping: open→New, investigating→Investigating, closed/resolved→Closed
+   - **Estimated Effort:** 0.5 day → **Actual: 0.5 day**
+
 7. **Special IDR Upload Feature** (Week 4-5)
    - **Purpose:** Automated mapping of IDR records to PQ events using timestamp and substation
    - **Key Features:**
