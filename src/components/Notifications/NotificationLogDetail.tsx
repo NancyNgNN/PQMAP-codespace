@@ -75,13 +75,6 @@ export default function NotificationLogDetail({ log, onClose }: NotificationLogD
           bg: 'bg-blue-50',
           label: 'Email'
         };
-      case 'sms':
-        return {
-          icon: MessageSquare,
-          color: 'text-green-600',
-          bg: 'bg-green-50',
-          label: 'SMS'
-        };
       case 'teams':
         return {
           icon: Radio,

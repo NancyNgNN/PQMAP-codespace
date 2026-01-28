@@ -109,7 +109,6 @@ export default function TemplateList({ onEdit, onNew }: TemplateListProps) {
   const getChannelBadges = (channels: string[]) => {
     const channelIcons: Record<string, string> = {
       email: '📧',
-      sms: '💬',
       teams: '👥'
     };
 

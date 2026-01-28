@@ -9,7 +9,7 @@ interface TemplateEditorProps {
   onSaved: () => void;
 }
 
-type ChannelTab = 'email' | 'sms' | 'teams';
+type ChannelTab = 'email' | 'teams';
 
 interface TemplateVariable {
   name: string;
@@ -45,7 +45,6 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
   const [description, setDescription] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
-  const [smsBody, setSmsBody] = useState('');
   const [teamsBody, setTeamsBody] = useState('');
   const [variables, setVariables] = useState<TemplateVariable[]>([
     { name: 'event_type', description: 'Type of PQ event', required: true },
@@ -78,7 +77,6 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
       setDescription(data.description || '');
       setEmailSubject(data.email_subject || '');
       setEmailBody(data.email_body || '');
-      setSmsBody(data.sms_body || '');
       setTeamsBody(data.teams_body || '');
       setVariables(data.variables || []);
       setSelectedChannels(data.applicable_channels || []);
@@ -108,10 +106,7 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
       alert('Email channel requires both subject and body');
       return;
     }
-    if (selectedChannels.includes('sms') && !smsBody.trim()) {
-      alert('SMS channel requires message body');
-      return;
-    }
+
     if (selectedChannels.includes('teams') && !teamsBody.trim()) {
       alert('Teams channel requires message body');
       return;
@@ -125,7 +120,6 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
       description: description.trim() || null,
       email_subject: emailSubject.trim() || null,
       email_body: emailBody.trim() || null,
-      sms_body: smsBody.trim() || null,
       teams_body: teamsBody.trim() || null,
       variables,
       applicable_channels: selectedChannels,
@@ -174,9 +168,6 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
       case 'email':
         setEmailBody(emailBody + placeholder);
         break;
-      case 'sms':
-        setSmsBody(smsBody + placeholder);
-        break;
       case 'teams':
         setTeamsBody(teamsBody + placeholder);
         break;
@@ -201,22 +192,11 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
           subject: substituteVariables(emailSubject, sampleVariables),
           body: substituteVariables(emailBody, sampleVariables)
         };
-      case 'sms':
-        return {
-          body: substituteVariables(smsBody, sampleVariables)
-        };
       case 'teams':
         return {
           body: substituteVariables(teamsBody, sampleVariables)
         };
     }
-  };
-
-  const getSmsCharCount = () => {
-    const count = smsBody.length;
-    const limit = 160;
-    const color = count > limit ? 'text-red-600' : count > limit * 0.9 ? 'text-amber-600' : 'text-slate-600';
-    return <span className={`text-sm ${color} font-semibold`}>{count}/{limit}</span>;
   };
 
   if (loading) {
@@ -303,7 +283,7 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
                     Channels *
                   </label>
                   <div className="space-y-2">
-                    {['email', 'sms', 'teams'].map((channel) => (
+                    {['email', 'teams'].map((channel) => (
                       <label key={channel} className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
@@ -422,7 +402,7 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
             <div className="lg:col-span-2 space-y-4">
               {/* Tab Navigation */}
               <div className="flex gap-2 border-b border-slate-200">
-                {['email', 'sms', 'teams'].map((tab) => (
+                {['email', 'teams'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab as ChannelTab)}
@@ -481,24 +461,6 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
                     </>
                   )}
 
-                  {activeTab === 'sms' && (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="block text-sm font-semibold text-slate-700">
-                          Message *
-                        </label>
-                        {getSmsCharCount()}
-                      </div>
-                      <textarea
-                        value={smsBody}
-                        onChange={(e) => setSmsBody(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        rows={10}
-                        placeholder="PQ Alert: {{event_type}} at {{location}}. Magnitude: {{magnitude}}."
-                      />
-                    </div>
-                  )}
-
                   {activeTab === 'teams' && (
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -531,7 +493,7 @@ export default function TemplateEditor({ templateId, onClose, onSaved }: Templat
                       </div>
                     </div>
                   )}
-                  {(activeTab === 'sms' || activeTab === 'teams') && (
+                  {activeTab === 'teams' && (
                     <div className="bg-white p-4 rounded-lg border border-slate-200 whitespace-pre-wrap">
                       {getPreviewContent().body}
                     </div>

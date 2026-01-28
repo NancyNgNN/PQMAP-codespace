@@ -1,0 +1,38 @@
+[
+  {
+    "id": "mock-001",
+    "title": "System Maintenance Scheduled",
+    "content": "The system will undergo scheduled maintenance on February 1, 2026 from 2:00 AM to 5:00 AM. The system will be temporarily unavailable during this period. Please plan your work accordingly and save all data before the maintenance window.",
+    "severity": "info",
+    "is_active": true,
+    "start_time": "2026-01-28T00:00:00Z",
+    "end_time": "2026-02-01T05:00:00Z",
+    "created_by": "demo-user",
+    "created_at": "2026-01-28T08:00:00Z",
+    "updated_at": "2026-01-28T08:00:00Z"
+  },
+  {
+    "id": "mock-002",
+    "title": "⚠️ Typhoon Signal No.8 Alert",
+    "content": "Typhoon Signal No.8 will be hoisted in approximately 1 hour. All field operations should be suspended immediately. Personnel are advised to secure equipment and return to safe locations. Remote monitoring will remain active.",
+    "severity": "warning",
+    "is_active": true,
+    "start_time": "2026-01-28T00:00:00Z",
+    "end_time": "2026-01-29T18:00:00Z",
+    "created_by": "demo-user",
+    "created_at": "2026-01-28T09:00:00Z",
+    "updated_at": "2026-01-28T09:00:00Z"
+  },
+  {
+    "id": "mock-003",
+    "title": "🔴 CRITICAL: Power Grid Instability Detected",
+    "content": "Critical power quality issue detected in Central District. Engineers are investigating. Real-time monitoring is active. Emergency response team has been dispatched. Expected resolution time: 3 hours.",
+    "severity": "critical",
+    "is_active": true,
+    "start_time": "2026-01-28T00:00:00Z",
+    "end_time": "2026-01-28T23:59:59Z",
+    "created_by": "demo-user",
+    "created_at": "2026-01-28T10:00:00Z",
+    "updated_at": "2026-01-28T10:00:00Z"
+  }
+]

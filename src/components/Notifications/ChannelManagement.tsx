@@ -206,39 +206,6 @@ export default function ChannelManagement() {
                         </>
                       )}
 
-                      {channel.type === 'sms' && (
-                        <>
-                          <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
-                              Provider
-                            </label>
-                            <select
-                              value={config.provider || 'demo'}
-                              onChange={(e) => setConfig({ ...config, provider: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value="demo">Demo (No actual SMS)</option>
-                              <option value="twilio">Twilio</option>
-                              <option value="aws-sns">AWS SNS</option>
-                            </select>
-                          </div>
-                          {config.provider !== 'demo' && (
-                            <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-1">
-                                API Key
-                              </label>
-                              <input
-                                type="password"
-                                value={config.api_key || ''}
-                                onChange={(e) => setConfig({ ...config, api_key: e.target.value })}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Enter API key"
-                              />
-                            </div>
-                          )}
-                        </>
-                      )}
-
                       {channel.type === 'teams' && (
                         <div>
                           <label className="block text-sm font-medium text-slate-700 mb-1">

@@ -3,6 +3,8 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import Navigation from './components/Navigation';
+import CriticalMessageBar from './components/CriticalMessageBar';
+import NotificationBell from './components/NotificationBell';
 import Dashboard from './components/Dashboard/Dashboard';
 import EventManagement from './components/EventManagement/EventManagement';
 import ImpactAnalysis from './components/ImpactAnalysis';
@@ -57,6 +59,12 @@ function AppContent() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <main className="flex-1 overflow-y-auto">
+        {/* Header Bar with Notification Bell */}
+        <div className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-end shadow-sm">
+          <NotificationBell />
+        </div>
+        
+        <CriticalMessageBar />
         {currentView === 'dashboard' && <Dashboard onNavigateToMeter={handleNavigateToMeter} />}
         {currentView === 'events' && <EventManagement />}
         {currentView === 'analytics' && <ImpactAnalysis />}
