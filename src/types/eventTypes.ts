@@ -40,6 +40,16 @@ export interface EventFilter {
   showFalseEventsOnly: boolean;
   showMotherEventsWithoutChildren: boolean;
   showLateEventsOnly: boolean;
+  // Advanced filter fields
+  minV1?: number | null;
+  maxV1?: number | null;
+  minV2?: number | null;
+  maxV2?: number | null;
+  minV3?: number | null;
+  maxV3?: number | null;
+  transformerNumbers?: string[];
+  ringNumber?: string;
+  idrNumber?: string;
   filter_rules?: {
     duration_min_ms?: number;
     duration_max_ms?: number;

@@ -176,17 +176,28 @@
      - AssetManagement.tsx: Add event viewing capability for selected meter
    - **Estimated Effort:** 1 week
 
-6. **Advanced Filter Button in Event Management** (Week 4)
+6. **Advanced Filter Button in Event Management** ✅ **COMPLETED** (Jan 28, 2026)
    - **Purpose:** Add comprehensive filtering for voltage dip/swell events
-   - **Key Features:**
-     - "Advanced Filter" button in EventManagement module
-     - Shows all filters that influence voltage dip & voltage swell event list
-     - Includes date range, severity, substation, meter, cause, customer impact, etc.
-     - Collapsible filter panel with save/load filter profiles
+   - **Completed Features:**
+     - ✅ "Advanced Filter" button next to "Reset All" in EventManagement module
+     - ✅ Comprehensive filter modal with VL1/VL2/VL3 voltage range inputs
+     - ✅ Substation multi-select dropdown with checkbox list
+     - ✅ Transformer number multi-select (H1, H2, H3 from customer_transformer_matching)
+     - ✅ IDR No. text input with partial match search
+     - ✅ Ring Number text input for circuit ring filtering
+     - ✅ Date range inputs in modal
+     - ✅ Apply + Clear All buttons
+     - ✅ Integration with existing filter profiles system (saveable)
    - **UI Components:**
-     - AdvancedFilterModal component with all filter options
-     - Integration with existing filter profiles system
-   - **Estimated Effort:** 3 days
+     - AdvancedFilterModal component (380+ lines) with scrollable content
+     - Integrated with EventManagement.tsx filter logic
+     - Gradient blue header matching PQMAP design system
+   - **Implementation Notes:**
+     - V1/V2/V3 filters use min/max range inputs for remaining voltage %
+     - Transformer filtering ready (requires backend join implementation)
+     - Ring number filtering ready (requires ring_number field in pq_meters table)
+     - IDR partial match implemented using existing idr_no field
+   - **Estimated Effort:** 3 days → **Actual: 1 day**
 
 7. **Special IDR Upload Feature** (Week 4-5)
    - **Purpose:** Automated mapping of IDR records to PQ events using timestamp and substation

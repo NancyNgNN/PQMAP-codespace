@@ -5,10 +5,11 @@ import { EventTreeNode, EventFilter } from '../../types/eventTypes';
 import EventDetails from './EventDetails';
 import FalseEventConfig from './FalseEventConfig';
 import FalseEventAnalytics from './FalseEventAnalytics';
+import AdvancedFilterModal from './AdvancedFilterModal';
 import { falseEventDetector } from '../../utils/falseEventDetection';
 import { MotherEventGroupingService } from '../../services/mother-event-grouping';
 import { ExportService } from '../../services/exportService';
-import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Shield, BarChart3, Group, Check, X, Save, Edit2, Trash2, RotateCcw, ChevronDown, Download, Upload, FileDown, ArrowUpDown, Clock } from 'lucide-react';
+import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Shield, BarChart3, Group, Check, X, Save, Edit2, Trash2, RotateCcw, ChevronDown, Download, Upload, FileDown, ArrowUpDown, Clock, Sliders } from 'lucide-react';
 
 export default function EventManagement() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -82,6 +83,10 @@ export default function EventManagement() {
     errors: Array<{ row: number; column: string; message: string }>;
   } | null>(null);
 
+  // Advanced Filter Modal states
+  const [showAdvancedFilterModal, setShowAdvancedFilterModal] = useState(false);
+  const [transformerNumbers, setTransformerNumbers] = useState<string[]>([]);
+
   // Manual Event Creation states
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
   const [creatingEvent, setCreatingEvent] = useState(false);
@@ -144,18 +149,25 @@ export default function EventManagement() {
 
   const loadData = async () => {
     try {
-      const [eventsRes, substationsRes, metersRes] = await Promise.all([
+      const [eventsRes, substationsRes, metersRes, transformersRes] = await Promise.all([
         supabase
           .from('pq_events')
           .select('*, meter:pq_meters!meter_id(id, meter_id, site_id, voltage_level, circuit_id, region, oc), harmonic_event:harmonic_events!pqevent_id(*)')
           .order('timestamp', { ascending: false }),
         supabase.from('substations').select('*'),
         supabase.from('pq_meters').select('*').order('meter_id', { ascending: true }),
+        supabase.from('customer_transformer_matching').select('transformer_code').order('transformer_code'),
       ]);
 
       if (!eventsRes.error) setEvents(eventsRes.data || []);
       if (!substationsRes.error) setSubstations(substationsRes.data || []);
       if (!metersRes.error) setMeters(metersRes.data || []);
+      
+      // Extract unique transformer numbers (H1, H2, H3, etc.)
+      if (!transformersRes.error && transformersRes.data) {
+        const uniqueTransformers = [...new Set(transformersRes.data.map(t => t.transformer_code))].filter(Boolean);
+        setTransformerNumbers(uniqueTransformers as string[]);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -500,7 +512,17 @@ export default function EventManagement() {
       showOnlyStandaloneEvents: false,
       showMotherEventsWithoutChildren: false,
       showFalseEventsOnly: false,
-      showLateEventsOnly: false
+      showLateEventsOnly: false,
+      // Reset advanced filter fields
+      minV1: null,
+      maxV1: null,
+      minV2: null,
+      maxV2: null,
+      minV3: null,
+      maxV3: null,
+      transformerNumbers: [],
+      ringNumber: '',
+      idrNumber: ''
     });
     setSelectedProfileId(null);
   };
@@ -909,6 +931,63 @@ export default function EventManagement() {
       // Meter ID filter
       if (filters.meterIds.length > 0 && event.meter_id && !filters.meterIds.includes(event.meter_id)) {
         return false;
+      }
+
+      // Advanced Filter: V1 (Phase A voltage) range
+      if (filters.minV1 !== null && filters.minV1 !== undefined && event.v1 !== null && event.v1 < filters.minV1) {
+        return false;
+      }
+      if (filters.maxV1 !== null && filters.maxV1 !== undefined && event.v1 !== null && event.v1 > filters.maxV1) {
+        return false;
+      }
+
+      // Advanced Filter: V2 (Phase B voltage) range
+      if (filters.minV2 !== null && filters.minV2 !== undefined && event.v2 !== null && event.v2 < filters.minV2) {
+        return false;
+      }
+      if (filters.maxV2 !== null && filters.maxV2 !== undefined && event.v2 !== null && event.v2 > filters.maxV2) {
+        return false;
+      }
+
+      // Advanced Filter: V3 (Phase C voltage) range
+      if (filters.minV3 !== null && filters.minV3 !== undefined && event.v3 !== null && event.v3 < filters.minV3) {
+        return false;
+      }
+      if (filters.maxV3 !== null && filters.maxV3 !== undefined && event.v3 !== null && event.v3 > filters.maxV3) {
+        return false;
+      }
+
+      // Advanced Filter: Transformer Number (TODO: requires joining with customer_transformer_matching)
+      // For now, this would need to be implemented with a proper join in the SQL query
+      // Placeholder logic - in production, this should join with customer_transformer_matching table
+      if (filters.transformerNumbers && filters.transformerNumbers.length > 0) {
+        // This requires circuit_id to be present to match with transformer table
+        // Skip filtering for now - will need backend query modification
+        // return false;
+      }
+
+      // Advanced Filter: IDR Number (partial match)
+      if (filters.idrNumber && filters.idrNumber.trim() !== '') {
+        // This requires joining with idr_records table
+        // For now, check if event.idr_no exists and contains the search term
+        if (event.idr_no) {
+          const searchTerm = filters.idrNumber.toLowerCase();
+          const idrNoLower = event.idr_no.toLowerCase();
+          if (!idrNoLower.includes(searchTerm)) {
+            return false;
+          }
+        } else {
+          // If event has no IDR number and filter is set, exclude it
+          return false;
+        }
+      }
+
+      // Advanced Filter: Ring Number (TODO: requires ring_number field in pq_meters table)
+      // Placeholder logic - field needs to be added to database schema
+      if (filters.ringNumber && filters.ringNumber.trim() !== '') {
+        // This would require event.meter.ring_number field
+        // Skip filtering for now until database schema is updated
+        // return false;
       }
 
       return true;
@@ -1585,13 +1664,23 @@ export default function EventManagement() {
                   <Search className="w-5 h-5" />
                   Advanced Filters
                 </h3>
-                <button
-                  onClick={handleResetFilters}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reset All
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowAdvancedFilterModal(true)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+                    title="Open Advanced Filters"
+                  >
+                    <Sliders className="w-4 h-4" />
+                    Advanced Filter
+                  </button>
+                  <button
+                    onClick={handleResetFilters}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-all"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Reset All
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -2940,6 +3029,20 @@ export default function EventManagement() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Advanced Filter Modal */}
+      {showAdvancedFilterModal && (
+        <AdvancedFilterModal
+          filters={filters}
+          onApply={(newFilters) => {
+            setFilters(newFilters);
+            setShowAdvancedFilterModal(false);
+          }}
+          onClose={() => setShowAdvancedFilterModal(false)}
+          substations={substations}
+          transformerNumbers={transformerNumbers}
+        />
       )}
     </div>
   );

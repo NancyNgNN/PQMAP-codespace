@@ -79,6 +79,26 @@ Generate a concise meeting summary document from detailed meeting minutes CSV fo
 - Use tables for comparisons/structured data
 - Use bullet points for lists
 
+## Using AI Assistant Clarification Questions
+
+If the meeting minutes include an "AI Assistant Clarification Questions" section:
+
+### When Questions Are Answered
+- **Integrate answers into summary**: Use answered questions to add clarity and specificity
+- **Example**: If template variables are specified, mention them in Notification System decisions
+- **Enhance context**: Use technical details (user count, sync frequency) to contextualize decisions
+
+### When Questions Are Unanswered
+- **Do NOT include unanswered questions in summary** - summary is for decisions made, not pending items
+- **Add to "Next Steps"** if critical questions need answers before next phase
+- **Skip entirely** if questions are internal/technical details not relevant to attendees
+
+### Question-Enhanced Summary Examples
+- ❌ Poor: "Notification system will use templates"
+- ✅ Better: "Notification system will use ~10 templates with variables like [duration_ms], [voltage_level], [customer_count]"
+
+---
+
 ## Content Selection Priority
 
 ### Must Include (High Priority)
@@ -86,6 +106,7 @@ Generate a concise meeting summary document from detailed meeting minutes CSV fo
 2. Top 3-5 pain points identified
 3. Critical action items with owners (if assigned)
 4. Next meeting/milestone dates
+5. **Answered clarification questions** (integrated into relevant sections)
 
 ### Should Include (Medium Priority)
 5. Architecture/integration decisions
