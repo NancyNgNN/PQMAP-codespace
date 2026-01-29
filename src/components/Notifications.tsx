@@ -70,12 +70,6 @@ export default function Notifications() {
             <p className="text-slate-600 mt-1">Configure alerts and notification rules</p>
           </div>
         </div>
-        {activeTab === 'rules' && (
-          <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:shadow-lg transition-all">
-            <Plus className="w-5 h-5" />
-            <span className="font-semibold">New Rule</span>
-          </button>
-        )}
       </div>
 
       {/* Tabs */}
