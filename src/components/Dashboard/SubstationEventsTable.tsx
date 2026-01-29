@@ -18,6 +18,7 @@ interface TableRow {
   customerName: string;
   services: string;
   eventId: string;
+  eventTimestamp: string; // Add for service filtering
 }
 
 type SortField = 'no' | 'substationCode' | 'customerName' | 'services';
@@ -51,48 +52,64 @@ export default function SubstationEventsTable({ substation, events, filters }: S
       // Get events for this substation
       const substationEvents = events.filter(e => e.substation_id === substation.id);
 
-      // Get customers for this substation
-      const { data: customers, error: customerError } = await supabase
-        .from('customers')
-        .select('id, name')
-        .eq('substation_id', substation.id);
+      // Build table rows with customer and service data
+      const rows: TableRow[] = await Promise.all(
+        substationEvents.map(async (event, index) => {
+          // Get sensitive customers for this event
+          const { data: eventCustomers } = await supabase
+            .from('event_customer_impact')
+            .select(`
+              customer_id,
+              customers!inner (
+                id,
+                name,
+                is_sensitive
+              )
+            `)
+            .eq('event_id', event.id)
+            .eq('customers.is_sensitive', true);
 
-      if (customerError) throw customerError;
+          const customerNames = eventCustomers
+            ?.map((ec: any) => ec.customers?.name)
+            .filter(Boolean)
+            .join(', ') || '-';
 
-      // Get service records for these customers
-      const customerIds = customers?.map(c => c.id) || [];
-      
-      let servicesMap: Record<string, string[]> = {};
-      
-      if (customerIds.length > 0) {
-        const { data: serviceRecords, error: serviceError } = await supabase
-          .from('pq_service_records')
-          .select('customer_id, service_type')
-          .in('customer_id', customerIds);
+          // Get PQ services for this event's customers, substation, and timeframe
+          const customerIds = eventCustomers?.map((ec: any) => ec.customer_id) || [];
+          
+          let serviceNames: string[] = [];
+          
+          if (customerIds.length > 0) {
+            // Get services within event timeframe (same day or week)
+            const eventDate = new Date(event.timestamp);
+            const startOfDay = new Date(eventDate);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(eventDate);
+            endOfDay.setHours(23, 59, 59, 999);
 
-        if (serviceError) throw serviceError;
+            const { data: serviceRecords } = await supabase
+              .from('pq_service_records')
+              .select('service_type, service_name')
+              .eq('substation_id', substation.id)
+              .in('customer_id', customerIds)
+              .gte('service_date', startOfDay.toISOString())
+              .lte('service_date', endOfDay.toISOString());
 
-        // Group services by customer
-        serviceRecords?.forEach(record => {
-          if (!servicesMap[record.customer_id]) {
-            servicesMap[record.customer_id] = [];
+            serviceNames = serviceRecords
+              ?.map(s => s.service_name || s.service_type)
+              .filter(Boolean) || [];
           }
-          if (!servicesMap[record.customer_id].includes(record.service_type)) {
-            servicesMap[record.customer_id].push(record.service_type);
-          }
-        });
-      }
 
-      // Build table rows
-      const rows: TableRow[] = substationEvents.map((event, index) => ({
-        no: index + 1,
-        substationCode: substation.code,
-        customerName: '', // Leave blank as per requirements
-        services: customerIds.length > 0 
-          ? Object.values(servicesMap).flat().join(', ') 
-          : 'N/A',
-        eventId: event.id
-      }));
+          return {
+            no: index + 1,
+            substationCode: substation.code,
+            customerName: customerNames,
+            services: serviceNames.length > 0 ? serviceNames.join(', ') : 'N/A',
+            eventId: event.id,
+            eventTimestamp: event.timestamp
+          };
+        })
+      );
 
       setTableData(rows);
       setCurrentPage(1);

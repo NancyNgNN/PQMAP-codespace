@@ -7,14 +7,11 @@ import CriticalMessageBar from './components/CriticalMessageBar';
 import NotificationBell from './components/NotificationBell';
 import Dashboard from './components/Dashboard/Dashboard';
 import EventManagement from './components/EventManagement/EventManagement';
-import ImpactAnalysis from './components/ImpactAnalysis';
 import AssetManagement from './components/AssetManagement';
 import Reports from './components/Reports';
 import ReportingPreview from './components/ReportingPreview';
 import Notifications from './components/Notifications';
-import TemplateManagement from './components/Notifications/TemplateManagement';
 import PQServices from './components/PQServices';
-import SystemHealth from './components/SystemHealth';
 import CustomerTransformerMatching from './components/CustomerTransformerMatching';
 import UserManagement from './components/UserManagement';
 import SCADA from './components/SCADA';
@@ -67,14 +64,11 @@ function AppContent() {
         <CriticalMessageBar />
         {currentView === 'dashboard' && <Dashboard onNavigateToMeter={handleNavigateToMeter} />}
         {currentView === 'events' && <EventManagement />}
-        {currentView === 'analytics' && <ImpactAnalysis />}
         {currentView === 'assets' && <AssetManagement selectedMeterId={selectedMeterId} onClearSelectedMeter={() => setSelectedMeterId(null)} />}
         {currentView === 'reports' && <Reports />}
         {currentView === 'reportingPreview' && <ReportingPreview />}
         {currentView === 'notifications' && <Notifications />}
-        {currentView === 'templates' && <TemplateManagement />}
         {currentView === 'services' && <PQServices />}
-        {currentView === 'health' && <SystemHealth />}
         {currentView === 'userManagement' && <UserManagement />}
         {currentView === 'scada' && <SCADA />}
         {currentView === 'meterHierarchy' && <MeterHierarchy />}

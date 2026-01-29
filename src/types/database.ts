@@ -536,6 +536,9 @@ export interface SubstationMapFilters {
   profileId: string;
   startDate: string;
   endDate: string;
+  includeFalseEvents: boolean;
+  motherEventsOnly: boolean;
+  voltageLevels: string[];
 }
 
 export interface SubstationMapProfile {

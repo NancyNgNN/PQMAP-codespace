@@ -9,6 +9,7 @@ export type WidgetId =
   | 'root-cause-chart'
   | 'insight-chart'
   | 'affected-customer-chart'
+  | 'affected-equipment-chart'
   | 'event-list'
   | 'sarfi-70-monitor'
   | 'report-builder';
@@ -95,6 +96,13 @@ export const WIDGET_CATALOG: Record<WidgetId, WidgetConfig> = {
     defaultSize: 'full',
     locked: true,
   },
+  'affected-equipment-chart': {
+    id: 'affected-equipment-chart',
+    title: 'Affected Equipment',
+    description: 'Equipment failure analysis by type',
+    defaultSize: 'half',
+    locked: true,
+  },
   'event-list': {
     id: 'event-list',
     title: 'Recent Events',
@@ -130,8 +138,9 @@ export const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
       { id: 'root-cause-chart', col: 0, row: 4, width: 6, visible: true },
       { id: 'insight-chart', col: 6, row: 4, width: 6, visible: true },
       { id: 'affected-customer-chart', col: 0, row: 5, width: 12, visible: true },
-      { id: 'event-list', col: 0, row: 6, width: 12, visible: true },
-      { id: 'sarfi-70-monitor', col: 0, row: 7, width: 12, visible: true },
+      { id: 'affected-equipment-chart', col: 0, row: 6, width: 6, visible: true },
+      { id: 'event-list', col: 0, row: 7, width: 12, visible: true },
+      { id: 'sarfi-70-monitor', col: 0, row: 8, width: 12, visible: true },
     ],
   },
   operator: {
@@ -144,8 +153,9 @@ export const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
       { id: 'root-cause-chart', col: 0, row: 4, width: 6, visible: true },
       { id: 'insight-chart', col: 6, row: 4, width: 6, visible: true },
       { id: 'affected-customer-chart', col: 0, row: 5, width: 12, visible: true },
-      { id: 'event-list', col: 0, row: 6, width: 12, visible: true },
-      { id: 'sarfi-70-monitor', col: 0, row: 7, width: 12, visible: false },
+      { id: 'affected-equipment-chart', col: 0, row: 6, width: 6, visible: true },
+      { id: 'event-list', col: 0, row: 7, width: 12, visible: true },
+      { id: 'sarfi-70-monitor', col: 0, row: 8, width: 12, visible: false },
     ],
   },
   viewer: {
@@ -158,8 +168,9 @@ export const DEFAULT_LAYOUTS: Record<string, DashboardLayout> = {
       { id: 'root-cause-chart', col: 0, row: 4, width: 6, visible: false },
       { id: 'insight-chart', col: 6, row: 4, width: 6, visible: false },
       { id: 'affected-customer-chart', col: 0, row: 5, width: 12, visible: true },
-      { id: 'event-list', col: 0, row: 6, width: 12, visible: true },
-      { id: 'sarfi-70-monitor', col: 0, row: 7, width: 12, visible: false },
+      { id: 'affected-equipment-chart', col: 0, row: 6, width: 6, visible: false },
+      { id: 'event-list', col: 0, row: 7, width: 12, visible: true },
+      { id: 'sarfi-70-monitor', col: 0, row: 8, width: 12, visible: false },
     ],
   },
 };

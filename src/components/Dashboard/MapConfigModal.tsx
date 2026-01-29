@@ -11,11 +11,17 @@ interface MapConfigModalProps {
 export default function MapConfigModal({ filters, onApply, onClose }: MapConfigModalProps) {
   const [startDate, setStartDate] = useState(filters.startDate || '');
   const [endDate, setEndDate] = useState(filters.endDate || '');
+  const [includeFalseEvents, setIncludeFalseEvents] = useState(filters.includeFalseEvents ?? false);
+  const [motherEventsOnly, setMotherEventsOnly] = useState(filters.motherEventsOnly ?? true);
+  const [voltageLevels, setVoltageLevels] = useState<string[]>(filters.voltageLevels || []);
   const [profiles, setProfiles] = useState<SubstationMapProfile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState(filters.profileId || '');
   const [showNewProfile, setShowNewProfile] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
   const [newProfileDescription, setNewProfileDescription] = useState('');
+  
+  // Available voltage levels
+  const availableVoltageLevels = ['400kV', '132kV', '33kV', '11kV', '380V'];
 
   useEffect(() => {
     loadProfiles();
@@ -40,6 +46,14 @@ export default function MapConfigModal({ filters, onApply, onClose }: MapConfigM
       setStartDate(profile.start_date);
       setEndDate(profile.end_date);
       setSelectedProfileId(profileId);
+    }
+  };
+  
+  const handleToggleVoltageLevel = (level: string) => {
+    if (voltageLevels.includes(level)) {
+      setVoltageLevels(voltageLevels.filter(v => v !== level));
+    } else {
+      setVoltageLevels([...voltageLevels, level]);
     }
   };
 
@@ -96,13 +110,19 @@ export default function MapConfigModal({ filters, onApply, onClose }: MapConfigM
     onApply({
       profileId: selectedProfileId,
       startDate,
-      endDate
+      endDate,
+      includeFalseEvents,
+      motherEventsOnly,
+      voltageLevels
     });
   };
 
   const handleClearFilters = () => {
     setStartDate('');
     setEndDate('');
+    setIncludeFalseEvents(false);
+    setMotherEventsOnly(true);
+    setVoltageLevels([]);
     setSelectedProfileId('');
   };
 
@@ -147,6 +167,49 @@ export default function MapConfigModal({ filters, onApply, onClose }: MapConfigM
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+            </div>
+          </div>
+          
+          {/* Event Type Filters */}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Event Type Filters</h3>
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeFalseEvents}
+                  onChange={(e) => setIncludeFalseEvents(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-slate-700">Include False Events</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={motherEventsOnly}
+                  onChange={(e) => setMotherEventsOnly(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-slate-700">Mother Events Only</span>
+              </label>
+            </div>
+          </div>
+          
+          {/* Voltage Level Filter */}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Voltage Level</h3>
+            <div className="space-y-2">
+              {availableVoltageLevels.map(level => (
+                <label key={level} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={voltageLevels.includes(level)}
+                    onChange={() => handleToggleVoltageLevel(level)}
+                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-slate-700">{level}</span>
+                </label>
+              ))}
             </div>
           </div>
 

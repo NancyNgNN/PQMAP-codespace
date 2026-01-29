@@ -14,14 +14,10 @@ export default function Navigation({ currentView, onViewChange, collapsed, onTog
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'events', icon: Activity, label: 'Event Management' },
-    { id: 'analytics', icon: BarChart3, label: 'Impact Analysis' },
     { id: 'assets', icon: DatabaseIcon, label: 'Asset Management' },
-    { id: 'reports', icon: FileText, label: 'Reports' },
-    { id: 'reportingPreview', icon: FlaskConical, label: 'Reporting (Preview)' },
+    { id: 'reportingPreview', icon: FlaskConical, label: 'Reporting' },
     { id: 'notifications', icon: Bell, label: 'Notifications' },
-    { id: 'templates', icon: FileCode, label: 'Templates' },
     { id: 'services', icon: Wrench, label: 'PQ Services' },
-    { id: 'health', icon: Settings, label: 'System Health' },
   ];
 
   const dataMaintenanceItems = [

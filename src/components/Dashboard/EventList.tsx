@@ -67,10 +67,6 @@ export default function EventList({ events, substations }: EventListProps) {
         aVal = a.duration_ms ?? 0;
         bVal = b.duration_ms ?? 0;
         break;
-      case 'voltage_level':
-        aVal = a.voltage_level || '';
-        bVal = b.voltage_level || '';
-        break;
       default:
         aVal = '';
         bVal = '';
@@ -192,22 +188,8 @@ export default function EventList({ events, substations }: EventListProps) {
                   )}
                 </button>
               </th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">
-                <button
-                  onClick={() => handleSort('voltage_level')}
-                  className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-                >
-                  Voltage Level
-                  {sortField === 'voltage_level' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
-                  ) : (
-                    <ArrowUpDown className="w-3 h-3 opacity-30" />
-                  )}
-                </button>
-              </th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Severity</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">
-                <button
+              <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">\n                <button
                   onClick={() => handleSort('duration')}
                   className="flex items-center gap-1 hover:text-blue-600 transition-colors"
                 >
@@ -242,9 +224,6 @@ export default function EventList({ events, substations }: EventListProps) {
                   </td>
                   <td className="py-3 px-4 text-sm text-slate-700">
                     {event.meter_id || 'N/A'}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-slate-700">
-                    {event.voltage_level || 'N/A'}
                   </td>
                   <td className="py-3 px-4">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(event.severity)}`}>
