@@ -1759,14 +1759,15 @@ export default function EventDetails({ event: initialEvent, substation: initialS
               </div>
             </div>
 
-            {/* False Event Actions */}
+            {/* False Event Actions - Only show for voltage_dip and voltage_swell */}
             {(() => {
               console.log('🔍 [Convert Button Condition]', {
                 activeTab,
+                event_type: currentEvent.event_type,
                 false_event: currentEvent.false_event,
-                shouldShow: currentEvent.false_event === true
+                shouldShow: currentEvent.false_event === true && (currentEvent.event_type === 'voltage_dip' || currentEvent.event_type === 'voltage_swell')
               });
-              return currentEvent.false_event;
+              return currentEvent.false_event && (currentEvent.event_type === 'voltage_dip' || currentEvent.event_type === 'voltage_swell');
             })() && (
               <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
                 <div className="flex items-center justify-between">
@@ -1835,22 +1836,25 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                     )}
                   </dd>
                 </div>
-                <div>
-                  <dt className="text-sm text-slate-600">False Event:</dt>
-                  <dd className="flex items-center gap-2 mt-1">
-                    {currentEvent.false_event ? (
-                      <>
-                        <XCircle className="w-5 h-5 text-red-600" />
-                        <span className="font-semibold text-red-700">Yes</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <span className="font-semibold text-green-700">No</span>
-                      </>
-                    )}
-                  </dd>
-                </div>
+                {/* False Event - Only show for voltage_dip and voltage_swell */}
+                {(currentEvent.event_type === 'voltage_dip' || currentEvent.event_type === 'voltage_swell') && (
+                  <div>
+                    <dt className="text-sm text-slate-600">False Event:</dt>
+                    <dd className="flex items-center gap-2 mt-1">
+                      {currentEvent.false_event ? (
+                        <>
+                          <XCircle className="w-5 h-5 text-red-600" />
+                          <span className="font-semibold text-red-700">Yes</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="font-semibold text-green-700">No</span>
+                        </>
+                      )}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
 
@@ -1900,7 +1904,11 @@ export default function EventDetails({ event: initialEvent, substation: initialS
             )}
 
             {/* Waveform Display */}
-            <WaveformViewer csvData={waveformCsvData} />
+            <WaveformViewer 
+              csvData={waveformCsvData} 
+              event={currentEvent}
+              eventType={currentEvent.event_type}
+            />
           </div>
         )}
 
