@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Bell, Plus, Edit2, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import sampleRules from '../../data/sampleNotificationRules.json';
 
 interface RuleListProps {
   onEdit: (ruleId: string) => void;
@@ -25,23 +26,31 @@ export default function RuleList({ onEdit, onNew, refreshKey }: RuleListProps) {
 
   const loadRules = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('notification_rules')
-      .select(`
-        *,
-        template:notification_templates(name, code)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (data) setRules(data);
+    
+    // Load from localStorage (JSON file simulation)
+    const storedRules = localStorage.getItem('notificationRules');
+    if (storedRules) {
+      const parsedRules = JSON.parse(storedRules);
+      setRules(parsedRules);
+    } else {
+      // Initialize with sample rules if localStorage is empty
+      localStorage.setItem('notificationRules', JSON.stringify(sampleRules));
+      setRules(sampleRules);
+    }
+    
     setLoading(false);
   };
 
   const toggleRule = async (ruleId: string, active: boolean) => {
-    await supabase
-      .from('notification_rules')
-      .update({ active: !active })
-      .eq('id', ruleId);
+    // Load from localStorage
+    const storedRules = localStorage.getItem('notificationRules');
+    if (storedRules) {
+      const parsedRules = JSON.parse(storedRules);
+      const updatedRules = parsedRules.map((rule: any) => 
+        rule.id === ruleId ? { ...rule, active: !active } : rule
+      );
+      localStorage.setItem('notificationRules', JSON.stringify(updatedRules));
+    }
 
     loadRules();
   };
@@ -51,10 +60,13 @@ export default function RuleList({ onEdit, onNew, refreshKey }: RuleListProps) {
       return;
     }
 
-    await supabase
-      .from('notification_rules')
-      .delete()
-      .eq('id', ruleId);
+    // Load from localStorage and delete
+    const storedRules = localStorage.getItem('notificationRules');
+    if (storedRules) {
+      const parsedRules = JSON.parse(storedRules);
+      const updatedRules = parsedRules.filter((rule: any) => rule.id !== ruleId);
+      localStorage.setItem('notificationRules', JSON.stringify(updatedRules));
+    }
 
     loadRules();
   };

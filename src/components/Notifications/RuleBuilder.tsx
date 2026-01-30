@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, Save, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import sampleGroups from '../../data/sampleNotificationGroups.json';
 
 interface RuleBuilderProps {
   ruleId?: string;
@@ -16,14 +17,9 @@ interface Condition {
 }
 
 const CONDITION_FIELDS = [
-  { value: 'event_type', label: 'Event Type', type: 'select', options: ['voltage_dip', 'swell', 'interruption', 'harmonic', 'transient'] },
-  { value: 'severity', label: 'Severity', type: 'select', options: ['low', 'medium', 'high', 'critical'] },
+  { value: 'customer_count', label: 'Customer Count', type: 'number' },
   { value: 'magnitude', label: 'Magnitude (%)', type: 'number' },
   { value: 'duration', label: 'Duration (ms)', type: 'number' },
-  { value: 'customer_count', label: 'Customer Count', type: 'number' },
-  { value: 'region', label: 'Region', type: 'select', options: ['Hong Kong', 'Kowloon', 'New Territories'] },
-  { value: 'voltage_level', label: 'Voltage Level', type: 'select', options: ['11kV', '22kV', '33kV', '66kV', '132kV', '275kV', '400kV'] },
-  { value: 'status', label: 'Status', type: 'select', options: ['new', 'under_investigation', 'resolved', 'closed'] },
 ];
 
 const OPERATORS = [
@@ -43,17 +39,14 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
   const [description, setDescription] = useState('');
   const [conditions, setConditions] = useState<Condition[]>([]);
   const [templateId, setTemplateId] = useState('');
-  const [channels, setChannels] = useState<string[]>(['email']);
   const [groups, setGroups] = useState<string[]>([]);
   const [adhocRecipients, setAdhocRecipients] = useState('');
   const [priority, setPriority] = useState(1);
   const [typhoonModeEnabled, setTyphoonModeEnabled] = useState(false);
   const [motherEventOnly, setMotherEventOnly] = useState(false);
-  const [includeWaveform, setIncludeWaveform] = useState(false);
   const [active, setActive] = useState(true);
   
   const [templates, setTemplates] = useState<any[]>([]);
-  const [availableChannels, setAvailableChannels] = useState<any[]>([]);
   const [availableGroups, setAvailableGroups] = useState<any[]>([]);
   
   const [saving, setSaving] = useState(false);
@@ -66,54 +59,45 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
   const loadData = async () => {
     setLoading(true);
 
-    // Load templates
-    const { data: templatesData } = await supabase
-      .from('notification_templates')
-      .select('*')
-      .eq('status', 'approved')
-      .order('name', { ascending: true });
+    // Load templates from localStorage
+    const storedTemplates = localStorage.getItem('notificationTemplates');
+    if (storedTemplates) {
+      const parsedTemplates = JSON.parse(storedTemplates).filter((t: any) => t.status === 'approved');
+      setTemplates(parsedTemplates);
+    } else {
+      setTemplates([]);
+    }
 
-    if (templatesData) setTemplates(templatesData);
+    // Load groups from localStorage
+    const storedGroups = localStorage.getItem('notificationGroups');
+    if (storedGroups) {
+      const parsedGroups = JSON.parse(storedGroups).filter((g: any) => g.status === 'active');
+      setAvailableGroups(parsedGroups);
+    } else {
+      // Initialize with sample groups if localStorage is empty
+      localStorage.setItem('notificationGroups', JSON.stringify(sampleGroups));
+      setAvailableGroups(sampleGroups.filter((g: any) => g.status === 'active'));
+    }
 
-    // Load channels
-    const { data: channelsData } = await supabase
-      .from('notification_channels')
-      .select('*')
-      .eq('status', 'enabled')
-      .order('priority', { ascending: true });
-
-    if (channelsData) setAvailableChannels(channelsData);
-
-    // Load groups
-    const { data: groupsData } = await supabase
-      .from('notification_groups')
-      .select('*')
-      .eq('status', 'active')
-      .order('name', { ascending: true });
-
-    if (groupsData) setAvailableGroups(groupsData);
-
-    // Load rule data if editing
+    // Load rule data if editing from localStorage
     if (ruleId) {
-      const { data: ruleData } = await supabase
-        .from('notification_rules')
-        .select('*')
-        .eq('id', ruleId)
-        .single();
-
-      if (ruleData) {
-        setName(ruleData.name);
-        setDescription(ruleData.description || '');
-        setConditions(ruleData.conditions?.map((c: any) => ({ ...c, id: crypto.randomUUID() })) || []);
-        setTemplateId(ruleData.template_id || '');
-        setChannels(ruleData.channels || ['email']);
-        setGroups(ruleData.notification_groups || []);
-        setAdhocRecipients(ruleData.adhoc_recipients?.join(', ') || '');
-        setPriority(ruleData.priority || 1);
-        setTyphoonModeEnabled(ruleData.typhoon_mode_enabled || false);
-        setMotherEventOnly(ruleData.mother_event_only || false);
-        setIncludeWaveform(ruleData.include_waveform || false);
-        setActive(ruleData.active);
+      const storedRules = localStorage.getItem('notificationRules');
+      if (storedRules) {
+        const parsedRules = JSON.parse(storedRules);
+        const ruleData = parsedRules.find((r: any) => r.id === ruleId);
+        
+        if (ruleData) {
+          setName(ruleData.name);
+          setDescription(ruleData.description || '');
+          setConditions(ruleData.conditions?.map((c: any) => ({ ...c, id: crypto.randomUUID() })) || []);
+          setTemplateId(ruleData.template_id || '');
+          setGroups(ruleData.notification_groups || []);
+          setAdhocRecipients(ruleData.adhoc_recipients?.join(', ') || '');
+          setPriority(ruleData.priority || 1);
+          setTyphoonModeEnabled(ruleData.typhoon_mode_enabled || false);
+          setMotherEventOnly(ruleData.mother_event_only || false);
+          setActive(ruleData.active);
+        }
       }
     }
 
@@ -131,11 +115,6 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
       return;
     }
 
-    if (channels.length === 0) {
-      alert('Please select at least one channel');
-      return;
-    }
-
     if (groups.length === 0 && !adhocRecipients.trim()) {
       alert('Please select at least one group or add ad-hoc recipients');
       return;
@@ -145,31 +124,36 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
 
     try {
       const ruleData = {
+        id: ruleId || crypto.randomUUID(),
         name: name.trim(),
         description: description.trim(),
         conditions: conditions.map(({ id, ...c }) => c),
         template_id: templateId,
-        channels,
+        channels: ['email'],
         notification_groups: groups,
         adhoc_recipients: adhocRecipients.trim() ? adhocRecipients.split(',').map(r => r.trim()) : null,
         priority,
         typhoon_mode_enabled: typhoonModeEnabled,
         mother_event_only: motherEventOnly,
-        include_waveform: includeWaveform,
         active,
+        created_at: ruleId ? undefined : new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
+      // Load existing rules from localStorage
+      const storedRules = localStorage.getItem('notificationRules');
+      let rules = storedRules ? JSON.parse(storedRules) : [];
+
       if (ruleId) {
-        await supabase
-          .from('notification_rules')
-          .update(ruleData)
-          .eq('id', ruleId);
+        // Update existing rule
+        rules = rules.map((r: any) => r.id === ruleId ? { ...r, ...ruleData } : r);
       } else {
-        await supabase
-          .from('notification_rules')
-          .insert(ruleData);
+        // Add new rule
+        rules.push(ruleData);
       }
+
+      // Save back to localStorage
+      localStorage.setItem('notificationRules', JSON.stringify(rules));
 
       onSaved();
     } catch (error) {
@@ -183,7 +167,7 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
   const addCondition = () => {
     setConditions([...conditions, {
       id: crypto.randomUUID(),
-      field: 'event_type',
+      field: 'customer_count',
       operator: 'equals',
       value: ''
     }]);
@@ -195,14 +179,6 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
 
   const updateCondition = (id: string, updates: Partial<Condition>) => {
     setConditions(conditions.map(c => c.id === id ? { ...c, ...updates } : c));
-  };
-
-  const toggleChannel = (channelType: string) => {
-    setChannels(prev => 
-      prev.includes(channelType)
-        ? prev.filter(c => c !== channelType)
-        : [...prev, channelType]
-    );
   };
 
   const toggleGroup = (groupId: string) => {
@@ -382,31 +358,6 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
             </select>
           </div>
 
-          {/* Channels */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-slate-900 text-lg">Delivery Channels *</h3>
-            <div className="flex flex-wrap gap-3">
-              {availableChannels.map(channel => (
-                <label
-                  key={channel.id}
-                  className="flex items-center gap-2 px-4 py-2 border-2 rounded-lg cursor-pointer transition-all"
-                  style={{
-                    borderColor: channels.includes(channel.type) ? '#3b82f6' : '#e2e8f0',
-                    backgroundColor: channels.includes(channel.type) ? '#eff6ff' : 'white'
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={channels.includes(channel.type)}
-                    onChange={() => toggleChannel(channel.type)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                  <span className="font-medium capitalize">{channel.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
           {/* Groups */}
           <div className="space-y-4">
             <h3 className="font-semibold text-slate-900 text-lg">Recipient Groups</h3>
@@ -492,19 +443,6 @@ function RuleBuilder({ ruleId, onClose, onSaved }: RuleBuilderProps) {
                 <div>
                   <span className="font-medium text-slate-900">Mother Event Only</span>
                   <p className="text-sm text-slate-600">Only notify for mother events, not child events</p>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeWaveform}
-                  onChange={(e) => setIncludeWaveform(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <div>
-                  <span className="font-medium text-slate-900">Include Waveform</span>
-                  <p className="text-sm text-slate-600">Attach waveform image to notification</p>
                 </div>
               </label>
 
