@@ -3,13 +3,12 @@ import { supabase } from '../lib/supabase';
 import { NotificationRule } from '../types/database';
 import { Bell, Plus, Edit2, Trash2, FileText, Radio, Users, ScrollText, LayoutDashboard, Settings, X } from 'lucide-react';
 import TemplateManagement from './Notifications/TemplateManagement';
-import ChannelManagement from './Notifications/ChannelManagement';
 import GroupManagement from './Notifications/GroupManagement';
 import RuleManagement from './Notifications/RuleManagement';
 import NotificationLogs from './Notifications/NotificationLogs';
 import SystemConfig from './Notifications/SystemConfig';
 
-type TabType = 'dashboard' | 'rules' | 'templates' | 'channels' | 'groups' | 'logs';
+type TabType = 'dashboard' | 'rules' | 'templates' | 'groups' | 'logs';
 
 export default function Notifications() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -55,7 +54,6 @@ export default function Notifications() {
     { id: 'dashboard' as TabType, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'rules' as TabType, label: 'Rules', icon: Bell },
     { id: 'templates' as TabType, label: 'Templates', icon: FileText },
-    { id: 'channels' as TabType, label: 'Channels', icon: Radio },
     { id: 'groups' as TabType, label: 'Groups', icon: Users },
     { id: 'logs' as TabType, label: 'Logs', icon: ScrollText },
   ];
@@ -168,8 +166,6 @@ export default function Notifications() {
           {activeTab === 'rules' && <RuleManagement />}
 
           {activeTab === 'templates' && <TemplateManagement />}
-
-          {activeTab === 'channels' && <ChannelManagement />}
 
           {activeTab === 'groups' && <GroupManagement />}
 

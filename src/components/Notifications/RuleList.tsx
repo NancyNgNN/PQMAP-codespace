@@ -140,16 +140,12 @@ export default function RuleList({ onEdit, onNew, refreshKey }: RuleListProps) {
                     <p className="text-slate-600 text-sm mb-3">{rule.description}</p>
                   )}
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="text-slate-600">Template:</span>
                       <p className="font-semibold text-slate-900">
                         {rule.template?.name || 'No template'}
                       </p>
-                    </div>
-                    <div>
-                      <span className="text-slate-600">Channels:</span>
-                      <p className="font-semibold text-slate-900">{rule.channels?.length || 0}</p>
                     </div>
                     <div>
                       <span className="text-slate-600">Groups:</span>
@@ -175,19 +171,6 @@ export default function RuleList({ onEdit, onNew, refreshKey }: RuleListProps) {
                       )}
                     </div>
                   </div>
-
-                  {rule.channels && rule.channels.length > 0 && (
-                    <div className="mt-3">
-                      <span className="text-slate-600 text-sm">Delivery Channels:</span>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {rule.channels.map((channel: string, index: number) => (
-                          <span key={index} className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg capitalize">
-                            {channel}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex items-center gap-2 ml-4">
