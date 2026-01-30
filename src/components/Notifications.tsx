@@ -194,7 +194,7 @@ export default function Notifications() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6">
-              <SystemConfig />
+              <SystemConfig onSaved={() => setShowSystemConfig(false)} />
             </div>
           </div>
         </div>
