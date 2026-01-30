@@ -214,6 +214,7 @@ export interface PQEvent {
    // Cause Analysis
   cause_group: string | null;
   cause: string | null;
+  psbg_cause: 'VEGETATION' | 'DAMAGED BY THIRD PARTY' | 'UNCONFIRMED' | 'ANIMALS, BIRDS, INSECTS' | null;
   description: string | null;
     // Equipment Fault Details
   object_part_group: string | null;

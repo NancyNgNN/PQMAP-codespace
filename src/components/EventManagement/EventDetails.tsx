@@ -6,6 +6,7 @@ import WaveformViewer from './WaveformViewer';
 import { MotherEventGroupingService } from '../../services/mother-event-grouping';
 import { ExportService } from '../../services/exportService';
 import CustomerEventHistoryPanel from './CustomerEventHistoryPanel';
+import PSBGConfigModal from './PSBGConfigModal';
 
 type TabType = 'overview' | 'technical' | 'impact' | 'services' | 'children' | 'timeline' | 'idr';
 
@@ -110,6 +111,16 @@ export default function EventDetails({ event: initialEvent, substation: initialS
   // Waveform data state
   const [waveformCsvData, setWaveformCsvData] = useState<string | null>(null);
 
+  // PSBG Cause management state
+  const [showPSBGConfig, setShowPSBGConfig] = useState(false);
+  const [psbgOptions, setPsbgOptions] = useState<string[]>([
+    'VEGETATION',
+    'DAMAGED BY THIRD PARTY',
+    'UNCONFIRMED',
+    'ANIMALS, BIRDS, INSECTS'
+  ]);
+  const [usedPsbgOptions, setUsedPsbgOptions] = useState<string[]>([]);
+
   // Update state when props change
   useEffect(() => {
     console.log('🔍 [EventDetails] Props updated:', {
@@ -191,7 +202,7 @@ export default function EventDetails({ event: initialEvent, substation: initialS
     const loadDemoWaveform = async () => {
       try {
         // For demonstration, load the sample CSV for all events
-        const response = await fetch('/Artifacts/From Users/System Images/BKP0227_20260126 101655_973.csv');
+        const response = await fetch('/BKP0227_20260126 101655_973.csv');
         if (response.ok) {
           const csvText = await response.text();
           setWaveformCsvData(csvText);
@@ -232,6 +243,28 @@ export default function EventDetails({ event: initialEvent, substation: initialS
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showExportDropdown, showUploadDropdown]);
+
+  // Load used PSBG options when component mounts
+  useEffect(() => {
+    const loadUsedPsbgOptions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pq_events')
+          .select('psbg_cause')
+          .not('psbg_cause', 'is', null);
+
+        if (error) throw error;
+
+        const used = [...new Set(data?.map(d => d.psbg_cause).filter(Boolean) || [])];
+        setUsedPsbgOptions(used);
+      } catch (error) {
+        console.error('❌ Error loading used PSBG options:', error);
+        setUsedPsbgOptions([]);
+      }
+    };
+
+    loadUsedPsbgOptions();
+  }, []);
 
   const loadIDRRecord = async (eventId: string) => {
     setLoadingIDR(true);
@@ -807,6 +840,31 @@ export default function EventDetails({ event: initialEvent, substation: initialS
       alert(`Failed to export event as ${format.toUpperCase()}. Please try again.`);
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  // PSBG Cause handler
+  const handlePsbgCauseChange = async (newPsbgCause: string) => {
+    try {
+      const { error } = await supabase
+        .from('pq_events')
+        .update({ psbg_cause: newPsbgCause || null })
+        .eq('id', currentEvent.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setCurrentEvent({ ...currentEvent, psbg_cause: newPsbgCause || null });
+
+      // Notify parent to reload data
+      if (onEventUpdated) {
+        onEventUpdated();
+      }
+
+      console.log('✅ PSBG cause updated successfully');
+    } catch (error) {
+      console.error('❌ Error updating PSBG cause:', error);
+      alert('Failed to update PSBG cause. Please try again.');
     }
   };
 
@@ -1730,10 +1788,39 @@ export default function EventDetails({ event: initialEvent, substation: initialS
               </div>
             )}
 
-            {currentEvent.cause && (
+            {/* PSBG Cause Field */}
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-blue-700 text-sm font-semibold">PSBG Cause:</span>
+                <button
+                  onClick={() => setShowPSBGConfig(true)}
+                  className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                  title="Manage PSBG Cause Options"
+                >
+                  <Wrench className="w-4 h-4" />
+                </button>
+              </div>
+              <select
+                value={currentEvent.psbg_cause || ''}
+                onChange={(e) => handlePsbgCauseChange(e.target.value)}
+                className="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Select PSBG Cause</option>
+                {psbgOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cause Display (PSBG takes priority, falls back to IDR cause) */}
+            {(currentEvent.psbg_cause || currentEvent.cause) && (
               <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg">
-                <span className="text-slate-600 text-sm font-semibold">Cause:</span>
-                <p className="text-slate-900 mt-1">{currentEvent.cause}</p>
+                <span className="text-slate-600 text-sm font-semibold">
+                  {currentEvent.psbg_cause ? 'Cause (IDR):' : 'Cause:'}
+                </span>
+                <p className="text-slate-900 mt-1">
+                  {currentEvent.psbg_cause ? (currentEvent.cause || 'Not specified') : currentEvent.cause}
+                </p>
               </div>
             )}
 
@@ -3360,4 +3447,15 @@ export default function EventDetails({ event: initialEvent, substation: initialS
       )}
     </div>
   );
+
+  {/* PSBG Config Modal */}
+  {showPSBGConfig && (
+    <PSBGConfigModal
+      isOpen={showPSBGConfig}
+      onClose={() => setShowPSBGConfig(false)}
+      onSave={setPsbgOptions}
+      currentOptions={psbgOptions}
+      usedOptions={usedPsbgOptions}
+    />
+  )}
 }

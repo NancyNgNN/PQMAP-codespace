@@ -53,7 +53,8 @@ export default function RootCauseChart({ events }: RootCauseChartProps) {
   const filteredEvents = getFilteredEvents();
 
   const rootCauseCounts = filteredEvents.reduce((acc, event) => {
-    const cause = event.cause || 'Unknown';
+    // Use PSBG cause first, then fall back to cause field
+    const cause = event.psbg_cause || event.cause || 'Unknown';
     acc[cause] = (acc[cause] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
