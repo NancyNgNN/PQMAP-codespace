@@ -721,14 +721,14 @@ export const findMatchingRules = async (event: PQEvent): Promise<NotificationRul
 /**
  * Send a demo notification (logs to console instead of real channels)
  * 
- * @param channel - Channel type (email, sms, teams)
- * @param recipient - Email address or phone number
+ * @param channel - Channel type (email, teams)
+ * @param recipient - Email address
  * @param subject - Email subject (email only)
  * @param message - Notification message
  * @param metadata - Additional metadata for logging
  */
 export const sendDemoNotification = async (
-  channel: 'email' | 'sms' | 'teams',
+  channel: 'email' | 'teams',
   recipient: string,
   subject: string | null,
   message: string,
@@ -824,8 +824,6 @@ export const processEventNotifications = async (event: PQEvent) => {
       if (channel === 'email' && template.email_subject && template.email_body) {
         subject = substituteVariables(template.email_subject, variables);
         message = substituteVariables(template.email_body, variables);
-      } else if (channel === 'sms' && template.sms_body) {
-        message = substituteVariables(template.sms_body, variables);
       } else if (channel === 'teams' && template.teams_body) {
         message = substituteVariables(template.teams_body, variables);
       } else {
@@ -834,12 +832,12 @@ export const processEventNotifications = async (event: PQEvent) => {
       
       // Send to each recipient
       for (const recipient of recipients) {
-        const recipientAddress = channel === 'email' ? recipient.email : recipient.phone;
+        const recipientAddress = channel === 'email' ? recipient.email : undefined;
         
         if (!recipientAddress) continue;
         
         await sendDemoNotification(
-          channel as 'email' | 'sms' | 'teams',
+          channel as 'email' | 'teams',
           recipientAddress,
           subject,
           message,

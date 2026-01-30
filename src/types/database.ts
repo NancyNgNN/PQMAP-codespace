@@ -7,7 +7,7 @@ export type SubstationStatus = 'operational' | 'maintenance' | 'offline';
 export type CustomerType = 'residential' | 'commercial' | 'industrial';
 export type ServiceType = 'site_survey' | 'harmonic_analysis' | 'consultation' | 'on_site_study' | 'power_quality_audit' | 'installation_support';
 export type ReportType = 'supply_reliability' | 'annual_pq' | 'meter_availability' | 'customer_impact' | 'harmonic_analysis' | 'voltage_quality';
-export type NotificationType = 'email' | 'sms' | 'both';
+export type NotificationType = 'email' | 'teams';
 export type NotificationStatus = 'pending' | 'sent' | 'failed';
 export type ReportStatus = 'generating' | 'completed' | 'failed';
 export type SystemStatus = 'healthy' | 'degraded' | 'down';
@@ -656,13 +656,12 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 export interface NotificationChannel {
   id: string;
   name: string;
-  type: 'email' | 'sms' | 'teams';
+  type: 'email' | 'teams';
   status: 'enabled' | 'disabled' | 'maintenance';
   priority: number;
   config: {
     demo_mode?: boolean;
     smtp_server?: string;
-    sms_gateway?: string;
     teams_webhook?: string;
     [key: string]: any;
   };
@@ -683,7 +682,6 @@ export interface NotificationTemplate {
   description: string | null;
   email_subject: string | null;
   email_body: string | null;
-  sms_body: string | null;
   teams_body: string | null;
   variables: Array<{
     name: string;
@@ -718,7 +716,6 @@ export interface NotificationGroupMember {
   group_id: string;
   user_id: string;
   email: string | null;
-  phone: string | null;
   preferred_channels: string[];
   added_at: string;
   added_by: string | null;
@@ -758,7 +755,6 @@ export interface NotificationLog {
   recipient_type: 'user' | 'group' | 'adhoc';
   recipient_id: string | null;
   recipient_email: string | null;
-  recipient_phone: string | null;
   channel: string;
   subject: string | null;
   message: string | null;
