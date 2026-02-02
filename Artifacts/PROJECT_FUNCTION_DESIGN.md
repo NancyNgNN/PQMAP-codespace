@@ -222,12 +222,37 @@ interface WaveformViewerProps {
 
 ---
 
-#### Reporting Preview & Meter Communication (Jan 23, 2026)
+#### Reporting & Meter Communication (Jan 23, 2026)
 **Features Added:**
-- **Reporting (Preview) page** with Meter Communication summary + table, filters, sorting, and export (Excel/CSV)
+- Reporting page with Meter Communication summary + table, filters, sorting, and export (Excel/CSV)
 - **Database support** for `meter_voltage_readings` and `voltage_profiles` (UUID FK to `pq_meters`)
 - **Asset Management enhancement**: latest voltage/current reading panel sourced from database (mock fallback preserved)
 - **Shared availability utilities** for consistent time-range and availability calculations
+
+#### Reporting – PQ Summary UI Preview (Jan 30, 2026)
+**Features Added:**
+- New **Reporting** module entry (Navigation → Reporting)
+- PQ Summary screen matching target UI (filters + event list)
+- Clickable overlays for **Affected Customers**, **PQ Service Logs**, and **Event Details** (mock data)
+- English calendar-style date picker (YYYY/MM/DD) for time range selection
+
+#### Reporting – Benchmarking Tab Preview (Jan 30, 2026)
+**Features Added:**
+- Benchmarking tab with **PQ Standards** list (search + By Standard/By Parameter filters)
+- Add/Edit Standard modal and Delete confirmation modal (in-memory preview)
+- **Voltage Dip Benchmarking** flow: select standard + date range → “Get Benchmark Result” → chart + summary + detailed results table (mock data)
+
+#### Reporting – Data Maintenance Tab Preview (Jan 30, 2026)
+**Features Added:**
+- Data Maintenance tab with sub-tabs: **Raw Data / Daily Data / Weekly Data**
+- Left step panel:
+  - Step 1 meter selection (Raw: searchable meter list; Daily/Weekly: voltage level selector placeholder)
+  - Step 2 parameter selection (Voltage / Current / THD)
+  - Step 3 time range selection with English calendar popovers (`YYYY/MM/DD`) + hour/minute inputs
+  - Time range limits: Raw max **1 month**, Daily/Weekly max **1 year** (UI validation)
+- Right results area:
+  - Mock tables matching target layouts (Raw L1/L2/L3; Daily V1/2/3 max/min; Weekly L1/L2/L3)
+  - **Export CSV** (disabled when empty) + Clear Results
 
 #### Harmonic Events Table (Jan 9, 2026)
 **Features Added:**
@@ -1269,23 +1294,18 @@ interface ReportConfig {
 
 ---
 
-#### Reporting (Preview) ✨ NEW (January 2026)
+#### Reporting Tools ✨ UPDATED (January 2026)
 
-**Location**: Navigation → Reporting (Preview)
+**Location**: Navigation → Reports
 
-**Purpose**: Phased rollout of selected reporting features from Erxi-Reporting without disrupting the existing Report Builder.
+**Purpose**: Centralized entry point for reporting tools and report configuration.
 
-**Phase 1 Scope**:
-- Scaffold page with Meter Communication preview
-- Uses existing `reports` permission module (no new module ID)
-
-**Future Data Source**:
-- `meter_voltage_readings` (server-side ingestion from PQMS/CPDIS scheduler)
-- `voltage_profiles` for saved profile configurations (phase-dependent)
- - Ingestion job design: **TBD** (server-side only, no client import)
+**Scope**:
+- PQ Summary report filter configuration (11 event types)
+- Advanced filters are shown only when Event Type = **Voltage** (Voltage Level, Incident Time, Region, Duration)
 
 **Component File**:
-- `src/components/ReportingPreview.tsx`
+- `src/components/Reports.tsx`
 
 ---
 
@@ -1466,6 +1486,15 @@ interface PQBenchmarkThreshold {
 - Year-over-year comparison
 - Improvement recommendations
 
+**Raw Data Download (UI in Reports Module)** ✨ NEW (Jan 2026)
+- Location: Reporting Tools → Report Type → **Annual PQ Performance**
+- 3-step filter workflow (aligned with PQMS raw data UI):
+  1) Select one PQ meter (with voltage-level quick filter + search)
+  2) Select parameter (dropdown)
+  3) Set time range (max 1 month)
+- Action: **Get Raw Data** downloads an Excel file with columns: `Name`, `Parameter`, `status`, `Timestamp`, `L1`, `L2`, `L3`
+- Data source: `meter_voltage_readings` (currently supports Voltage/Current phase values)
+
 ##### 3. Meter Availability Report
 **Metrics**:
 - Communication uptime (%)
@@ -1565,6 +1594,8 @@ interface NotificationRule {
 interface PQServiceRecord {
   id: string;
   customer_id: string | null;
+  event_id: string | null;           // Optional link to pq_events
+  idr_no?: string | null;            // PQSIS IDR number (primary key for Voltage Dip mapping)
   service_date: string;
   service_type: 'site_survey' | 'harmonic_analysis' | 'consultation';
   findings: string | null;           // Observations and measurements
@@ -1577,6 +1608,7 @@ interface PQServiceRecord {
 
 #### Key Features
 - **Customer Linkage**: Associated with customer accounts
+- **IDR Mapping (PQSIS → PQMAP)**: When `idr_no` is provided, map the service record to a PQMAP **Voltage Dip** event via `pq_events.idr_no` (non-voltage-dip services are shown as independent service entries)
 - **Engineering Notes**: Detailed findings documentation
 - **Benchmark Standards**: Reference standards for assessment
 - **Recommendation Tracking**: Follow-up on suggested actions

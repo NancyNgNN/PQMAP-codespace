@@ -13,12 +13,13 @@ interface EventDetailsProps {
   event: PQEvent;
   substation?: Substation;
   impacts: EventCustomerImpact[];
+  initialTab?: TabType;
   onStatusChange: (eventId: string, status: string) => void;
   onEventDeleted?: () => void;
   onEventUpdated?: () => void;
 }
 
-export default function EventDetails({ event: initialEvent, substation: initialSubstation, impacts: initialImpacts, onStatusChange, onEventDeleted, onEventUpdated }: EventDetailsProps) {
+export default function EventDetails({ event: initialEvent, substation: initialSubstation, impacts: initialImpacts, initialTab, onStatusChange, onEventDeleted, onEventUpdated }: EventDetailsProps) {
   // Navigation state
   const [currentEvent, setCurrentEvent] = useState<PQEvent>(initialEvent);
   const [currentSubstation, setCurrentSubstation] = useState<Substation | undefined>(initialSubstation);
@@ -31,7 +32,7 @@ export default function EventDetails({ event: initialEvent, substation: initialS
   }>>([]);
   
   // Tab state - remembers last viewed tab
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'overview');
   
   // Child events state
   const [childEvents, setChildEvents] = useState<PQEvent[]>([]);

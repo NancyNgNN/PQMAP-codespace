@@ -92,26 +92,36 @@ export default function ViewDetailsModal({ isOpen, onClose, service, onViewEvent
             </div>
           </div>
 
-          {/* Event Link (if applicable) */}
-          {service.event_id && (
+          {/* Event Link (Voltage Dip mapping via IDR No.) */}
+          {(service.idr_no || service.event?.idr_no || service.event?.id) && (
             <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <LinkIcon className="w-5 h-5 text-blue-600" />
-                <p className="font-semibold text-slate-900">Linked Event</p>
+                <p className="font-semibold text-slate-900">Linked IDR / Event</p>
               </div>
-              <button
-                onClick={() => {
-                  console.log('🖱️ [ViewDetailsModal] View Event button clicked:', service.event_id);
-                  if (onViewEvent && service.event_id) {
-                    onViewEvent(service.event_id);
-                  } else {
-                    console.warn('⚠️ [ViewDetailsModal] onViewEvent callback not provided or event_id missing');
-                  }
-                }}
-                className="text-blue-600 hover:text-blue-700 font-semibold underline"
-              >
-                View Event {service.event_id}
-              </button>
+              <div className="text-sm text-slate-700">
+                <p>
+                  <span className="font-semibold">IDR No:</span>{' '}
+                  {service.idr_no || service.event?.idr_no || '—'}
+                </p>
+                {service.event?.id ? (
+                  <button
+                    onClick={() => {
+                      console.log('🖱️ [ViewDetailsModal] View mapped event clicked:', service.event?.id);
+                      if (onViewEvent && service.event?.id) {
+                        onViewEvent(service.event.id);
+                      }
+                    }}
+                    className="mt-2 text-blue-600 hover:text-blue-700 font-semibold underline"
+                  >
+                    View mapped Voltage Dip event
+                  </button>
+                ) : (
+                  <p className="mt-2 text-slate-500">
+                    No Voltage Dip event mapping found.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 

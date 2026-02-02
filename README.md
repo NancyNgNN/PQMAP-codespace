@@ -66,7 +66,6 @@ Start the development server:
 ```bash
 npm run dev
 ```
-test
 
 The application will be available at `http://localhost:5173`
 

@@ -19,6 +19,7 @@ export default function AddServiceModal({ isOpen, onClose, onSuccess, customerId
     service_date: new Date().toISOString().split('T')[0],
     service_type: 'site_survey' as ServiceType,
     event_id: '',
+    idr_no: '',
     findings: '',
     recommendations: '',
     benchmark_standard: '',
@@ -93,7 +94,7 @@ export default function AddServiceModal({ isOpen, onClose, onSuccess, customerId
       // Then fetch the events (only mother events or standalone events)
       const { data: eventsData, error: eventsError } = await supabase
         .from('pq_events')
-        .select('id, timestamp, event_type, magnitude, duration_ms, severity, is_mother_event')
+        .select('id, idr_no, timestamp, event_type, magnitude, duration_ms, severity, is_mother_event')
         .in('id', eventIds)
         .or('is_mother_event.eq.true,is_child_event.eq.false')
         .order('timestamp', { ascending: false })
@@ -176,6 +177,7 @@ export default function AddServiceModal({ isOpen, onClose, onSuccess, customerId
         service_date: formData.service_date,
         service_type: formData.service_type,
         event_id: formData.event_id || null,
+        idr_no: formData.idr_no?.trim() || null,
         findings: formData.findings || null,
         recommendations: formData.recommendations || null,
         benchmark_standard: formData.benchmark_standard || null,
@@ -204,6 +206,7 @@ export default function AddServiceModal({ isOpen, onClose, onSuccess, customerId
       service_date: new Date().toISOString().split('T')[0],
       service_type: 'site_survey',
       event_id: '',
+      idr_no: '',
       findings: '',
       recommendations: '',
       benchmark_standard: '',
@@ -258,6 +261,23 @@ export default function AddServiceModal({ isOpen, onClose, onSuccess, customerId
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
+            </div>
+
+            {/* IDR Number (for Voltage Dip mapping) */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                IDR Number
+              </label>
+              <input
+                type="text"
+                value={formData.idr_no}
+                onChange={(e) => setFormData({ ...formData, idr_no: e.target.value })}
+                placeholder="e.g., IDR-2025-000123"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                If provided, the system maps this service to a PQMAP Voltage Dip event by IDR No.
+              </p>
             </div>
 
             {/* Service Type */}
@@ -378,7 +398,11 @@ export default function AddServiceModal({ isOpen, onClose, onSuccess, customerId
                           <button
                             key={event.id}
                             onClick={() => {
-                              setFormData({ ...formData, event_id: event.id });
+                              setFormData((prev) => ({
+                                ...prev,
+                                event_id: event.id,
+                                idr_no: event.idr_no ? String(event.idr_no) : prev.idr_no
+                              }));
                               setEventSearchQuery('');
                               setShowEventDropdown(false);
                             }}

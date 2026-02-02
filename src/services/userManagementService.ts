@@ -131,6 +131,7 @@ export const systemModules: SystemModule[] = [
   { id: 'analytics', name: 'Impact Analysis', description: 'Event impact and analytics', category: 'Analytics' },
   { id: 'assets', name: 'Asset Management', description: 'Meters, substations, and equipment', category: 'Core' },
   { id: 'reports', name: 'Reports', description: 'Report generation and viewing', category: 'Reporting' },
+  { id: 'reporting', name: 'Reporting', description: 'Reporting module with PQ Summary and overlays', category: 'Reporting' },
   { id: 'notifications', name: 'Notifications', description: 'Notification rules and history', category: 'Core' },
   { id: 'services', name: 'PQ Services', description: 'Power quality services management', category: 'Services' },
   { id: 'health', name: 'System Health', description: 'System monitoring and health checks', category: 'Administration' },

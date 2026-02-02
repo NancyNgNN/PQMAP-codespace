@@ -46,6 +46,8 @@ export default function PQServices() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedService, setSelectedService] = useState<PQServiceRecord | null>(null);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
+  type EventDetailsTab = 'overview' | 'technical' | 'impact' | 'services' | 'children' | 'timeline' | 'idr';
+  const [eventDetailsInitialTab, setEventDetailsInitialTab] = useState<EventDetailsTab>('overview');
   const [selectedEventData, setSelectedEventData] = useState<{
     event: any;
     substation: any;
@@ -81,7 +83,41 @@ export default function PQServices() {
         .order('service_date', { ascending: false });
 
       if (error) throw error;
-      setServices(data || []);
+
+      const serviceRows = (data || []) as PQServiceRecord[];
+      const idrNumbers = Array.from(
+        new Set(
+          serviceRows
+            .map((s) => (s.idr_no || '').trim())
+            .filter((v) => v.length > 0)
+        )
+      );
+
+      let idrToVoltageDipEvent = new Map<string, { id: string; idr_no: string }>();
+      if (idrNumbers.length > 0) {
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('pq_events')
+          .select('id, idr_no, event_type')
+          .in('idr_no', idrNumbers)
+          .eq('event_type', 'voltage_dip');
+
+        if (eventsError) throw eventsError;
+        (eventsData || []).forEach((e: any) => {
+          if (e.idr_no) {
+            idrToVoltageDipEvent.set(String(e.idr_no), { id: e.id, idr_no: String(e.idr_no) });
+          }
+        });
+      }
+
+      const enriched = serviceRows.map((s) => {
+        const idrNo = (s.idr_no || '').trim();
+        if (idrNo && idrToVoltageDipEvent.has(idrNo)) {
+          return { ...s, event: idrToVoltageDipEvent.get(idrNo) };
+        }
+        return { ...s, event: undefined };
+      });
+
+      setServices(enriched);
     } catch (err) {
       console.error('Error loading services:', err);
     } finally {
@@ -208,7 +244,7 @@ export default function PQServices() {
   };
 
   // Handle View Event button click
-  const handleViewEvent = async (eventId: string) => {
+  const handleViewEvent = async (eventId: string, initialTab: EventDetailsTab = 'overview') => {
     console.log('🔍 [PQServices] View Event clicked:', eventId);
     
     try {
@@ -258,6 +294,8 @@ export default function PQServices() {
         count: impactsData?.length || 0,
         firstImpact: impactsData?.[0]
       });
+
+      setEventDetailsInitialTab(initialTab);
 
       setSelectedEventData({
         event: eventData,
@@ -664,6 +702,44 @@ export default function PQServices() {
                             : 'No services yet'}
                         </p>
                       </div>
+
+                      <div className="p-4 bg-white rounded-lg border border-slate-200 md:col-span-2">
+                        <p className="text-sm font-semibold text-slate-700 mb-3">IDR Numbers</p>
+                        {services.filter(s => s.customer_id === selectedCustomer.id).length === 0 ? (
+                          <p className="text-sm text-slate-500">No services yet</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {services
+                              .filter(s => s.customer_id === selectedCustomer.id)
+                              .map((s) => {
+                                const idrNo = (s.idr_no || s.event?.idr_no || '').trim();
+                                const mappedEventId = s.event?.id;
+                                const hasEvent = !!mappedEventId;
+                                return (
+                                  <button
+                                    key={s.id}
+                                    type="button"
+                                    disabled={!hasEvent}
+                                    onClick={() => {
+                                      if (mappedEventId) handleViewEvent(mappedEventId, 'idr');
+                                    }}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                                      hasEvent
+                                        ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                                        : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
+                                    }`}
+                                    title={hasEvent ? 'Open IDR details' : 'No related event linked'}
+                                  >
+                                    {idrNo || 'No IDR'}
+                                  </button>
+                                );
+                              })}
+                          </div>
+                        )}
+                        <p className="text-xs text-slate-500 mt-2">
+                          Click an IDR number to open the related event and view IDR details.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -737,6 +813,9 @@ export default function PQServices() {
                                 Event ID
                               </th>
                               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                IDR No.
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                                 Content
                               </th>
                               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
@@ -760,20 +839,32 @@ export default function PQServices() {
                                   </span>
                                 </td>
                                 <td className="px-4 py-3 text-sm">
-                                  {service.event_id ? (
+                                  {service.event?.id ? (
                                     <button 
                                       onClick={() => {
-                                        console.log('🖱️ [PQServices] Event ID clicked in table:', service.event_id);
-                                        if (service.event_id) {
-                                          handleViewEvent(service.event_id);
-                                        }
+                                        console.log('🖱️ [PQServices] Event ID clicked in table:', service.event?.id);
+                                        if (service.event?.id) handleViewEvent(service.event.id, 'overview');
                                       }}
                                       className="text-blue-600 hover:text-blue-700 font-medium underline"
                                     >
-                                      {service.event_id.slice(0, 8)}...
+                                      {service.event.id.slice(0, 8)}...
                                     </button>
                                   ) : (
-                                    <span className="text-slate-400">N/A</span>
+                                    <span className="text-slate-400">—</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {service.event?.id ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleViewEvent(service.event!.id, 'idr')}
+                                      className="text-blue-600 hover:text-blue-700 font-medium underline"
+                                      title="Open IDR details"
+                                    >
+                                      {(service.idr_no || service.event?.idr_no || 'No IDR')}
+                                    </button>
+                                  ) : (
+                                    <span className="text-slate-400">{(service.idr_no || '—')}</span>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">
@@ -898,6 +989,7 @@ export default function PQServices() {
                 event={selectedEventData.event}
                 substation={selectedEventData.substation}
                 impacts={selectedEventData.impacts}
+                initialTab={eventDetailsInitialTab}
                 onStatusChange={async (eventId, status) => {
                   console.log('🔄 [PQServices] Status change requested:', { eventId, status });
                   // Reload services after status change
@@ -907,6 +999,7 @@ export default function PQServices() {
                   console.log('🗑️ [PQServices] Event deleted, reloading services');
                   setShowEventDetailsModal(false);
                   setSelectedEventData(null);
+                  setEventDetailsInitialTab('overview');
                   loadServices();
                 }}
                 onEventUpdated={() => {

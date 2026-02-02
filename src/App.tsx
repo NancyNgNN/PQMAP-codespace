@@ -4,13 +4,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import Navigation from './components/Navigation';
 import CriticalMessageBar from './components/CriticalMessageBar';
-import NotificationBell from './components/NotificationBell';
 import Dashboard from './components/Dashboard/Dashboard';
 import EventManagement from './components/EventManagement/EventManagement';
 import ImpactAnalysis from './components/ImpactAnalysis';
 import AssetManagement from './components/AssetManagement';
-import Reports from './components/Reports';
-import ReportingPreview from './components/ReportingPreview';
+import Reporting from './components/Reporting';
 import Notifications from './components/Notifications';
 import TemplateManagement from './components/Notifications/TemplateManagement';
 import PQServices from './components/PQServices';
@@ -59,18 +57,12 @@ function AppContent() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <main className="flex-1 overflow-y-auto">
-        {/* Header Bar with Notification Bell */}
-        <div className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-end shadow-sm">
-          <NotificationBell />
-        </div>
-        
-        <CriticalMessageBar />
+        {currentView !== 'reporting' && <CriticalMessageBar />}
         {currentView === 'dashboard' && <Dashboard onNavigateToMeter={handleNavigateToMeter} />}
         {currentView === 'events' && <EventManagement />}
         {currentView === 'analytics' && <ImpactAnalysis />}
         {currentView === 'assets' && <AssetManagement selectedMeterId={selectedMeterId} onClearSelectedMeter={() => setSelectedMeterId(null)} />}
-        {currentView === 'reports' && <Reports />}
-        {currentView === 'reportingPreview' && <ReportingPreview />}
+        {currentView === 'reporting' && <Reporting />}
         {currentView === 'notifications' && <Notifications />}
         {currentView === 'templates' && <TemplateManagement />}
         {currentView === 'services' && <PQServices />}

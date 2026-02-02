@@ -387,11 +387,13 @@ export interface PQServiceRecord {
   benchmark_standard: string | null;
   engineer_id: string | null;
   event_id: string | null;
+  idr_no?: string | null;
   content: string | null;
   created_at: string;
   updated_at: string;
   customer?: Customer;
   engineer?: Profile;
+  event?: Pick<PQEvent, 'id' | 'idr_no'>;
 }
 
 export interface Report {

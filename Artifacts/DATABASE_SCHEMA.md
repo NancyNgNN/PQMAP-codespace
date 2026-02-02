@@ -672,12 +672,17 @@ Historical events (created before the trigger was added) will have `customer_cou
 | `benchmark_standard` | text | | Standard reference | `IEEE 519-2014` |
 | `engineer_id` | uuid | FK → profiles | Assigned engineer | `550e8400-e29b-41d4-a716-446655440000` |
 | `content` | text | | Additional content | |
+| `idr_no` | text | | IDR number from PQSIS (used to map to PQMAP voltage dip events) | `IDR-2025-000123` |
 | `created_at` | timestamptz | DEFAULT now() | Creation timestamp | `2025-12-15 14:30:00+00` |
 | `updated_at` | timestamptz | DEFAULT now() | Last update timestamp | `2025-12-15 16:45:00+00` |
 
 **Relationships:**
 - **event_id → pq_events**: Links service records to specific power quality events (one event can have multiple service records)
 - **customer_id → customers**: Associates service with customer account
+
+**IDR Mapping Rule (PQSIS → PQMAP):**
+- If `idr_no` is present, the system uses it as the primary key to map the service record to a **PQMAP Voltage Dip** event (`pq_events.event_type = 'voltage_dip'`).
+- For all other PQ services (no `idr_no`), records are displayed as independent service entries (no event-level mapping required).
 - **engineer_id → profiles**: Tracks which engineer performed the service
 
 **TypeScript Interface:** `PQServiceRecord`  
