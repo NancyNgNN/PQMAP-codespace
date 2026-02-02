@@ -3,13 +3,10 @@ import { supabase } from '../../lib/supabase';
 import { PQEvent, Substation, EventCustomerImpact, PQMeter, FilterProfile } from '../../types/database';
 import { EventTreeNode, EventFilter } from '../../types/eventTypes';
 import EventDetails from './EventDetails';
-import FalseEventConfig from './FalseEventConfig';
-import FalseEventAnalytics from './FalseEventAnalytics';
 import AdvancedFilterModal from './AdvancedFilterModal';
-import { falseEventDetector } from '../../utils/falseEventDetection';
 import { MotherEventGroupingService } from '../../services/mother-event-grouping';
 import { ExportService } from '../../services/exportService';
-import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Shield, BarChart3, Group, Check, X, Save, Edit2, Trash2, RotateCcw, ChevronDown, Download, Upload, FileDown, ArrowUpDown, Clock, Sliders } from 'lucide-react';
+import { Activity, Plus, GitBranch, Filter, Search, Calendar, Users, AlertTriangle, Group, Check, X, Save, Edit2, Trash2, RotateCcw, ChevronDown, Download, Upload, FileDown, ArrowUpDown, ArrowUp, ArrowDown, Clock, Sliders } from 'lucide-react';
 
 export default function EventManagement() {
   const [events, setEvents] = useState<PQEvent[]>([]);
@@ -19,9 +16,6 @@ export default function EventManagement() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'tree'>('tree');
   const [showFilters, setShowFilters] = useState(true);
-  const [activeTab, setActiveTab] = useState<'events' | 'false-detection' | 'analytics'>('events');
-  const [falseEventRules, setFalseEventRules] = useState<any[]>([]);
-  const [falseEventResults, setFalseEventResults] = useState<any[]>([]);
   
   // Multi-select and grouping states
   const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
@@ -72,6 +66,7 @@ export default function EventManagement() {
   // Sort states
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortBy, setSortBy] = useState<'timestamp' | 'event_type' | 'meter_id' | 'voltage_level' | 'duration'>('timestamp');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Import states
   const [showImportDropdown, setShowImportDropdown] = useState(false);
@@ -82,6 +77,12 @@ export default function EventManagement() {
     failed: number;
     errors: Array<{ row: number; column: string; message: string }>;
   } | null>(null);
+
+  // Pagination states for list view table
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [tableSortField, setTableSortField] = useState<'timestamp' | 'event_type' | 'meter_id' | 'voltage_level' | 'duration' | 'remaining_voltage'>('timestamp');
+  const [tableSortDirection, setTableSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Advanced Filter Modal states
   const [showAdvancedFilterModal, setShowAdvancedFilterModal] = useState(false);
@@ -1003,22 +1004,27 @@ export default function EventManagement() {
     ? filteredEvents.filter(e => e.false_event === true)
     : filteredEvents;
   
-  // Apply sorting
+  // Sort events for tree/list card view (used in tree view and mobile)
   const sortedEvents = [...finalEvents].sort((a, b) => {
     switch (sortBy) {
       case 'timestamp':
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        const timeDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        return sortDirection === 'desc' ? timeDiff : -timeDiff;
       case 'event_type':
-        return (a.event_type || '').localeCompare(b.event_type || '');
+        const typeCompare = (a.event_type || '').localeCompare(b.event_type || '');
+        return sortDirection === 'asc' ? typeCompare : -typeCompare;
       case 'meter_id':
-        return (a.meter_id || '').localeCompare(b.meter_id || '');
+        const meterCompare = (a.meter_id || '').localeCompare(b.meter_id || '');
+        return sortDirection === 'asc' ? meterCompare : -meterCompare;
       case 'voltage_level':
         const voltageOrder = { '400kV': 1, '132kV': 2, '33kV': 3, '11kV': 4, '380V': 5 };
         const aVolt = voltageOrder[a.meter?.voltage_level as keyof typeof voltageOrder] || 999;
         const bVolt = voltageOrder[b.meter?.voltage_level as keyof typeof voltageOrder] || 999;
-        return aVolt - bVolt;
+        const voltDiff = aVolt - bVolt;
+        return sortDirection === 'asc' ? voltDiff : -voltDiff;
       case 'duration':
-        return (b.duration_ms || 0) - (a.duration_ms || 0);
+        const durationDiff = (b.duration_ms || 0) - (a.duration_ms || 0);
+        return sortDirection === 'desc' ? durationDiff : -durationDiff;
       default:
         return 0;
     }
@@ -1026,27 +1032,53 @@ export default function EventManagement() {
   
   const eventTree = buildEventTree(sortedEvents);
 
-  // False event detection handlers
-  const handleFalseEventRulesChange = (rules: any[]) => {
-    setFalseEventRules(rules);
-  };
+  // Sort events for list view table (independent sorting)
+  const tableSortedEvents = [...finalEvents].sort((a, b) => {
+    switch (tableSortField) {
+      case 'timestamp':
+        const timeDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        return tableSortDirection === 'desc' ? timeDiff : -timeDiff;
+      case 'event_type':
+        const typeCompare = (a.event_type || '').localeCompare(b.event_type || '');
+        return tableSortDirection === 'asc' ? typeCompare : -typeCompare;
+      case 'meter_id':
+        const meterCompare = (a.meter_id || '').localeCompare(b.meter_id || '');
+        return tableSortDirection === 'asc' ? meterCompare : -meterCompare;
+      case 'voltage_level':
+        const voltageOrder = { '400kV': 1, '132kV': 2, '33kV': 3, '11kV': 4, '380V': 5 };
+        const aVolt = voltageOrder[a.meter?.voltage_level as keyof typeof voltageOrder] || 999;
+        const bVolt = voltageOrder[b.meter?.voltage_level as keyof typeof voltageOrder] || 999;
+        const voltDiff = aVolt - bVolt;
+        return tableSortDirection === 'asc' ? voltDiff : -voltDiff;
+      case 'duration':
+        const durationDiff = (b.duration_ms || 0) - (a.duration_ms || 0);
+        return tableSortDirection === 'desc' ? durationDiff : -durationDiff;
+      case 'remaining_voltage':
+        const aVoltage = a.remaining_voltage ?? 0;
+        const bVoltage = b.remaining_voltage ?? 0;
+        return tableSortDirection === 'asc' ? aVoltage - bVoltage : bVoltage - aVoltage;
+      default:
+        return 0;
+    }
+  });
 
-  const handleApplyFalseEventRules = () => {
-    const results = filteredEvents.map(event => {
-      return falseEventDetector.detectFalseEvents(event, {
-        recentEvents: events,
-        historicalData: events,
-        maintenanceWindows: [],
-        systemStatus: 'normal'
-      });
-    });
-    setFalseEventResults(results);
-  };
+  // Pagination for table view
+  const totalPages = Math.ceil(tableSortedEvents.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedEvents = tableSortedEvents.slice(startIndex, endIndex);
 
-  const handleRuleOptimize = (ruleId: string) => {
-    // Implement rule optimization logic
-    console.log('Optimizing rule:', ruleId);
-  };
+  // Auto-select first event when list loads or filters change (list view only)
+  useEffect(() => {
+    if (viewMode === 'list' && tableSortedEvents.length > 0 && !selectedEvent) {
+      handleEventSelect(tableSortedEvents[0]);
+    }
+  }, [tableSortedEvents.length, viewMode]);
+
+  // Reset page when filters/sorting changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, tableSortField, tableSortDirection, rowsPerPage]);
 
   const handleGroupEvents = async (eventIds: string[]) => {
     if (eventIds.length < 2) {
@@ -1057,26 +1089,72 @@ export default function EventManagement() {
     setGroupingInProgress(true);
     
     try {
-      // Check if events can be grouped
       const selectedEvents = events.filter(e => eventIds.includes(e.id));
-      const validation = MotherEventGroupingService.canGroupEvents(selectedEvents);
+      const motherEvents = selectedEvents.filter(e => e.is_mother_event);
+      const standaloneEvents = selectedEvents.filter(e => !e.is_mother_event && !e.parent_event_id);
       
-      if (!validation.canGroup) {
-        alert(validation.reason);
+      console.log('🔧 [handleGroupEvents]', {
+        totalSelected: eventIds.length,
+        motherCount: motherEvents.length,
+        standaloneCount: standaloneEvents.length
+      });
+      
+      // Scenario 1: Add children to existing mother (1 mother + N standalone)
+      if (motherEvents.length === 1 && standaloneEvents.length > 0) {
+        const motherEventId = motherEvents[0].id;
+        const childEventIds = standaloneEvents.map(e => e.id);
+        
+        console.log('➕ Adding children to existing mother:', {
+          motherEventId,
+          childCount: childEventIds.length
+        });
+        
+        const success = await MotherEventGroupingService.addChildrenToMotherEvent(motherEventId, childEventIds);
+        
+        if (success) {
+          console.log('✅ Children added successfully');
+          await loadData();
+          setSelectedEventIds(new Set());
+          setIsMultiSelectMode(false);
+          alert(`Successfully added ${childEventIds.length} event(s) to the group.`);
+        } else {
+          throw new Error('Failed to add children to mother event');
+        }
         return;
       }
-
-      // Perform manual grouping
-      const result = await MotherEventGroupingService.performManualGrouping(eventIds);
       
-      if (result) {
-        console.log('Events grouped successfully:', result);
-        await loadData(); // Reload events to show new grouping
-        setSelectedEventIds(new Set()); // Clear selection
-        setIsMultiSelectMode(false); // Exit multi-select mode
+      // Scenario 2: Create new mother-child group (N standalone, no mothers)
+      if (motherEvents.length === 0 && standaloneEvents.length >= 2) {
+        const validation = MotherEventGroupingService.canGroupEvents(selectedEvents);
+        
+        if (!validation.canGroup) {
+          alert(validation.reason);
+          return;
+        }
+        
+        console.log('🆕 Creating new mother-child group');
+        const result = await MotherEventGroupingService.performManualGrouping(eventIds);
+        
+        if (result) {
+          console.log('✅ Events grouped successfully:', result);
+          await loadData();
+          setSelectedEventIds(new Set());
+          setIsMultiSelectMode(false);
+          alert('Events grouped successfully!');
+        }
+        return;
       }
+      
+      // Invalid scenario
+      if (motherEvents.length > 1) {
+        alert('Cannot select multiple mother events. Please select only ONE mother event to add children.');
+        return;
+      }
+      
+      alert('Invalid selection. Select either:\n- 2+ standalone events to create new group\n- 1 mother event + 1+ standalone events to add children');
+      
     } catch (error) {
-      console.error('Error grouping events:', error);
+      console.error('❌ Error grouping events:', error);
       alert('Failed to group events. Please try again.');
     } finally {
       setGroupingInProgress(false);
@@ -1119,8 +1197,13 @@ export default function EventManagement() {
 
   // Handle select all/none
   const handleSelectAll = () => {
-    const ungroupedEvents = filteredEvents.filter(e => !e.parent_event_id && !e.is_mother_event);
-    setSelectedEventIds(new Set(ungroupedEvents.map(e => e.id)));
+    // Select all mother events and standalone events (but not child events)
+    // Only voltage_dip and voltage_swell types
+    const selectableEvents = finalEvents.filter(e => 
+      !e.parent_event_id && 
+      (e.event_type === 'voltage_dip' || e.event_type === 'voltage_swell')
+    );
+    setSelectedEventIds(new Set(selectableEvents.map(e => e.id)));
   };
 
   const handleSelectNone = () => {
@@ -1389,6 +1472,18 @@ export default function EventManagement() {
     });
   };
 
+  // Table sort handler for list view
+  const handleTableSort = (field: typeof tableSortField) => {
+    if (tableSortField === field) {
+      // Toggle direction if same field
+      setTableSortDirection(tableSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field with default direction
+      setTableSortField(field);
+      setTableSortDirection(field === 'timestamp' || field === 'duration' ? 'desc' : 'asc');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -1401,49 +1496,25 @@ export default function EventManagement() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Activity className="w-8 h-8 text-slate-700" />
+          <Activity className="w-7 h-7 text-slate-700" />
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Event Management</h1>
-            <p className="text-slate-600 mt-1">Monitor and analyze power quality events with advanced filtering</p>
+            <h1 className="text-2xl font-bold text-slate-900">Event Management</h1>
+            <p className="text-slate-600 text-sm">Monitor and analyze power quality events with advanced filtering</p>
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-slate-200">
-        <nav className="flex space-x-8">
-          {[
-            { id: 'events', label: 'Event Analysis', icon: Activity },
-            { id: 'false-detection', label: 'False Event Detection', icon: Shield },
-            { id: 'analytics', label: 'Detection Analytics', icon: BarChart3 }
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id as any)}
-              className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Events Tab */}
-      {activeTab === 'events' && (
-        <div className="space-y-6">
+      {/* Event Analysis Content */}
+      <div className="space-y-4">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setViewMode(viewMode === 'tree' ? 'list' : 'tree')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-all text-sm ${
                   viewMode === 'tree' 
                     ? 'bg-purple-600 text-white border-purple-600' 
                     : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
@@ -1454,7 +1525,7 @@ export default function EventManagement() {
               </button>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-all text-sm ${
                   showFilters 
                     ? 'bg-blue-600 text-white border-blue-600' 
                     : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
@@ -1556,7 +1627,17 @@ export default function EventManagement() {
 
               {/* Multi-select and Grouping Controls */}
               <button
-                onClick={() => setIsMultiSelectMode(!isMultiSelectMode)}
+                onClick={() => {
+                  const newMode = !isMultiSelectMode;
+                  console.log('🎯 [Multi-Select Button Clicked]', {
+                    previousMode: isMultiSelectMode,
+                    newMode: newMode,
+                    buttonText: newMode ? 'Exit Select' : 'Multi-Select',
+                    filteredEventsCount: finalEvents.length,
+                    viewMode: viewMode
+                  });
+                  setIsMultiSelectMode(newMode);
+                }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
                   isMultiSelectMode 
                     ? 'bg-green-600 text-white border-green-600' 
@@ -1598,7 +1679,7 @@ export default function EventManagement() {
               <button
                 onClick={handleAutoGroupEvents}
                 disabled={groupingInProgress}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all text-sm"
               >
                 <GitBranch className="w-4 h-4" />
                 Auto Group
@@ -1658,7 +1739,7 @@ export default function EventManagement() {
 
           {/* Advanced Filters Panel */}
           {showFilters && (
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
+            <div className="bg-white rounded-xl shadow-lg border border-slate-100 p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Search className="w-5 h-5" />
@@ -2039,8 +2120,11 @@ export default function EventManagement() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-            <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-4 max-h-[800px] overflow-y-auto xl:col-span-1">
+          {/* Layout: Tree View (horizontal split) vs List View (vertical split with table) */}
+          {viewMode === 'tree' ? (
+            /* Tree View: Keep horizontal 1/4 and 3/4 split */
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+              <div className="bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 p-3 max-h-[800px] overflow-y-auto xl:col-span-1">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-bold text-slate-900">
                   {viewMode === 'tree' ? 'Event Tree' : 'Events'}
@@ -2064,63 +2148,108 @@ export default function EventManagement() {
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-50">
                         <button
                           onClick={() => {
-                            setSortBy('timestamp');
+                            if (sortBy === 'timestamp') {
+                              setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                            } else {
+                              setSortBy('timestamp');
+                              setSortDirection('desc');
+                            }
                             setShowSortDropdown(false);
                           }}
                           className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
                             sortBy === 'timestamp' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
                           }`}
                         >
-                          <ArrowUpDown className="w-4 h-4" />
-                          Sort by Timestamp
+                          {sortBy === 'timestamp' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpDown className="w-4 h-4" />
+                          )}
+                          Sort by Timestamp {sortBy === 'timestamp' && `(${sortDirection === 'asc' ? 'Oldest' : 'Newest'} First)`}
                         </button>
                         <button
                           onClick={() => {
-                            setSortBy('event_type');
+                            if (sortBy === 'event_type') {
+                              setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                            } else {
+                              setSortBy('event_type');
+                              setSortDirection('asc');
+                            }
                             setShowSortDropdown(false);
                           }}
                           className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
                             sortBy === 'event_type' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
                           }`}
                         >
-                          <ArrowUpDown className="w-4 h-4" />
-                          Sort by Event Type
+                          {sortBy === 'event_type' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpDown className="w-4 h-4" />
+                          )}
+                          Sort by Event Type {sortBy === 'event_type' && `(${sortDirection === 'asc' ? 'A-Z' : 'Z-A'})`}
                         </button>
                         <button
                           onClick={() => {
-                            setSortBy('meter_id');
+                            if (sortBy === 'meter_id') {
+                              setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                            } else {
+                              setSortBy('meter_id');
+                              setSortDirection('asc');
+                            }
                             setShowSortDropdown(false);
                           }}
                           className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
                             sortBy === 'meter_id' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
                           }`}
                         >
-                          <ArrowUpDown className="w-4 h-4" />
-                          Sort by PQ Meter ID
+                          {sortBy === 'meter_id' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpDown className="w-4 h-4" />
+                          )}
+                          Sort by PQ Meter ID {sortBy === 'meter_id' && `(${sortDirection === 'asc' ? 'A-Z' : 'Z-A'})`}
                         </button>
                         <button
                           onClick={() => {
-                            setSortBy('voltage_level');
+                            if (sortBy === 'voltage_level') {
+                              setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                            } else {
+                              setSortBy('voltage_level');
+                              setSortDirection('asc');
+                            }
                             setShowSortDropdown(false);
                           }}
                           className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
                             sortBy === 'voltage_level' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
                           }`}
                         >
-                          <ArrowUpDown className="w-4 h-4" />
-                          Sort by Voltage Level
+                          {sortBy === 'voltage_level' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpDown className="w-4 h-4" />
+                          )}
+                          Sort by Voltage Level {sortBy === 'voltage_level' && `(${sortDirection === 'asc' ? '400→380V' : '380→400kV'})`}
                         </button>
                         <button
                           onClick={() => {
-                            setSortBy('duration');
+                            if (sortBy === 'duration') {
+                              setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                            } else {
+                              setSortBy('duration');
+                              setSortDirection('desc');
+                            }
                             setShowSortDropdown(false);
                           }}
                           className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
                             sortBy === 'duration' ? 'text-blue-600 bg-blue-50 font-medium' : 'text-slate-700'
                           }`}
                         >
-                          <ArrowUpDown className="w-4 h-4" />
-                          Sort by Duration
+                          {sortBy === 'duration' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpDown className="w-4 h-4" />
+                          )}
+                          Sort by Duration {sortBy === 'duration' && `(${sortDirection === 'asc' ? 'Shortest' : 'Longest'} First)`}
                         </button>
                       </div>
                     )}
@@ -2192,18 +2321,37 @@ export default function EventManagement() {
                             }`}
                           >
                             <div className="flex items-center gap-3">
-                              {/* Multi-select checkbox */}
-                              {isMultiSelectMode && !node.event.is_mother_event && !node.event.parent_event_id && (
-                                <input
-                                  type="checkbox"
-                                  checked={selectedEventIds.has(node.id)}
-                                  onChange={(e) => {
-                                    e.stopPropagation();
-                                    toggleEventSelection(node.id);
-                                  }}
-                                  className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
-                                />
-                              )}
+                              {/* Multi-select checkbox - voltage_dip and voltage_swell (mothers & standalone) */}
+                              {(() => {
+                                // Show for mother events and standalone events, but NOT child events
+                                const showCheckbox = isMultiSelectMode && 
+                                  !node.event.parent_event_id && 
+                                  (node.event.event_type === 'voltage_dip' || node.event.event_type === 'voltage_swell');
+                                
+                                // Debug logging
+                                if (isMultiSelectMode) {
+                                  console.log('🔍 [Tree View Checkbox Debug]', {
+                                    eventId: node.id,
+                                    eventType: node.event.event_type,
+                                    isMotherEvent: node.event.is_mother_event,
+                                    hasParent: !!node.event.parent_event_id,
+                                    isMultiSelectMode,
+                                    showCheckbox
+                                  });
+                                }
+                                
+                                return showCheckbox && (
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedEventIds.has(node.id)}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      toggleEventSelection(node.id);
+                                    }}
+                                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                                  />
+                                );
+                              })()}
                               
                               <div
                                 onClick={() => handleEventSelect(node.event)}
@@ -2281,18 +2429,37 @@ export default function EventManagement() {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
-                            {/* Multi-select checkbox */}
-                            {isMultiSelectMode && !event.is_mother_event && !event.parent_event_id && (
-                              <input
-                                type="checkbox"
-                                checked={selectedEventIds.has(event.id)}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  toggleEventSelection(event.id);
-                                }}
-                                className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 mt-1"
-                              />
-                            )}
+                            {/* Multi-select checkbox - voltage_dip and voltage_swell (mothers & standalone) */}
+                            {(() => {
+                              // Show for mother events and standalone events, but NOT child events
+                              const showCheckbox = isMultiSelectMode && 
+                                !event.parent_event_id && 
+                                (event.event_type === 'voltage_dip' || event.event_type === 'voltage_swell');
+                              
+                              // Debug logging
+                              if (isMultiSelectMode) {
+                                console.log('🔍 [List View Checkbox Debug]', {
+                                  eventId: event.id,
+                                  eventType: event.event_type,
+                                  isMotherEvent: event.is_mother_event,
+                                  hasParent: !!event.parent_event_id,
+                                  isMultiSelectMode,
+                                  showCheckbox
+                                });
+                              }
+                              
+                              return showCheckbox && (
+                                <input
+                                  type="checkbox"
+                                  checked={selectedEventIds.has(event.id)}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    toggleEventSelection(event.id);
+                                  }}
+                                  className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 mt-1"
+                                />
+                              );
+                            })()}
 
                             {/* Mother event indicator */}
                             {event.is_mother_event && (
@@ -2353,7 +2520,7 @@ export default function EventManagement() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-6 max-h-[800px] overflow-y-auto xl:col-span-3">
+            <div className="bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 p-4 max-h-[800px] overflow-y-auto xl:col-span-3">
               {selectedEvent ? (
                 <EventDetails
                   event={selectedEvent}
@@ -2374,27 +2541,242 @@ export default function EventManagement() {
               )}
             </div>
           </div>
+          ) : (
+            /* List View: Vertical split with table (30%) and detail panel (70%) */
+            <div className="space-y-4">
+              {/* Event Table (30% height) */}
+              <div className="bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-200 bg-slate-50">
+                  <h2 className="text-sm font-semibold text-slate-900">
+                    Events
+                    <span className="text-xs font-normal text-slate-500 ml-2">
+                      ({tableSortedEvents.length} total, showing {paginatedEvents.length})
+                    </span>
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-600">Rows:</span>
+                    <select
+                      value={rowsPerPage}
+                      onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                      className="px-1.5 py-0.5 border border-slate-300 rounded text-xs"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="overflow-auto" style={{ maxHeight: '400px' }}>
+                  <table className="w-full">
+                    <thead className="sticky top-0 bg-white border-b border-slate-300 z-10">
+                      <tr>
+                        {/* Multi-select checkbox column */}
+                        {isMultiSelectMode && (
+                          <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase w-10">
+                            <input
+                              type="checkbox"
+                              checked={paginatedEvents.filter(e => !e.parent_event_id && (e.event_type === 'voltage_dip' || e.event_type === 'voltage_swell')).length > 0 && paginatedEvents.filter(e => !e.parent_event_id && (e.event_type === 'voltage_dip' || e.event_type === 'voltage_swell')).every(e => selectedEventIds.has(e.id))}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  const selectableIds = paginatedEvents.filter(ev => !ev.parent_event_id && (ev.event_type === 'voltage_dip' || ev.event_type === 'voltage_swell')).map(ev => ev.id);
+                                  setSelectedEventIds(new Set([...selectedEventIds, ...selectableIds]));
+                                } else {
+                                  const selectableIds = new Set(paginatedEvents.filter(ev => !ev.parent_event_id && (ev.event_type === 'voltage_dip' || ev.event_type === 'voltage_swell')).map(ev => ev.id));
+                                  setSelectedEventIds(new Set([...selectedEventIds].filter(id => !selectableIds.has(id))));
+                                }
+                              }}
+                              className="w-4 h-4 text-purple-600 rounded"
+                            />
+                          </th>
+                        )}
+                        <th className="py-1 px-2 text-center text-xs font-semibold text-slate-700 uppercase w-12">
+                          M/C
+                        </th>
+                        <th className="py-1 px-2 text-center text-xs font-semibold text-slate-700 uppercase w-12">
+                          False
+                        </th>
+                        <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase">
+                          <button onClick={() => handleTableSort('timestamp')} className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                            Timestamp
+                            {tableSortField === 'timestamp' ? (tableSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                          </button>
+                        </th>
+                        <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase">
+                          <button onClick={() => handleTableSort('event_type')} className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                            Event Type
+                            {tableSortField === 'event_type' ? (tableSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                          </button>
+                        </th>
+                        <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase">
+                          <button onClick={() => handleTableSort('meter_id')} className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                            Meter ID
+                            {tableSortField === 'meter_id' ? (tableSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                          </button>
+                        </th>
+                        <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase">
+                          Substation
+                        </th>
+                        <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase">
+                          <button onClick={() => handleTableSort('voltage_level')} className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                            Voltage Level
+                            {tableSortField === 'voltage_level' ? (tableSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                          </button>
+                        </th>
+                        <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase">
+                          <button onClick={() => handleTableSort('duration')} className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                            Duration
+                            {tableSortField === 'duration' ? (tableSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                          </button>
+                        </th>
+                        <th className="py-1 px-2 text-left text-xs font-semibold text-slate-700 uppercase">
+                          <button onClick={() => handleTableSort('remaining_voltage')} className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                            Remaining V
+                            {tableSortField === 'remaining_voltage' ? (tableSortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                          </button>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedEvents.map((event) => {
+                        const substation = substations.find(s => s.id === event.substation_id);
+                        const isSelected = selectedEvent?.id === event.id;
+                        const isMultiSelected = selectedEventIds.has(event.id);
+                        const meter = meters.find(m => m.id === event.meter_id);
+                        const showCheckbox = !event.parent_event_id && (event.event_type === 'voltage_dip' || event.event_type === 'voltage_swell');
+
+                        return (
+                          <tr
+                            key={event.id}
+                            onClick={() => handleEventSelect(event)}
+                            className={`border-b border-slate-100 cursor-pointer transition-colors ${
+                              isSelected ? 'bg-blue-50' : isMultiSelected ? 'bg-green-50' : 'hover:bg-slate-50'
+                            }`}
+                          >
+                            {/* Multi-select checkbox */}
+                            {isMultiSelectMode && (
+                              <td className="py-1 px-2" onClick={(e) => e.stopPropagation()}>
+                                {showCheckbox && (
+                                  <input
+                                    type="checkbox"
+                                    checked={isMultiSelected}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      toggleEventSelection(event.id);
+                                    }}
+                                    className="w-4 h-4 text-purple-600 rounded"
+                                  />
+                                )}
+                              </td>
+                            )}
+                            {/* Mother/Child Indicator */}
+                            <td className="py-1 px-2 text-center">
+                              {event.is_mother_event && (
+                                <div title="Mother Event">
+                                  <GitBranch className="w-3.5 h-3.5 text-purple-600 mx-auto" />
+                                </div>
+                              )}
+                              {event.is_child_event && (
+                                <div className="text-purple-400 text-xs" title="Child Event">↳</div>
+                              )}
+                            </td>
+                            {/* False Event Indicator */}
+                            <td className="py-1 px-2 text-center">
+                              {event.false_event && (
+                                <div title="False Event">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-orange-500 mx-auto" />
+                                </div>
+                              )}
+                            </td>
+                            {/* Timestamp */}
+                            <td className="py-1 px-2 text-xs text-slate-700">
+                              {new Date(event.timestamp).toLocaleDateString('en-CA')} {new Date(event.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                            </td>
+                            {/* Event Type */}
+                            <td className="py-1 px-2 text-xs text-slate-700 capitalize">
+                              {event.event_type.replace('_', ' ')}
+                            </td>
+                            {/* Meter ID */}
+                            <td className="py-1 px-2 text-xs text-slate-700">
+                              {meter?.meter_id || event.meter?.site_id || '-'}
+                            </td>
+                            {/* Substation */}
+                            <td className="py-1 px-2 text-xs text-slate-700">
+                              {substation?.name || '-'}
+                            </td>
+                            {/* Voltage Level */}
+                            <td className="py-1 px-2 text-xs text-slate-700">
+                              {event.meter?.voltage_level || '-'}
+                            </td>
+                            {/* Duration */}
+                            <td className="py-1 px-2 text-xs text-slate-700">
+                              {event.duration_ms ? (event.duration_ms < 1000 ? `${event.duration_ms}ms` : `${(event.duration_ms / 1000).toFixed(1)}s`) : '-'}
+                            </td>
+                            {/* Remaining Voltage */}
+                            <td className="py-1 px-2 text-xs text-slate-700">
+                              {event.remaining_voltage !== null && event.remaining_voltage !== undefined ? `${event.remaining_voltage}%` : '-'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-200 bg-slate-50">
+                  <div className="text-xs text-slate-600">
+                    Showing {startIndex + 1} to {Math.min(endIndex, tableSortedEvents.length)} of {tableSortedEvents.length} events
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="px-2 py-0.5 text-xs border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-xs text-slate-600">
+                      Page {currentPage} of {totalPages || 1}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="px-2 py-0.5 text-xs border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Detail Panel (70% height) - Hide on mobile unless event selected */}
+              <div className={`bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 p-4 overflow-y-auto ${selectedEvent ? 'block' : 'hidden md:block'}`}>
+                {selectedEvent ? (
+                  <EventDetails
+                    event={selectedEvent}
+                    substation={substations.find(s => s.id === selectedEvent.substation_id)}
+                    impacts={impacts}
+                    onStatusChange={updateEventStatus}
+                    onEventDeleted={handleEventDeleted}
+                    onEventUpdated={loadData}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400">
+                    <div className="text-center">
+                      <Calendar className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                      <p className="text-lg">Event details will appear here</p>
+                      <p className="text-sm mt-1">Click an event in the table above</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* False Event Detection Tab */}
-      {activeTab === 'false-detection' && (
-        <FalseEventConfig
-          events={events}
-          onRulesChange={handleFalseEventRulesChange}
-          onApplyRules={handleApplyFalseEventRules}
-        />
-      )}
-
-      {/* Analytics Tab */}
-      {activeTab === 'analytics' && (
-        <FalseEventAnalytics
-          events={events}
-          detectionResults={falseEventResults}
-          rules={falseEventRules}
-          onRuleOptimize={handleRuleOptimize}
-        />
-      )}
+      </div>
 
       {/* Profile Save Dialog */}
       {showProfileDialog && (

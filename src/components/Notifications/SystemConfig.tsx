@@ -5,8 +5,8 @@ import toast from 'react-hot-toast';
 
 interface SystemConfig {
   id: string;
-  typhoon_mode_active: boolean;
-  typhoon_mode_expiry: string | null;
+  typhoon_mode: boolean;
+  typhoon_mode_until: string | null;
   notification_cooldown_minutes: number;
   max_notifications_per_event: number;
   enable_batch_notifications: boolean;
@@ -15,7 +15,11 @@ interface SystemConfig {
   updated_by: string | null;
 }
 
-export default function SystemConfig() {
+interface SystemConfigProps {
+  onSaved?: () => void;
+}
+
+export default function SystemConfig({ onSaved }: SystemConfigProps) {
   const [config, setConfig] = useState<SystemConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,8 +49,8 @@ export default function SystemConfig() {
       console.error('Error loading config:', error);
     } else if (data) {
       setConfig(data);
-      setTyphoonMode(data.typhoon_mode_active);
-      setTyphoonExpiry(data.typhoon_mode_expiry || '');
+      setTyphoonMode(data.typhoon_mode);
+      setTyphoonExpiry(data.typhoon_mode_until || '');
       setCooldownMinutes(data.notification_cooldown_minutes);
       setMaxPerEvent(data.max_notifications_per_event);
       setBatchEnabled(data.enable_batch_notifications);
@@ -67,8 +71,8 @@ export default function SystemConfig() {
     const { data: { user } } = await supabase.auth.getUser();
 
     const updates = {
-      typhoon_mode_active: typhoonMode,
-      typhoon_mode_expiry: typhoonMode ? typhoonExpiry : null,
+      typhoon_mode: typhoonMode,
+      typhoon_mode_until: typhoonMode ? typhoonExpiry : null,
       notification_cooldown_minutes: cooldownMinutes,
       max_notifications_per_event: maxPerEvent,
       enable_batch_notifications: batchEnabled,
@@ -88,6 +92,12 @@ export default function SystemConfig() {
     } else {
       toast.success('System configuration updated successfully!');
       loadConfig();
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('typhoonModeChanged'));
+      // Close modal after successful save
+      if (onSaved) {
+        onSaved();
+      }
     }
 
     setSaving(false);

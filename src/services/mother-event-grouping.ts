@@ -28,11 +28,13 @@ export class MotherEventGroupingService {
   static async performAutomaticGrouping(events: PQEvent[]): Promise<GroupingResult[]> {
     const results: GroupingResult[] = [];
     
-    // Filter to only voltage_dip events
-    const voltageDipEvents = events.filter(e => e.event_type === 'voltage_dip');
+    // Filter to only voltage_dip and voltage_swell events
+    const groupableEvents = events.filter(e => 
+      e.event_type === 'voltage_dip' || e.event_type === 'voltage_swell'
+    );
     
     // Sort events by timestamp to ensure chronological processing
-    const sortedEvents = [...voltageDipEvents].sort((a, b) => 
+    const sortedEvents = [...groupableEvents].sort((a, b) => 
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
@@ -81,6 +83,91 @@ export class MotherEventGroupingService {
       groupingType: 'manual',
       timestamp: new Date().toISOString()
     };
+  }
+
+  /**
+   * Add child events to an existing mother event
+   * Used for expanding existing groups with new events
+   */
+  static async addChildrenToMotherEvent(motherEventId: string, childEventIds: string[]): Promise<boolean> {
+    try {
+      if (childEventIds.length === 0) {
+        throw new Error('No child events provided');
+      }
+
+      // Validate mother event exists and is a mother
+      const { data: motherEvent, error: motherFetchError } = await supabase
+        .from('pq_events')
+        .select('*')
+        .eq('id', motherEventId)
+        .single();
+
+      if (motherFetchError || !motherEvent) {
+        throw new Error('Mother event not found');
+      }
+
+      if (!motherEvent.is_mother_event) {
+        throw new Error('Selected event is not a mother event');
+      }
+
+      // Validate child events are voltage_dip or voltage_swell and not already grouped
+      const { data: childEvents, error: childFetchError } = await supabase
+        .from('pq_events')
+        .select('*')
+        .in('id', childEventIds);
+
+      if (childFetchError || !childEvents) {
+        throw new Error('Failed to fetch child events');
+      }
+
+      // Validation checks
+      const invalidEvents = childEvents.filter(e => 
+        e.event_type !== 'voltage_dip' && e.event_type !== 'voltage_swell'
+      );
+      
+      if (invalidEvents.length > 0) {
+        throw new Error('Only voltage_dip and voltage_swell events can be added to groups');
+      }
+
+      const alreadyGrouped = childEvents.filter(e => 
+        e.is_mother_event || e.parent_event_id
+      );
+      
+      if (alreadyGrouped.length > 0) {
+        throw new Error('Some events are already in a group');
+      }
+
+      // Check if all events are from same substation
+      const differentSubstation = childEvents.some(e => 
+        e.substation_id !== motherEvent.substation_id
+      );
+      
+      if (differentSubstation) {
+        throw new Error('All events must be from the same substation');
+      }
+
+      // Update child events to link to mother
+      const { error: updateError } = await supabase
+        .from('pq_events')
+        .update({ 
+          parent_event_id: motherEventId,
+          is_child_event: true
+        })
+        .in('id', childEventIds);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Log the operation
+      await this.logGroupingOperation('add_children', motherEventId, childEventIds);
+
+      console.log(`✅ Added ${childEventIds.length} children to mother event ${motherEventId}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error adding children to mother event:', error);
+      return false;
+    }
   }
 
   /**
@@ -413,10 +500,12 @@ export class MotherEventGroupingService {
       return { canGroup: false, reason: 'At least 2 events required for grouping' };
     }
 
-    // Check if all events are voltage_dip type
-    const allVoltageDip = events.every(e => e.event_type === 'voltage_dip');
-    if (!allVoltageDip) {
-      return { canGroup: false, reason: 'Only voltage_dip events can be grouped together' };
+    // Check if all events are voltage_dip or voltage_swell type
+    const allGroupable = events.every(e => 
+      e.event_type === 'voltage_dip' || e.event_type === 'voltage_swell'
+    );
+    if (!allGroupable) {
+      return { canGroup: false, reason: 'Only voltage_dip and voltage_swell events can be grouped together' };
     }
 
     // Check if any events are already grouped

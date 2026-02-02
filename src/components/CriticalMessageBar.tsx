@@ -13,21 +13,51 @@ export default function CriticalMessageBar() {
 
   useEffect(() => {
     loadMessages();
+    
+    // 🔑 Listen for storage changes from NotificationLogs component
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'pqmap_demo_critical_messages') {
+        loadMessages();
+      }
+    };
+    
+    // Also check for custom event from NotificationLogs
+    const handleCriticalMessageUpdate = () => {
+      loadMessages();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('criticalMessageUpdate', handleCriticalMessageUpdate);
     const interval = setInterval(loadMessages, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('criticalMessageUpdate', handleCriticalMessageUpdate);
+      clearInterval(interval);
+    };
   }, []);
 
   const loadMessages = async () => {
     try {
+      // Load from localStorage first (updates from NotificationLogs component)
+      const stored = localStorage.getItem('pqmap_demo_critical_messages');
+      const messagesToUse = stored ? JSON.parse(stored) : mockMessages;
+      
       // Use mock data from JSON file (Demo Mode)
       const now = new Date();
-      const activeMessages = mockMessages.filter(msg => {
+      const activeMessages = messagesToUse.filter((msg: CriticalMessage) => {
         if (!msg.is_active) return false;
         const startTime = new Date(msg.start_time);
         const endTime = msg.end_time ? new Date(msg.end_time) : null;
         return startTime <= now && (!endTime || endTime > now);
       });
-      setMessages(activeMessages as CriticalMessage[]);
+      
+      // 🔑 Sort by creation date descending (newest first)
+      const sortedMessages = (activeMessages as CriticalMessage[]).sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      
+      setMessages(sortedMessages);
     } catch (error) {
       console.error('Error loading critical messages:', error);
     } finally {

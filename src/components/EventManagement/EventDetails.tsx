@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Clock, MapPin, Zap, AlertTriangle, Users, ArrowLeft, GitBranch, Trash2, ChevronDown, ChevronUp, CheckCircle, XCircle, Ungroup, Download, FileText, Edit, Save, X as XIcon, Upload, FileDown, Wrench } from 'lucide-react';
+import { Clock, Zap, AlertTriangle, Users, ArrowLeft, GitBranch, Trash2, ChevronDown, ChevronUp, CheckCircle, XCircle, Ungroup, Download, FileText, Edit, Save, X as XIcon, Upload, FileDown, Wrench } from 'lucide-react';
 import { PQEvent, Substation, EventCustomerImpact, IDRRecord, PQServiceRecord, PQMeter, Customer } from '../../types/database';
 import { supabase } from '../../lib/supabase';
 import WaveformViewer from './WaveformViewer';
 import { MotherEventGroupingService } from '../../services/mother-event-grouping';
 import { ExportService } from '../../services/exportService';
 import CustomerEventHistoryPanel from './CustomerEventHistoryPanel';
+import PSBGConfigModal from './PSBGConfigModal';
 
 type TabType = 'overview' | 'technical' | 'impact' | 'services' | 'children' | 'timeline' | 'idr';
 
@@ -97,6 +98,9 @@ export default function EventDetails({ event: initialEvent, substation: initialS
     equipment_affected: '',
     restoration_actions: '',
     notes: '',
+    circuit: '',
+    faulty_component: '',
+    external_internal: '' as 'external' | 'internal' | '',
   });
   const [savingIDR, setSavingIDR] = useState(false);
 
@@ -110,6 +114,16 @@ export default function EventDetails({ event: initialEvent, substation: initialS
 
   // Waveform data state
   const [waveformCsvData, setWaveformCsvData] = useState<string | null>(null);
+
+  // PSBG Cause management state
+  const [showPSBGConfig, setShowPSBGConfig] = useState(false);
+  const [psbgOptions, setPsbgOptions] = useState<string[]>([
+    'VEGETATION',
+    'DAMAGED BY THIRD PARTY',
+    'UNCONFIRMED',
+    'ANIMALS, BIRDS, INSECTS'
+  ]);
+  const [usedPsbgOptions, setUsedPsbgOptions] = useState<string[]>([]);
 
   // Update state when props change
   useEffect(() => {
@@ -192,7 +206,7 @@ export default function EventDetails({ event: initialEvent, substation: initialS
     const loadDemoWaveform = async () => {
       try {
         // For demonstration, load the sample CSV for all events
-        const response = await fetch('/Artifacts/From Users/System Images/BKP0227_20260126 101655_973.csv');
+        const response = await fetch('/BKP0227_20260126 101655_973.csv');
         if (response.ok) {
           const csvText = await response.text();
           setWaveformCsvData(csvText);
@@ -233,6 +247,28 @@ export default function EventDetails({ event: initialEvent, substation: initialS
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showExportDropdown, showUploadDropdown]);
+
+  // Load used PSBG options when component mounts
+  useEffect(() => {
+    const loadUsedPsbgOptions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pq_events')
+          .select('psbg_cause')
+          .not('psbg_cause', 'is', null);
+
+        if (error) throw error;
+
+        const used = [...new Set(data?.map(d => d.psbg_cause).filter(Boolean) || [])];
+        setUsedPsbgOptions(used);
+      } catch (error) {
+        console.error('❌ Error loading used PSBG options:', error);
+        setUsedPsbgOptions([]);
+      }
+    };
+
+    loadUsedPsbgOptions();
+  }, []);
 
   const loadIDRRecord = async (eventId: string) => {
     setLoadingIDR(true);
@@ -277,6 +313,9 @@ export default function EventDetails({ event: initialEvent, substation: initialS
           equipment_affected: data.equipment_affected || '',
           restoration_actions: data.restoration_actions || '',
           notes: data.notes || '',
+          circuit: data.circuit || '',
+          faulty_component: data.faulty_component || '',
+          external_internal: data.external_internal || '',
         });
       } else {
         console.log('ℹ️ No IDR record found, showing empty form');
@@ -308,6 +347,9 @@ export default function EventDetails({ event: initialEvent, substation: initialS
           equipment_affected: '',
           restoration_actions: '',
           notes: '',
+          circuit: '',
+          faulty_component: '',
+          external_internal: '',
         });
       }
     } catch (error) {
@@ -811,6 +853,36 @@ export default function EventDetails({ event: initialEvent, substation: initialS
     }
   };
 
+  // PSBG Cause handler
+  const handlePsbgCauseChange = async (newPsbgCause: string) => {
+    const validValues: Array<'VEGETATION' | 'DAMAGED BY THIRD PARTY' | 'UNCONFIRMED' | 'ANIMALS, BIRDS, INSECTS'> = [
+      'VEGETATION', 'DAMAGED BY THIRD PARTY', 'UNCONFIRMED', 'ANIMALS, BIRDS, INSECTS'
+    ];
+    const validatedValue = validValues.includes(newPsbgCause as any) ? newPsbgCause as typeof validValues[number] : null;
+
+    try {
+      const { error } = await supabase
+        .from('pq_events')
+        .update({ psbg_cause: validatedValue })
+        .eq('id', currentEvent.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setCurrentEvent({ ...currentEvent, psbg_cause: validatedValue });
+
+      // Notify parent to reload data
+      if (onEventUpdated) {
+        onEventUpdated();
+      }
+
+      console.log('✅ PSBG cause updated successfully');
+    } catch (error) {
+      console.error('❌ Error updating PSBG cause:', error);
+      alert('Failed to update PSBG cause. Please try again.');
+    }
+  };
+
   // IDR CSV Upload Functions
   const handleDownloadIDRTemplate = () => {
     const headers = [
@@ -1064,8 +1136,6 @@ export default function EventDetails({ event: initialEvent, substation: initialS
       current
     };
   };
-
-  const waveformData = currentEvent.waveform_data || generateMockWaveform();
 
   // Calculate child events severity distribution for preview
   const getChildEventsSummary = () => {
@@ -1490,14 +1560,14 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                     <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</label>
                     <div className="mt-1">
                       <span className={`inline-block px-4 py-2 rounded-lg text-base font-semibold ${
-                        currentEvent.status === 'open' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                        currentEvent.status === 'new' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
                         currentEvent.status === 'investigating' ? 'bg-blue-100 text-blue-800 border border-blue-300' :
-                        currentEvent.status === 'closed' || currentEvent.status === 'resolved' ? 'bg-green-100 text-green-800 border border-green-300' :
+                        currentEvent.status === 'resolved' ? 'bg-green-100 text-green-800 border border-green-300' :
                         'bg-slate-100 text-slate-800 border border-slate-300'
                       }`}>
-                        {currentEvent.status === 'open' ? 'New' : 
+                        {currentEvent.status === 'new' ? 'New' : 
                          currentEvent.status === 'investigating' ? 'Investigating' : 
-                         currentEvent.status === 'closed' || currentEvent.status === 'resolved' ? 'Closed' : 
+                         currentEvent.status === 'resolved' ? 'Closed' : 
                          currentEvent.status}
                       </span>
                     </div>
@@ -1731,10 +1801,39 @@ export default function EventDetails({ event: initialEvent, substation: initialS
               </div>
             )}
 
-            {currentEvent.cause && (
+            {/* PSBG Cause Field */}
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-blue-700 text-sm font-semibold">PSBG Cause:</span>
+                <button
+                  onClick={() => setShowPSBGConfig(true)}
+                  className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                  title="Manage PSBG Cause Options"
+                >
+                  <Wrench className="w-4 h-4" />
+                </button>
+              </div>
+              <select
+                value={currentEvent.psbg_cause || ''}
+                onChange={(e) => handlePsbgCauseChange(e.target.value)}
+                className="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Select PSBG Cause</option>
+                {psbgOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cause Display (PSBG takes priority, falls back to IDR cause) */}
+            {(currentEvent.psbg_cause || currentEvent.cause) && (
               <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg">
-                <span className="text-slate-600 text-sm font-semibold">Cause:</span>
-                <p className="text-slate-900 mt-1">{currentEvent.cause}</p>
+                <span className="text-slate-600 text-sm font-semibold">
+                  {currentEvent.psbg_cause ? 'Cause (IDR):' : 'Cause:'}
+                </span>
+                <p className="text-slate-900 mt-1">
+                  {currentEvent.psbg_cause ? (currentEvent.cause || 'Not specified') : currentEvent.cause}
+                </p>
               </div>
             )}
 
@@ -1760,14 +1859,15 @@ export default function EventDetails({ event: initialEvent, substation: initialS
               </div>
             </div>
 
-            {/* False Event Actions */}
+            {/* False Event Actions - Only show for voltage_dip and voltage_swell */}
             {(() => {
               console.log('🔍 [Convert Button Condition]', {
                 activeTab,
+                event_type: currentEvent.event_type,
                 false_event: currentEvent.false_event,
-                shouldShow: currentEvent.false_event === true
+                shouldShow: currentEvent.false_event === true && (currentEvent.event_type === 'voltage_dip' || currentEvent.event_type === 'voltage_swell')
               });
-              return currentEvent.false_event;
+              return currentEvent.false_event && (currentEvent.event_type === 'voltage_dip' || currentEvent.event_type === 'voltage_swell');
             })() && (
               <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
                 <div className="flex items-center justify-between">
@@ -1836,22 +1936,25 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                     )}
                   </dd>
                 </div>
-                <div>
-                  <dt className="text-sm text-slate-600">False Event:</dt>
-                  <dd className="flex items-center gap-2 mt-1">
-                    {currentEvent.false_event ? (
-                      <>
-                        <XCircle className="w-5 h-5 text-red-600" />
-                        <span className="font-semibold text-red-700">Yes</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <span className="font-semibold text-green-700">No</span>
-                      </>
-                    )}
-                  </dd>
-                </div>
+                {/* False Event - Only show for voltage_dip and voltage_swell */}
+                {(currentEvent.event_type === 'voltage_dip' || currentEvent.event_type === 'voltage_swell') && (
+                  <div>
+                    <dt className="text-sm text-slate-600">False Event:</dt>
+                    <dd className="flex items-center gap-2 mt-1">
+                      {currentEvent.false_event ? (
+                        <>
+                          <XCircle className="w-5 h-5 text-red-600" />
+                          <span className="font-semibold text-red-700">Yes</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="font-semibold text-green-700">No</span>
+                        </>
+                      )}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
 
@@ -1901,7 +2004,11 @@ export default function EventDetails({ event: initialEvent, substation: initialS
             )}
 
             {/* Waveform Display */}
-            <WaveformViewer csvData={waveformCsvData} />
+            <WaveformViewer 
+              csvData={waveformCsvData} 
+              event={currentEvent}
+              eventType={currentEvent.event_type}
+            />
           </div>
         )}
 
@@ -2767,11 +2874,11 @@ export default function EventDetails({ event: initialEvent, substation: initialS
 
             {/* IDR Content - Grouped Cards Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {/* Basic Information */}
+              {/* IDR Core Information */}
               <div className="bg-white border border-slate-200 rounded-lg p-3">
                 <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded"></span>
-                  Basic Information
+                  IDR Core Information
                 </h4>
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
@@ -2855,51 +2962,12 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                 </div>
               </div>
 
-              {/* Location & Equipment */}
-              <div className="bg-white border border-slate-200 rounded-lg p-3">
-                <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <span className="w-1 h-4 bg-green-500 rounded"></span>
-                  Location & Equipment
-                </h4>
-                <div className="space-y-2">
-                  <div>
-                    <label className="text-xs font-medium text-slate-600">Region</label>
-                    <p className="text-sm font-semibold text-slate-900 mt-1">{currentSubstation?.region || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-slate-600">Address</label>
-                    {isEditingIDR ? (
-                      <input
-                        type="text"
-                        value={idrFormData.address}
-                        onChange={(e) => setIDRFormData({ ...idrFormData, address: e.target.value })}
-                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
-                      />
-                    ) : (
-                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.address || '-'}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-slate-600">Equipment Type</label>
-                    {isEditingIDR ? (
-                      <input
-                        type="text"
-                        value={idrFormData.equipment_type}
-                        onChange={(e) => setIDRFormData({ ...idrFormData, equipment_type: e.target.value })}
-                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
-                      />
-                    ) : (
-                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.equipment_type || '-'}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
 
-              {/* Fault Details */}
+              {/* Fault & Asset Location */}
               <div className="bg-white border border-slate-200 rounded-lg p-3">
                 <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
                   <span className="w-1 h-4 bg-red-500 rounded"></span>
-                  Fault Details
+                  Fault & Asset Location
                 </h4>
                 <div className="space-y-2">
                   <div>
@@ -2967,26 +3035,60 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Fault Type</label>
+                    <label className="text-xs font-medium text-slate-600">Address</label>
                     {isEditingIDR ? (
                       <input
                         type="text"
-                        value={idrFormData.fault_type}
-                        onChange={(e) => setIDRFormData({ ...idrFormData, fault_type: e.target.value })}
+                        value={idrFormData.address}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, address: e.target.value })}
                         className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
                       />
                     ) : (
-                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.fault_type || '-'}</p>
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.address || '-'}</p>
                     )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Circuit</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.circuit}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, circuit: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.circuit || '-'}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Region</label>
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{currentSubstation?.region || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Equipment Type</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.equipment_type}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, equipment_type: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.equipment_type || '-'}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Cause Analysis */}
+              {/* Root Cause Analysis */}
               <div className="bg-white border border-slate-200 rounded-lg p-3">
                 <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
                   <span className="w-1 h-4 bg-yellow-500 rounded"></span>
-                  Cause Analysis
+                  Root Cause Analysis
                 </h4>
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
@@ -3019,6 +3121,20 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                   </div>
 
                   <div>
+                    <label className="text-xs font-medium text-slate-600">Faulty Component</label>
+                    {isEditingIDR ? (
+                      <input
+                        type="text"
+                        value={idrFormData.faulty_component}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, faulty_component: e.target.value })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.faulty_component || '-'}</p>
+                    )}
+                  </div>
+
+                  <div>
                     <label className="text-xs font-medium text-slate-600">Remarks</label>
                     {isEditingIDR ? (
                       <textarea
@@ -3029,6 +3145,32 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                       />
                     ) : (
                       <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.remarks || '-'}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Extended Technical Detail */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3">
+                <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-purple-500 rounded"></span>
+                  Extended Technical Detail
+                </h4>
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">External / Internal</label>
+                    {isEditingIDR ? (
+                      <select
+                        value={idrFormData.external_internal}
+                        onChange={(e) => setIDRFormData({ ...idrFormData, external_internal: e.target.value as 'external' | 'internal' | '' })}
+                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="">Select...</option>
+                        <option value="external">External</option>
+                        <option value="internal">Internal</option>
+                      </select>
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.external_internal ? (idrFormData.external_internal === 'external' ? 'External' : 'Internal') : '-'}</p>
                     )}
                   </div>
 
@@ -3089,13 +3231,42 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                       )}
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Fault Type</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.fault_type}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, fault_type: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.fault_type || '-'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600">Outage Type</label>
+                      {isEditingIDR ? (
+                        <input
+                          type="text"
+                          value={idrFormData.outage_type}
+                          onChange={(e) => setIDRFormData({ ...idrFormData, outage_type: e.target.value })}
+                          className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.outage_type || '-'}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Environment & Operations */}
               <div className="bg-white border border-slate-200 rounded-lg p-3 lg:col-span-2">
                 <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <span className="w-1 h-4 bg-purple-500 rounded"></span>
+                  <span className="w-1 h-4 bg-orange-500 rounded"></span>
                   Environment & Operations
                 </h4>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
@@ -3126,20 +3297,6 @@ export default function EventDetails({ event: initialEvent, substation: initialS
                       />
                     ) : (
                       <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.weather_condition || '-'}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-medium text-slate-600">Outage Type</label>
-                    {isEditingIDR ? (
-                      <input
-                        type="text"
-                        value={idrFormData.outage_type}
-                        onChange={(e) => setIDRFormData({ ...idrFormData, outage_type: e.target.value })}
-                        className="w-full mt-1 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
-                      />
-                    ) : (
-                      <p className="text-sm font-semibold text-slate-900 mt-1">{idrFormData.outage_type || '-'}</p>
                     )}
                   </div>
 
@@ -3353,4 +3510,15 @@ export default function EventDetails({ event: initialEvent, substation: initialS
       )}
     </div>
   );
+
+  {/* PSBG Config Modal */}
+  {showPSBGConfig && (
+    <PSBGConfigModal
+      isOpen={showPSBGConfig}
+      onClose={() => setShowPSBGConfig(false)}
+      onSave={setPsbgOptions}
+      currentOptions={psbgOptions}
+      usedOptions={usedPsbgOptions}
+    />
+  )}
 }

@@ -11,11 +11,14 @@ interface WaveformData {
 
 interface WaveformViewerProps {
   csvData: string | null;
+  event?: any;
+  eventType?: string;
 }
 
-const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
+const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData, event, eventType }) => {
   const [zoomLevel, setZoomLevel] = useState(100);
   const [activeView, setActiveView] = useState<'combined' | 'v1' | 'v2' | 'v3'>('combined');
+  const [harmonicView, setHarmonicView] = useState<'thd' | 'tehd' | 'tohd'>('thd');
 
   // Parse CSV data
   const parsedData = useMemo<WaveformData[]>(() => {
@@ -43,19 +46,45 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
     }
   }, [csvData]);
 
-  // Downsample data for display performance
+  // Apply zoom by slicing data (zoom into center of waveform)
   const displayData = useMemo(() => {
-    if (parsedData.length === 0) return [];
-    
-    // For zoom > 100%, show more points
-    const targetPoints = Math.min(1000, Math.floor(parsedData.length * (zoomLevel / 100)));
-    
-    if (parsedData.length <= targetPoints) {
-      return parsedData;
+    if (parsedData.length === 0) {
+      console.log('📊 [WaveformViewer] No parsed data available');
+      return [];
     }
-
-    const step = Math.ceil(parsedData.length / targetPoints);
-    return parsedData.filter((_, index) => index % step === 0);
+    
+    console.log('📊 [WaveformViewer] Calculating display data:', {
+      totalPoints: parsedData.length,
+      zoomLevel: zoomLevel,
+      zoomPercentage: `${zoomLevel}%`
+    });
+    
+    // Calculate how much of the waveform to show based on zoom level
+    // 100% = show all data, 75% = show 75% of data centered, 200% = show 50% of data (zoomed in 2x)
+    const visibleRatio = 100 / zoomLevel;
+    const visiblePoints = Math.floor(parsedData.length * visibleRatio);
+    
+    console.log('📊 [WaveformViewer] Zoom calculation:', {
+      visibleRatio: visibleRatio.toFixed(2),
+      visiblePoints: visiblePoints,
+      percentageOfData: `${(visibleRatio * 100).toFixed(1)}%`
+    });
+    
+    // Center the visible window
+    const startIndex = Math.floor((parsedData.length - visiblePoints) / 2);
+    const endIndex = startIndex + visiblePoints;
+    
+    const slicedData = parsedData.slice(startIndex, endIndex);
+    
+    console.log('📊 [WaveformViewer] Display data result:', {
+      startIndex,
+      endIndex,
+      displayedPoints: slicedData.length,
+      firstTimestamp: slicedData[0]?.timestamp,
+      lastTimestamp: slicedData[slicedData.length - 1]?.timestamp
+    });
+    
+    return slicedData;
   }, [parsedData, zoomLevel]);
 
   // Calculate statistics
@@ -118,14 +147,23 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
 
   // Zoom handlers
   const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 25, 200));
+    setZoomLevel(prev => {
+      const newZoom = Math.min(prev + 25, 200);
+      console.log('🔍 [WaveformViewer] Zoom In:', prev, '→', newZoom);
+      return newZoom;
+    });
   };
 
   const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 25, 50));
+    setZoomLevel(prev => {
+      const newZoom = Math.max(prev - 25, 50);
+      console.log('🔍 [WaveformViewer] Zoom Out:', prev, '→', newZoom);
+      return newZoom;
+    });
   };
 
   const handleResetZoom = () => {
+    console.log('🔍 [WaveformViewer] Reset Zoom to 100%');
     setZoomLevel(100);
   };
 
@@ -138,6 +176,170 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
       handleZoomOut();
     }
   };
+
+  // Render harmonic analysis for harmonic events
+  if (eventType === 'harmonic') {
+    return (
+      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="w-5 h-5 text-white" />
+              <h3 className="font-semibold text-white">Harmonic Analysis</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* View Tabs */}
+              <div className="flex items-center gap-1 bg-white/20 rounded-lg p-1">
+                <button
+                  onClick={() => setHarmonicView('thd')}
+                  className={`px-3 py-1 text-xs font-semibold rounded transition-all ${
+                    harmonicView === 'thd'
+                      ? 'bg-white text-purple-600 shadow-md'
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  THD
+                </button>
+                <button
+                  onClick={() => setHarmonicView('tehd')}
+                  className={`px-3 py-1 text-xs font-semibold rounded transition-all ${
+                    harmonicView === 'tehd'
+                      ? 'bg-white text-purple-600 shadow-md'
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  TEHD
+                </button>
+                <button
+                  onClick={() => setHarmonicView('tohd')}
+                  className={`px-3 py-1 text-xs font-semibold rounded transition-all ${
+                    harmonicView === 'tohd'
+                      ? 'bg-white text-purple-600 shadow-md'
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  TOHD
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Statistics Summary */}
+        <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+          <div className="grid grid-cols-3 gap-4 text-xs">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <span className="font-semibold text-slate-700">Voltage Channel Ua</span>
+              </div>
+              <div className="ml-5 text-slate-600 space-y-0.5">
+                <div>RMS: <span className="font-mono">6.496 KV</span></div>
+                <div>Fundamental RMS: <span className="font-mono">4.59 KV</span></div>
+                <div className="font-semibold text-purple-700">THD: 3.85%</div>
+                <div>TOHD: 2.72%</div>
+                <div>TEHD: 2.73%</div>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="font-semibold text-slate-700">Voltage Channel Ub</span>
+              </div>
+              <div className="ml-5 text-slate-600 space-y-0.5">
+                <div>RMS: <span className="font-mono">4.948 KV</span></div>
+                <div>Fundamental RMS: <span className="font-mono">3.472 KV</span></div>
+                <div className="font-semibold text-purple-700">THD: 10.71%</div>
+                <div>TOHD: 7.65%</div>
+                <div>TEHD: 7.45%</div>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="font-semibold text-slate-700">Voltage Channel Uc</span>
+              </div>
+              <div className="ml-5 text-slate-600 space-y-0.5">
+                <div>RMS: <span className="font-mono">6.639 KV</span></div>
+                <div>Fundamental RMS: <span className="font-mono">4.692 KV</span></div>
+                <div className="font-semibold text-purple-700">THD: 3.52%</div>
+                <div>TOHD: 2.42%</div>
+                <div>TEHD: 2.55%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Harmonic Charts Placeholder */}
+        <div className="p-6">
+          <div className="space-y-6">
+            {/* Channel Ua */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <h4 className="text-sm font-semibold text-orange-600">Channel Ua - {harmonicView.toUpperCase()}</h4>
+              </div>
+              <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-12">
+                <p className="text-center text-slate-500 font-medium">
+                  📊 Harmonic histogram chart - To be implemented later
+                </p>
+                <p className="text-center text-xs text-slate-400 mt-2">
+                  Will show harmonic components 2-62+ with magnitude bars
+                </p>
+              </div>
+            </div>
+
+            {/* Channel Ub */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <h4 className="text-sm font-semibold text-purple-600">Channel Ub - {harmonicView.toUpperCase()}</h4>
+              </div>
+              <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-12">
+                <p className="text-center text-slate-500 font-medium">
+                  📊 Harmonic histogram chart - To be implemented later
+                </p>
+                <p className="text-center text-xs text-slate-400 mt-2">
+                  Will show harmonic components 2-62+ with magnitude bars
+                </p>
+              </div>
+            </div>
+
+            {/* Channel Uc */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <h4 className="text-sm font-semibold text-green-600">Channel Uc - {harmonicView.toUpperCase()}</h4>
+              </div>
+              <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-12">
+                <p className="text-center text-slate-500 font-medium">
+                  📊 Harmonic histogram chart - To be implemented later
+                </p>
+                <p className="text-center text-xs text-slate-400 mt-2">
+                  Will show harmonic components 2-62+ with magnitude bars
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Footer */}
+        <div className="bg-slate-50 px-4 py-2 border-t border-slate-200">
+          <div className="flex items-center justify-between text-xs text-slate-600">
+            <div>
+              <span className="font-semibold">Freq Nominal:</span> 50 Hz
+              <span className="mx-2 text-slate-400">•</span>
+              <span className="font-semibold">Voltage Level:</span> {event?.voltage_level || 'N/A'}
+            </div>
+            <div className="text-slate-500">
+              💡 Harmonic analysis based on 10-minute averaging (IEEE 519)
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!csvData || parsedData.length === 0) {
     return (
@@ -208,7 +410,7 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
             </div>
 
             {/* Zoom Controls */}
-            <div className="flex items-center gap-1 bg-white/20 rounded-lg p-1">
+            <div className="flex items-center gap-2 bg-white/20 rounded-lg p-2">
               <button
                 onClick={handleZoomOut}
                 disabled={zoomLevel <= 50}
@@ -217,9 +419,41 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
               >
                 <ZoomOut className="w-4 h-4" />
               </button>
+              
+              {/* Zoom Slider */}
+              <input
+                type="range"
+                min="50"
+                max="200"
+                step="25"
+                value={zoomLevel}
+                onChange={(e) => {
+                  const newZoom = parseInt(e.target.value);
+                  console.log('🎚️ [WaveformViewer] Slider changed:', zoomLevel, '→', newZoom);
+                  setZoomLevel(newZoom);
+                }}
+                className="w-24 h-2 bg-white/30 rounded-lg appearance-none cursor-pointer
+                          [&::-webkit-slider-thumb]:appearance-none 
+                          [&::-webkit-slider-thumb]:w-4 
+                          [&::-webkit-slider-thumb]:h-4 
+                          [&::-webkit-slider-thumb]:bg-white 
+                          [&::-webkit-slider-thumb]:rounded-full 
+                          [&::-webkit-slider-thumb]:cursor-pointer
+                          [&::-webkit-slider-thumb]:shadow-md
+                          [&::-moz-range-thumb]:w-4 
+                          [&::-moz-range-thumb]:h-4 
+                          [&::-moz-range-thumb]:bg-white 
+                          [&::-moz-range-thumb]:rounded-full 
+                          [&::-moz-range-thumb]:cursor-pointer
+                          [&::-moz-range-thumb]:border-0
+                          [&::-moz-range-thumb]:shadow-md"
+                title={`Zoom: ${zoomLevel}%`}
+              />
+              
               <span className="px-2 text-xs font-semibold text-white min-w-[60px] text-center">
                 {zoomLevel}%
               </span>
+              
               <button
                 onClick={handleZoomIn}
                 disabled={zoomLevel >= 200}
@@ -354,7 +588,7 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
         ) : (
           /* Individual Phase Views */
           <div className="space-y-4" onWheel={handleWheel}>
-            {(activeView === 'v1' || activeView === 'combined') && (
+            {activeView === 'v1' && (
               <div>
                 <h4 className="text-sm font-semibold text-red-600 mb-2 flex items-center gap-2">
                   <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -389,7 +623,7 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
               </div>
             )}
 
-            {(activeView === 'v2' || activeView === 'combined') && (
+            {activeView === 'v2' && (
               <div>
                 <h4 className="text-sm font-semibold text-green-600 mb-2 flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -424,7 +658,7 @@ const WaveformViewer: React.FC<WaveformViewerProps> = ({ csvData }) => {
               </div>
             )}
 
-            {(activeView === 'v3' || activeView === 'combined') && (
+            {activeView === 'v3' && (
               <div>
                 <h4 className="text-sm font-semibold text-blue-600 mb-2 flex items-center gap-2">
                   <div className="w-3 h-3 bg-blue-500 rounded-full"></div>

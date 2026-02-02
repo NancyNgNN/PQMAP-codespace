@@ -7,7 +7,7 @@ export type SubstationStatus = 'operational' | 'maintenance' | 'offline';
 export type CustomerType = 'residential' | 'commercial' | 'industrial';
 export type ServiceType = 'site_survey' | 'harmonic_analysis' | 'consultation' | 'on_site_study' | 'power_quality_audit' | 'installation_support';
 export type ReportType = 'supply_reliability' | 'annual_pq' | 'meter_availability' | 'customer_impact' | 'harmonic_analysis' | 'voltage_quality';
-export type NotificationType = 'email' | 'sms' | 'both';
+export type NotificationType = 'email' | 'teams';
 export type NotificationStatus = 'pending' | 'sent' | 'failed';
 export type ReportStatus = 'generating' | 'completed' | 'failed';
 export type SystemStatus = 'healthy' | 'degraded' | 'down';
@@ -214,6 +214,7 @@ export interface PQEvent {
    // Cause Analysis
   cause_group: string | null;
   cause: string | null;
+  psbg_cause: 'VEGETATION' | 'DAMAGED BY THIRD PARTY' | 'UNCONFIRMED' | 'ANIMALS, BIRDS, INSECTS' | null;
   description: string | null;
     // Equipment Fault Details
   object_part_group: string | null;
@@ -312,30 +313,32 @@ export interface HarmonicEvent {
 export interface IDRRecord {
   id: string;
   event_id: string;
-  // Basic Information
+  // IDR Core Information
   idr_no: string | null;
   status: string | null;
-  voltage_level: string | null;
+  voltage_level: '400kV' | '132kV' | '11kV' | '380V' | null;
   duration_ms: number | null;
-  // Location & Equipment
-  address: string | null;
-  equipment_type: string | null;
-  // Voltage Measurements
+  // Fault & Asset Location
   v1: number | null;
   v2: number | null;
   v3: number | null;
-  // Fault Details
-  fault_type: string | null;
-  // Cause Analysis
+  address: string | null;
+  circuit: string | null;
+  equipment_type: string | null;
+  // Root Cause Analysis
   cause_group: string | null;
   cause: string; // REQUIRED
+  faulty_component: string | null;
   remarks: string | null;
+  // Extended Technical Details
+  external_internal: 'external' | 'internal' | null;
   object_part_group: string | null;
   object_part_code: string | null;
   damage_group: string | null;
   damage_code: string | null;
-  // Environment & Operations
+  fault_type: string | null;
   outage_type: string | null;
+  // Environment & Operations
   weather: string | null;
   weather_condition: string | null;
   responsible_oc: string | null;
@@ -538,6 +541,9 @@ export interface SubstationMapFilters {
   profileId: string;
   startDate: string;
   endDate: string;
+  includeFalseEvents: boolean;
+  motherEventsOnly: boolean;
+  voltageLevels: string[];
 }
 
 export interface SubstationMapProfile {
@@ -658,13 +664,12 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 export interface NotificationChannel {
   id: string;
   name: string;
-  type: 'email' | 'sms' | 'teams';
+  type: 'email' | 'teams';
   status: 'enabled' | 'disabled' | 'maintenance';
   priority: number;
   config: {
     demo_mode?: boolean;
     smtp_server?: string;
-    sms_gateway?: string;
     teams_webhook?: string;
     [key: string]: any;
   };
@@ -685,7 +690,6 @@ export interface NotificationTemplate {
   description: string | null;
   email_subject: string | null;
   email_body: string | null;
-  sms_body: string | null;
   teams_body: string | null;
   variables: Array<{
     name: string;
@@ -720,7 +724,6 @@ export interface NotificationGroupMember {
   group_id: string;
   user_id: string;
   email: string | null;
-  phone: string | null;
   preferred_channels: string[];
   added_at: string;
   added_by: string | null;
@@ -760,7 +763,6 @@ export interface NotificationLog {
   recipient_type: 'user' | 'group' | 'adhoc';
   recipient_id: string | null;
   recipient_email: string | null;
-  recipient_phone: string | null;
   channel: string;
   subject: string | null;
   message: string | null;

@@ -3,6 +3,7 @@ import { Users, Plus, Edit2, Trash2, UserCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import type { NotificationGroup } from '../../types/database';
+import sampleGroups from '../../data/sampleNotificationGroups.json';
 
 interface GroupListProps {
   onEdit: (group: NotificationGroup) => void;
@@ -28,25 +29,23 @@ export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps)
   const loadGroups = async () => {
     setLoading(true);
     
-    // Get groups with member count
-    const { data: groupsData } = await supabase
-      .from('notification_groups')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (groupsData) {
-      // Get member counts for each group
-      const groupsWithCounts = await Promise.all(
-        groupsData.map(async (group) => {
-          const { count } = await supabase
-            .from('notification_group_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('group_id', group.id);
-
-          return { ...group, member_count: count || 0 };
-        })
-      );
-
+    // Load from localStorage (JSON file simulation)
+    const storedGroups = localStorage.getItem('notificationGroups');
+    if (storedGroups) {
+      const parsedGroups = JSON.parse(storedGroups);
+      // Add member_count: 0 for display (since we don't track members in localStorage yet)
+      const groupsWithCounts = parsedGroups.map((group: any) => ({
+        ...group,
+        member_count: 0
+      }));
+      setGroups(groupsWithCounts);
+    } else {
+      // Initialize with sample groups if localStorage is empty
+      const groupsWithCounts = sampleGroups.map((group: any) => ({
+        ...group,
+        member_count: 0
+      }));
+      localStorage.setItem('notificationGroups', JSON.stringify(sampleGroups));
       setGroups(groupsWithCounts);
     }
 
@@ -59,19 +58,13 @@ export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps)
     }
 
     try {
-      // Delete group members first
-      await supabase
-        .from('notification_group_members')
-        .delete()
-        .eq('group_id', groupId);
-
-      // Delete group
-      const { error } = await supabase
-        .from('notification_groups')
-        .delete()
-        .eq('id', groupId);
-
-      if (error) throw error;
+      // Load from localStorage and delete
+      const storedGroups = localStorage.getItem('notificationGroups');
+      if (storedGroups) {
+        const parsedGroups = JSON.parse(storedGroups);
+        const updatedGroups = parsedGroups.filter((group: any) => group.id !== groupId);
+        localStorage.setItem('notificationGroups', JSON.stringify(updatedGroups));
+      }
 
       toast.success(`Group "${groupName}" deleted successfully!`);
       loadGroups();
@@ -85,12 +78,15 @@ export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps)
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     
     try {
-      const { error } = await supabase
-        .from('notification_groups')
-        .update({ status: newStatus })
-        .eq('id', groupId);
-
-      if (error) throw error;
+      // Load from localStorage and update
+      const storedGroups = localStorage.getItem('notificationGroups');
+      if (storedGroups) {
+        const parsedGroups = JSON.parse(storedGroups);
+        const updatedGroups = parsedGroups.map((group: any) => 
+          group.id === groupId ? { ...group, status: newStatus } : group
+        );
+        localStorage.setItem('notificationGroups', JSON.stringify(updatedGroups));
+      }
 
       toast.success(`Group "${groupName}" ${newStatus === 'active' ? 'activated' : 'deactivated'}!`);
       loadGroups();

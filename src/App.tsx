@@ -5,15 +5,13 @@ import LoginPage from './components/LoginPage';
 import Navigation from './components/Navigation';
 import CriticalMessageBar from './components/CriticalMessageBar';
 import NotificationBell from './components/NotificationBell';
+import TyphoonModeIndicator from './components/TyphoonModeIndicator';
 import Dashboard from './components/Dashboard/Dashboard';
 import EventManagement from './components/EventManagement/EventManagement';
-import ImpactAnalysis from './components/ImpactAnalysis';
 import AssetManagement from './components/AssetManagement';
 import Reporting from './components/Reporting';
 import Notifications from './components/Notifications';
-import TemplateManagement from './components/Notifications/TemplateManagement';
 import PQServices from './components/PQServices';
-import SystemHealth from './components/SystemHealth';
 import CustomerTransformerMatching from './components/CustomerTransformerMatching';
 import UserManagement from './components/UserManagement';
 import SCADA from './components/SCADA';
@@ -59,7 +57,8 @@ function AppContent() {
       />
       <main className="flex-1 overflow-y-auto">
         {/* Header Bar with Notification Bell */}
-        <div className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-end shadow-sm">
+        <div className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-end gap-3 shadow-sm">
+          <TyphoonModeIndicator />
           <NotificationBell />
         </div>
         

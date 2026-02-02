@@ -96,7 +96,13 @@ export default function NotificationLogs() {
       }
       // Load from localStorage (Demo Mode)
       const data = stored ? JSON.parse(stored) : mockMessages;
-      setMessages(data as CriticalMessage[]);
+      
+      // 🔑 Sort by creation date descending (newest first)
+      const sortedMessages = (data as CriticalMessage[]).sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      
+      setMessages(sortedMessages);
     } catch (error) {
       toast.error('Failed to load messages');
       console.error(error);
@@ -238,6 +244,9 @@ export default function NotificationLogs() {
 
       // Save back to localStorage
       localStorage.setItem(STORAGE_KEY, JSON.stringify(allMessages));
+      
+      // 🔑 Dispatch custom event to notify CriticalMessageBar of changes
+      window.dispatchEvent(new Event('criticalMessageUpdate'));
 
       resetForm();
       await loadCriticalMessages();
@@ -271,6 +280,10 @@ export default function NotificationLogs() {
         const filtered = allMessages.filter(msg => msg.id !== id);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
       }
+      
+      // 🔑 Dispatch custom event to notify CriticalMessageBar of changes
+      window.dispatchEvent(new Event('criticalMessageUpdate'));
+      
       toast.success('Message deleted successfully');
       await loadCriticalMessages();
     } catch (error) {

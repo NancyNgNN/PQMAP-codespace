@@ -44,7 +44,7 @@ The project uses a streamlined documentation structure (see [DOCUMENTATION_RESTR
    - Power BI integration options
    - Deferred features tracking
 
-5. **[STYLES_GUIDE.md](../Artifacts/STYLES_GUIDE.md)** - UI/UX design guidelines
+5. **[STYLES_GUIDE.md] - UI/UX design guidelines
    - RefreshKey pattern (lines 3334-3650)
    - Export/Import patterns (lines 100-500)
    - Button/Dropdown standards

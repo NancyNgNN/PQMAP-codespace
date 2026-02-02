@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
-import { FileText, Plus, Edit2, Archive, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { FileText, Plus, Edit2, Archive, CheckCircle, Clock, XCircle, Trash2, ArchiveRestore } from 'lucide-react';
 import { getTemplates, archiveTemplate } from '../../services/notificationService';
 import type { NotificationTemplate } from '../../types/database';
 import TemplateApprovalModal from './TemplateApprovalModal';
+import sampleTemplates from '../../data/sampleNotificationTemplates.json';
 
 type StatusFilter = 'all' | 'draft' | 'approved' | 'archived';
 
 interface TemplateListProps {
   onEdit: (template: NotificationTemplate) => void;
   onNew: () => void;
+  refreshKey?: number;
 }
 
-export default function TemplateList({ onEdit, onNew }: TemplateListProps) {
+export default function TemplateList({ onEdit, onNew, refreshKey }: TemplateListProps) {
   const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
   const [filteredTemplates, setFilteredTemplates] = useState<NotificationTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,16 +26,31 @@ export default function TemplateList({ onEdit, onNew }: TemplateListProps) {
     loadTemplates();
   }, []);
 
+  // Reload when refreshKey changes
+  useEffect(() => {
+    if (refreshKey !== undefined && refreshKey > 0) {
+      loadTemplates();
+    }
+  }, [refreshKey]);
+
   useEffect(() => {
     filterTemplates();
   }, [templates, statusFilter, searchQuery]);
 
   const loadTemplates = async () => {
     setLoading(true);
-    const { data, error } = await getTemplates();
-    if (data && !error) {
-      setTemplates(data);
+    
+    // Load from localStorage (JSON file simulation)
+    const storedTemplates = localStorage.getItem('notificationTemplates');
+    if (storedTemplates) {
+      const parsedTemplates = JSON.parse(storedTemplates);
+      setTemplates(parsedTemplates);
+    } else {
+      // Initialize with sample templates if localStorage is empty
+      localStorage.setItem('notificationTemplates', JSON.stringify(sampleTemplates));
+      setTemplates(sampleTemplates as any);
     }
+    
     setLoading(false);
   };
 
@@ -60,8 +77,46 @@ export default function TemplateList({ onEdit, onNew }: TemplateListProps) {
 
   const handleArchive = async (template: NotificationTemplate) => {
     if (window.confirm(`Are you sure you want to archive "${template.name}"?`)) {
-      const { error } = await archiveTemplate(template.id);
-      if (!error) {
+      // Load from localStorage and update status
+      const storedTemplates = localStorage.getItem('notificationTemplates');
+      if (storedTemplates) {
+        const parsedTemplates = JSON.parse(storedTemplates);
+        const updatedTemplates = parsedTemplates.map((t: any) =>
+          t.id === template.id ? { ...t, previous_status: t.status, status: 'archived' } : t
+        );
+        localStorage.setItem('notificationTemplates', JSON.stringify(updatedTemplates));
+        loadTemplates();
+      }
+    }
+  };
+
+  const handleUnarchive = async (template: NotificationTemplate) => {
+    if (window.confirm(`Are you sure you want to unarchive "${template.name}"?`)) {
+      // Load from localStorage and restore previous status (draft or approved)
+      const storedTemplates = localStorage.getItem('notificationTemplates');
+      if (storedTemplates) {
+        const parsedTemplates = JSON.parse(storedTemplates);
+        const updatedTemplates = parsedTemplates.map((t: any) => {
+          if (t.id === template.id) {
+            const restoredStatus = t.previous_status || 'approved'; // Default to approved if no previous status
+            return { ...t, status: restoredStatus, previous_status: undefined };
+          }
+          return t;
+        });
+        localStorage.setItem('notificationTemplates', JSON.stringify(updatedTemplates));
+        loadTemplates();
+      }
+    }
+  };
+
+  const handleDelete = async (template: NotificationTemplate) => {
+    if (window.confirm(`Are you sure you want to permanently delete "${template.name}"? This action cannot be undone.`)) {
+      // Load from localStorage and remove the template
+      const storedTemplates = localStorage.getItem('notificationTemplates');
+      if (storedTemplates) {
+        const parsedTemplates = JSON.parse(storedTemplates);
+        const updatedTemplates = parsedTemplates.filter((t: any) => t.id !== template.id);
+        localStorage.setItem('notificationTemplates', JSON.stringify(updatedTemplates));
         loadTemplates();
       }
     }
@@ -329,6 +384,22 @@ export default function TemplateList({ onEdit, onNew }: TemplateListProps) {
                             <Archive className="w-4 h-4 text-amber-600 group-hover:text-amber-700" />
                           </button>
                         )}
+                        {template.status === 'archived' && (
+                          <button
+                            onClick={() => handleUnarchive(template)}
+                            className="p-2 hover:bg-green-50 rounded-lg transition-all group"
+                            title="Unarchive"
+                          >
+                            <ArchiveRestore className="w-4 h-4 text-green-600 group-hover:text-green-700" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(template)}
+                          className="p-2 hover:bg-red-50 rounded-lg transition-all group"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600 group-hover:text-red-700" />
+                        </button>
                       </div>
                     </td>
                   </tr>
