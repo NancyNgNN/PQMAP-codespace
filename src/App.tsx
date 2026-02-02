@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import Navigation from './components/Navigation';
 import CriticalMessageBar from './components/CriticalMessageBar';
+import NotificationBell from './components/NotificationBell';
 import Dashboard from './components/Dashboard/Dashboard';
 import EventManagement from './components/EventManagement/EventManagement';
 import ImpactAnalysis from './components/ImpactAnalysis';
