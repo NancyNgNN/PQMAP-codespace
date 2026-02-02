@@ -58,16 +58,18 @@ function AppContent() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <main className="flex-1 overflow-y-auto">
+        {/* Header Bar with Notification Bell */}
+        <div className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-end shadow-sm">
+          <NotificationBell />
+        </div>
+        
         {currentView !== 'reporting' && <CriticalMessageBar />}
         {currentView === 'dashboard' && <Dashboard onNavigateToMeter={handleNavigateToMeter} />}
         {currentView === 'events' && <EventManagement />}
-        {currentView === 'analytics' && <ImpactAnalysis />}
         {currentView === 'assets' && <AssetManagement selectedMeterId={selectedMeterId} onClearSelectedMeter={() => setSelectedMeterId(null)} />}
         {currentView === 'reporting' && <Reporting />}
         {currentView === 'notifications' && <Notifications />}
-        {currentView === 'templates' && <TemplateManagement />}
         {currentView === 'services' && <PQServices />}
-        {currentView === 'health' && <SystemHealth />}
         {currentView === 'userManagement' && <UserManagement />}
         {currentView === 'scada' && <SCADA />}
         {currentView === 'meterHierarchy' && <MeterHierarchy />}
