@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS notification_rules CASCADE;
 CREATE TABLE notification_channels (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL UNIQUE,
-  type text NOT NULL CHECK (type IN ('email', 'sms', 'teams', 'webhook')),
+  type text NOT NULL CHECK (type IN ('email', 'teams', 'webhook')),
   description text,
   status text DEFAULT 'enabled' CHECK (status IN ('enabled', 'disabled', 'maintenance')),
   priority integer DEFAULT 1,
@@ -76,7 +76,6 @@ CREATE TABLE notification_templates (
   -- Template Content (by channel)
   email_subject text,
   email_body text,
-  sms_body text,
   teams_body text,
   
   -- Variables Definition (JSON array)
@@ -87,7 +86,7 @@ CREATE TABLE notification_templates (
   
   -- Metadata
   version integer DEFAULT 1,
-  applicable_channels text[] DEFAULT ARRAY['email', 'sms', 'teams'],
+  applicable_channels text[] DEFAULT ARRAY['email', 'teams'],
   tags text[] DEFAULT ARRAY[]::text[],
   
   created_at timestamptz DEFAULT now(),
@@ -282,13 +281,6 @@ INSERT INTO notification_channels (name, type, description, config, status) VALU
   'enabled'
 ),
 (
-  'SMS',
-  'sms',
-  'SMS text message notifications',
-  '{"provider": "demo", "max_length": 160, "demo_mode": true}',
-  'enabled'
-),
-(
   'Microsoft Teams',
   'teams',
   'Microsoft Teams webhook integration (demo)',
@@ -305,7 +297,6 @@ INSERT INTO notification_templates (
   description, 
   email_subject, 
   email_body, 
-  sms_body, 
   teams_body, 
   variables, 
   status, 
@@ -319,7 +310,6 @@ INSERT INTO notification_templates (
   'Notification for critical power quality events',
   'CRITICAL: {{event_type}} at {{substation_name}}',
   '<html><body><h2 style="color: #d32f2f;">🚨 Critical Power Quality Event</h2><table style="width: 100%; border-collapse: collapse;"><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Event Type:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{event_type}}</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Severity:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{severity}}</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Location:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{substation_name}}</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Time:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{event_timestamp}}</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Magnitude:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{magnitude}}%</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Duration:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{duration}}ms</td></tr></table><p style="margin-top: 20px;"><a href="{{event_link}}" style="background-color: #1976d2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">View Event Details</a></p></body></html>',
-  'CRITICAL PQ Event: {{event_type}} at {{substation_name}}. Magnitude: {{magnitude}}%. Duration: {{duration}}ms. View: {{event_link}}',
   '🚨 **CRITICAL PQ Event**\n\n**Event:** {{event_type}}\n**Severity:** {{severity}}\n**Location:** {{substation_name}}\n**Time:** {{event_timestamp}}\n**Magnitude:** {{magnitude}}%\n**Duration:** {{duration}}ms\n\n[View Event Details]({{event_link}})',
   '[
     {"name": "event_type", "dataType": "string", "required": true, "description": "Type of PQ event", "example": "voltage_dip"},
@@ -331,7 +321,7 @@ INSERT INTO notification_templates (
     {"name": "event_link", "dataType": "string", "required": true, "description": "Link to event details", "example": "https://pqmap.clp.com/events/123"}
   ]',
   'approved',
-  ARRAY['email', 'sms', 'teams'],
+  ARRAY['email', 'teams'],
   (SELECT id FROM profiles WHERE role = 'admin' LIMIT 1),
   now()
 ),
@@ -341,7 +331,6 @@ INSERT INTO notification_templates (
   'Voltage dip event affecting multiple customers',
   'Voltage Dip Alert: {{customer_count}} Customers Affected at {{substation_name}}',
   '<html><body><h2 style="color: #f57c00;">⚠️ Voltage Dip Event</h2><p style="font-size: 16px;">A voltage dip event has been detected with customer impact.</p><table style="width: 100%; border-collapse: collapse; margin-top: 20px;"><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Location:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{substation_name}}</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Time:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{event_timestamp}}</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Magnitude:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{magnitude}}%</td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Duration:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{duration}}ms</td></tr><tr style="background-color: #fff3e0;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>Affected Customers:</strong></td><td style="padding: 8px; border: 1px solid #ddd;"><strong>{{customer_count}}</strong></td></tr><tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Est. Downtime:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{{downtime_min}} minutes</td></tr></table><p style="margin-top: 20px;"><a href="{{event_link}}" style="background-color: #1976d2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">View Full Report</a></p></body></html>',
-  'Voltage dip at {{substation_name}}: {{customer_count}} customers affected. Magnitude: {{magnitude}}%. Duration: {{duration}}ms',
   '⚠️ **Voltage Dip Event**\n\n**Location:** {{substation_name}}\n**Time:** {{event_timestamp}}\n**Customers Affected:** {{customer_count}}\n**Magnitude:** {{magnitude}}%\n**Duration:** {{duration}}ms\n**Downtime:** ~{{downtime_min}} min',
   '[
     {"name": "substation_name", "dataType": "string", "required": true, "description": "Substation name", "example": "TSW Substation"},
@@ -391,7 +380,7 @@ INSERT INTO notification_rules (
     {"field": "magnitude", "operator": "less_than", "value": 80}
   ]',
   (SELECT id FROM notification_templates WHERE code = 'PQ_EVENT_CRITICAL' LIMIT 1),
-  ARRAY['email', 'sms', 'teams'],
+  ARRAY['email', 'teams'],
   ARRAY[(SELECT id FROM notification_groups WHERE name = 'Emergency Response Team' LIMIT 1)],
   false,
   true,

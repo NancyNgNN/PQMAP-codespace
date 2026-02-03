@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Settings2, Download } from 'lucide-react';
+import { Settings2, Download, X } from 'lucide-react';
 import { Substation, PQEvent, SubstationMapFilters } from '../../types/database';
 import html2canvas from 'html2canvas';
 import SubstationEventsTable from './SubstationEventsTable';
 import MapConfigModal from './MapConfigModal';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface SubstationMapProps {
   substations: Substation[];
@@ -36,14 +37,38 @@ const MAP_HEIGHT = 480;
 export default function SubstationMap({ substations, events }: SubstationMapProps) {
   const [selectedSubstation, setSelectedSubstation] = useState<string | null>(null);
   const [hoveredSubstation, setHoveredSubstation] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [showTooltipPanel, setShowTooltipPanel] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   
   const [filters, setFilters] = useState<SubstationMapFilters>(() => {
     const saved = localStorage.getItem('substationMapFilters');
-    return saved ? JSON.parse(saved) : { profileId: '', startDate: '', endDate: '' };
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Ensure all required properties exist (backward compatibility)
+        return {
+          profileId: parsed.profileId || '',
+          startDate: parsed.startDate || '',
+          endDate: parsed.endDate || '',
+          includeFalseEvents: parsed.includeFalseEvents ?? false,
+          motherEventsOnly: parsed.motherEventsOnly ?? true,
+          voltageLevels: parsed.voltageLevels || []
+        };
+      } catch (e) {
+        console.error('Failed to parse saved filters:', e);
+      }
+    }
+    // Default values
+    return { 
+      profileId: '', 
+      startDate: '', 
+      endDate: '',
+      includeFalseEvents: false,
+      motherEventsOnly: true,
+      voltageLevels: []
+    };
   });
 
   const mapRef = useRef<HTMLDivElement>(null);
@@ -75,15 +100,23 @@ export default function SubstationMap({ substations, events }: SubstationMapProp
   // Filter events based on criteria
   const getFilteredEvents = (): PQEvent[] => {
     return events.filter(event => {
-      // Only mother events
-      if (!event.is_mother_event) return false;
+      // Mother events only filter
+      if (filters.motherEventsOnly && !event.is_mother_event) return false;
       
-      // Exclude false events
-      if (event.false_event) return false;
+      // False events filter
+      if (!filters.includeFalseEvents && event.false_event) return false;
       
       // Date range filter
       if (filters.startDate && new Date(event.timestamp) < new Date(filters.startDate)) return false;
       if (filters.endDate && new Date(event.timestamp) > new Date(filters.endDate)) return false;
+      
+      // Voltage level filter (filter by substation voltage level)
+      if (filters.voltageLevels && filters.voltageLevels.length > 0) {
+        const substation = substations.find(s => s.id === event.substation_id);
+        if (substation && !filters.voltageLevels.includes(substation.voltage_level)) {
+          return false;
+        }
+      }
       
       return true;
     });
@@ -135,22 +168,42 @@ export default function SubstationMap({ substations, events }: SubstationMapProp
 
   const bubbles = calculateBubbles();
   const filteredEvents = getFilteredEvents();
+  
+  // Calculate quarterly data for hovered substation
+  const getQuarterlyData = (substationId: string) => {
+    const substationEvents = filteredEvents.filter(e => e.substation_id === substationId);
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    const quarterData = quarters.map(quarter => {
+      const quarterNum = parseInt(quarter.substring(1));
+      const count = substationEvents.filter(e => {
+        const month = new Date(e.timestamp).getMonth() + 1;
+        return Math.ceil(month / 3) === quarterNum;
+      }).length;
+      return { quarter, count };
+    });
+    return quarterData;
+  };
+  
+  // Calculate monthly data for hovered substation
+  const getMonthlyData = (substationId: string) => {
+    const substationEvents = filteredEvents.filter(e => e.substation_id === substationId);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthData = months.map((month, index) => {
+      const count = substationEvents.filter(e => {
+        return new Date(e.timestamp).getMonth() === index;
+      }).length;
+      return { month, count };
+    });
+    return monthData;
+  };
 
   const handleBubbleClick = (substationId: string) => {
     setSelectedSubstation(substationId);
   };
 
-  const handleBubbleHover = (substationId: string | null, event?: React.MouseEvent) => {
+  const handleBubbleHover = (substationId: string | null) => {
     setHoveredSubstation(substationId);
-    if (substationId && event) {
-      const rect = mapRef.current?.getBoundingClientRect();
-      if (rect) {
-        setTooltipPos({
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top
-        });
-      }
-    }
+    setShowTooltipPanel(substationId !== null);
   };
 
   const handleExportMap = async () => {
@@ -182,6 +235,7 @@ export default function SubstationMap({ substations, events }: SubstationMapProp
 
   const selectedSubstationData = substations.find(s => s.id === selectedSubstation);
   const hoveredBubble = bubbles.find(b => b.id === hoveredSubstation);
+  const hoveredSubstationData = substations.find(s => s.id === hoveredSubstation);
 
   return (
     <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
@@ -257,28 +311,89 @@ export default function SubstationMap({ substations, events }: SubstationMapProp
                   strokeWidth={selectedSubstation === bubble.id ? 3 : 2}
                   className="cursor-pointer transition-all hover:opacity-90"
                   onClick={() => handleBubbleClick(bubble.id)}
-                  onMouseEnter={(e) => handleBubbleHover(bubble.id, e)}
+                  onMouseEnter={() => handleBubbleHover(bubble.id)}
                   onMouseLeave={() => handleBubbleHover(null)}
-                  onMouseMove={(e) => handleBubbleHover(bubble.id, e)}
                 />
               </g>
             ))}
           </svg>
 
-          {/* Tooltip */}
-          {hoveredBubble && (
-            <div
-              className="absolute bg-slate-900 text-white px-3 py-2 rounded-lg text-sm pointer-events-none z-10 shadow-lg"
-              style={{
-                left: tooltipPos.x + 10,
-                top: tooltipPos.y + 10
-              }}
-            >
-              <div className="font-semibold">{hoveredBubble.name}</div>
-              <div className="text-xs text-slate-300">Code: {hoveredBubble.code}</div>
-              <div className="text-xs text-slate-300">Region: {hoveredBubble.region}</div>
-              <div className="text-xs text-slate-300 mt-1">
-                {hoveredBubble.eventCount} incident{hoveredBubble.eventCount !== 1 ? 's' : ''}
+          {/* Fixed-Position Tooltip Panel */}
+          {showTooltipPanel && hoveredBubble && hoveredSubstationData && (
+            <div className="absolute top-4 right-4 bg-white rounded-lg shadow-2xl border border-slate-200 p-4 z-20" style={{ width: '800px' }}>
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h4 className="font-bold text-slate-900 text-lg">{hoveredSubstationData.name}</h4>
+                  <div className="flex items-center gap-4 mt-1">
+                    <span className="text-sm text-slate-600">Code: {hoveredSubstationData.code}</span>
+                    <span className="text-sm text-slate-600">Region: {hoveredSubstationData.region}</span>
+                  </div>
+                  <div className="mt-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full inline-block text-sm font-semibold">
+                    Total Events: {hoveredBubble.eventCount}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowTooltipPanel(false)}
+                  className="p-1 hover:bg-slate-100 rounded"
+                >
+                  <X className="w-4 h-4 text-slate-400" />
+                </button>
+              </div>
+
+              {/* Charts - Horizontal Layout */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Chart 1: Quarterly Data */}
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-700 mb-2">Events by Quarter</h5>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={getQuarterlyData(hoveredSubstationData.id)}
+                        dataKey="count"
+                        nameKey="quarter"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={60}
+                        label
+                      >
+                        {getQuarterlyData(hoveredSubstationData.id).map((_entry, index) => (
+                          <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'][index % 4]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Chart 2: Monthly Data */}
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-700 mb-2">Events by Month</h5>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={getMonthlyData(hoveredSubstationData.id)}
+                        dataKey="count"
+                        nameKey="month"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={60}
+                        label
+                      >
+                        {getMonthlyData(hoveredSubstationData.id).map((_entry, index) => (
+                          <Cell key={`cell-${index}`} fill={[
+                            '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b',
+                            '#10b981', '#06b6d4', '#6366f1', '#a855f7',
+                            '#f97316', '#84cc16', '#22d3ee', '#facc15'
+                          ][index % 12]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           )}

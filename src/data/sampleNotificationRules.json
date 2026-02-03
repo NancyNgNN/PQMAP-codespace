@@ -1,0 +1,95 @@
+[
+  {
+    "id": "rule-001",
+    "name": "Critical Events with Low Voltage",
+    "description": "Notify emergency team for events with magnitude below 80%",
+    "conditions": [
+      {
+        "field": "magnitude",
+        "operator": "less_than",
+        "value": 80
+      }
+    ],
+    "template_id": "template-001",
+    "channels": ["email"],
+    "notification_groups": ["group-001"],
+    "typhoon_mode_enabled": false,
+    "mother_event_only": true,
+    "include_waveform": true,
+    "priority": 1,
+    "active": true,
+    "created_at": "2026-01-14T10:00:00.000Z",
+    "updated_at": "2026-01-14T10:00:00.000Z"
+  },
+  {
+    "id": "rule-002",
+    "name": "Events Affecting 50+ Customers",
+    "description": "Alert management when events affect many customers",
+    "conditions": [
+      {
+        "field": "customer_count",
+        "operator": "greater_or_equal",
+        "value": 50
+      }
+    ],
+    "template_id": "template-002",
+    "channels": ["email"],
+    "notification_groups": ["group-003"],
+    "typhoon_mode_enabled": true,
+    "mother_event_only": true,
+    "include_waveform": false,
+    "priority": 2,
+    "active": true,
+    "created_at": "2026-01-14T10:00:00.000Z",
+    "updated_at": "2026-01-14T10:00:00.000Z"
+  },
+  {
+    "id": "rule-003",
+    "name": "Long Duration Events",
+    "description": "Notify operations team for events lasting over 500ms",
+    "conditions": [
+      {
+        "field": "duration",
+        "operator": "greater_than",
+        "value": 500
+      }
+    ],
+    "template_id": "template-001",
+    "channels": ["email"],
+    "notification_groups": ["group-004"],
+    "typhoon_mode_enabled": false,
+    "mother_event_only": false,
+    "include_waveform": false,
+    "priority": 3,
+    "active": true,
+    "created_at": "2026-01-14T10:00:00.000Z",
+    "updated_at": "2026-01-14T10:00:00.000Z"
+  },
+  {
+    "id": "rule-004",
+    "name": "High Customer Impact with Long Duration",
+    "description": "Critical alert for events affecting 100+ customers and lasting over 1000ms",
+    "conditions": [
+      {
+        "field": "customer_count",
+        "operator": "greater_or_equal",
+        "value": 100
+      },
+      {
+        "field": "duration",
+        "operator": "greater_than",
+        "value": 1000
+      }
+    ],
+    "template_id": "template-002",
+    "channels": ["email"],
+    "notification_groups": ["group-001", "group-003"],
+    "typhoon_mode_enabled": false,
+    "mother_event_only": true,
+    "include_waveform": true,
+    "priority": 1,
+    "active": true,
+    "created_at": "2026-01-14T10:00:00.000Z",
+    "updated_at": "2026-01-14T10:00:00.000Z"
+  }
+]

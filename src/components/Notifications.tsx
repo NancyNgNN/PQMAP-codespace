@@ -3,13 +3,12 @@ import { supabase } from '../lib/supabase';
 import { NotificationRule } from '../types/database';
 import { Bell, Plus, Edit2, Trash2, FileText, Radio, Users, ScrollText, LayoutDashboard, Settings, X } from 'lucide-react';
 import TemplateManagement from './Notifications/TemplateManagement';
-import ChannelManagement from './Notifications/ChannelManagement';
 import GroupManagement from './Notifications/GroupManagement';
 import RuleManagement from './Notifications/RuleManagement';
 import NotificationLogs from './Notifications/NotificationLogs';
 import SystemConfig from './Notifications/SystemConfig';
 
-type TabType = 'dashboard' | 'rules' | 'templates' | 'channels' | 'groups' | 'logs';
+type TabType = 'dashboard' | 'rules' | 'templates' | 'groups' | 'logs';
 
 export default function Notifications() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -55,7 +54,6 @@ export default function Notifications() {
     { id: 'dashboard' as TabType, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'rules' as TabType, label: 'Rules', icon: Bell },
     { id: 'templates' as TabType, label: 'Templates', icon: FileText },
-    { id: 'channels' as TabType, label: 'Channels', icon: Radio },
     { id: 'groups' as TabType, label: 'Groups', icon: Users },
     { id: 'logs' as TabType, label: 'Logs', icon: ScrollText },
   ];
@@ -70,12 +68,6 @@ export default function Notifications() {
             <p className="text-slate-600 mt-1">Configure alerts and notification rules</p>
           </div>
         </div>
-        {activeTab === 'rules' && (
-          <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:shadow-lg transition-all">
-            <Plus className="w-5 h-5" />
-            <span className="font-semibold">New Rule</span>
-          </button>
-        )}
       </div>
 
       {/* Tabs */}
@@ -175,8 +167,6 @@ export default function Notifications() {
 
           {activeTab === 'templates' && <TemplateManagement />}
 
-          {activeTab === 'channels' && <ChannelManagement />}
-
           {activeTab === 'groups' && <GroupManagement />}
 
           {activeTab === 'logs' && <NotificationLogs />}
@@ -200,7 +190,7 @@ export default function Notifications() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6">
-              <SystemConfig />
+              <SystemConfig onSaved={() => setShowSystemConfig(false)} />
             </div>
           </div>
         </div>

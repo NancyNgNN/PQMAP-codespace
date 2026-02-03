@@ -19,6 +19,23 @@ interface CustomerEventData {
   severity: 'critical' | 'high' | 'medium' | 'low';
 }
 
+interface CustomerServiceData {
+  customer_id: string;
+  account_number: string;
+  customer_name: string;
+  service_count: number;
+}
+
+interface ServiceRecord {
+  id: string;
+  service_type: string;
+  service_date: string;
+  findings: string | null;
+  recommendations: string | null;
+  customer_account: string;
+  customer_name: string;
+}
+
 interface CustomerEvent {
   account_number: string;
   customer_name: string;
@@ -31,9 +48,12 @@ interface CustomerEvent {
 
 export default function AffectedCustomerChart() {
   const chartRef = useRef<HTMLDivElement>(null);
+  const [view, setView] = useState<'events' | 'services'>('events');
   const [customerData, setCustomerData] = useState<CustomerEventData[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerEventData | null>(null);
+  const [serviceData, setServiceData] = useState<CustomerServiceData[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerEventData | CustomerServiceData | null>(null);
   const [customerEvents, setCustomerEvents] = useState<CustomerEvent[]>([]);
+  const [customerServices, setCustomerServices] = useState<ServiceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -67,8 +87,12 @@ export default function AffectedCustomerChart() {
   });
 
   useEffect(() => {
-    loadCustomerData();
-  }, [filters]);
+    if (view === 'events') {
+      loadCustomerData();
+    } else {
+      loadServiceData();
+    }
+  }, [filters, view]);
 
   useEffect(() => {
     localStorage.setItem('affected_customer_filters', JSON.stringify(filters));
@@ -86,6 +110,89 @@ export default function AffectedCustomerChart() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showExportDropdown]);
+
+  const loadServiceData = async () => {
+    setLoading(true);
+    console.log('🔄 Loading PQ service data with filters:', filters);
+    
+    try {
+      // Query all pq_service_records with customer join
+      const { data, error } = await supabase
+        .from('pq_service_records')
+        .select(`
+          customer_id,
+          service_type,
+          service_date,
+          customer:customers(account_number, name)
+        `);
+
+      if (error) {
+        console.error('❌ Service data query error:', error);
+        throw error;
+      }
+
+      console.log('✅ Service records loaded (before filtering):', data?.length || 0, 'records');
+      
+      // Filter by date range in memory
+      let filteredData = data || [];
+      if (filters.startDate && filters.endDate) {
+        const filterStart = new Date(filters.startDate);
+        const filterEnd = new Date(filters.endDate + 'T23:59:59');
+        
+        filteredData = data?.filter((record: any) => {
+          if (!record.service_date) return false; // Exclude if no service date
+          
+          const serviceDate = new Date(record.service_date);
+          
+          // Service is within filter period if service date is between start and end
+          return serviceDate >= filterStart && serviceDate <= filterEnd;
+        }) || [];
+        
+        console.log('✅ After date filter:', filteredData.length, 'records');
+      }
+
+      console.log('✅ Final filtered records:', filteredData.length);
+
+      // Aggregate data by customer
+      const customerMap = new Map<string, CustomerServiceData>();
+
+      filteredData.forEach((record: any) => {
+        if (!record.customer) return;
+
+        const customerId = record.customer_id;
+
+        if (!customerMap.has(customerId)) {
+          customerMap.set(customerId, {
+            customer_id: customerId,
+            account_number: record.customer.account_number,
+            customer_name: record.customer.name,
+            service_count: 0,
+          });
+        }
+
+        const customer = customerMap.get(customerId)!;
+        customer.service_count += 1;
+      });
+
+      const customers = Array.from(customerMap.values());
+      console.log('📊 Unique customers with services:', customers.length);
+
+      // Sort by service count and take top 10
+      customers.sort((a, b) => b.service_count - a.service_count);
+      const top10 = customers.slice(0, 10);
+
+      console.log('🔝 Top 10 customers (by service count):', top10.length);
+      if (top10.length > 0) {
+        console.log('📌 Top customer:', top10[0].account_number, 'with', top10[0].service_count, 'services');
+      }
+
+      setServiceData(top10);
+    } catch (error) {
+      console.error('❌ Error loading service data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadCustomerData = async () => {
     setLoading(true);
@@ -254,18 +361,82 @@ export default function AffectedCustomerChart() {
     }
   };
 
-  const handleCustomerClick = (customer: CustomerEventData) => {
+  const loadCustomerServices = async (customer: CustomerServiceData) => {
+    console.log('🔍 Loading services for customer:', customer.customer_id, customer.account_number);
+    console.log('🔍 Date range:', filters.startDate, 'to', filters.endDate);
+    
+    try {
+      const { data, error } = await supabase
+        .from('pq_service_records')
+        .select('id, service_type, service_date, findings, recommendations')
+        .eq('customer_id', customer.customer_id);
+
+      if (error) {
+        console.error('❌ Query error:', error);
+        throw error;
+      }
+
+      console.log('✅ All service records for customer:', data?.length || 0, 'services');
+      
+      // Filter by date range in memory
+      let filteredData = data || [];
+      if (filters.startDate && filters.endDate) {
+        const filterStart = new Date(filters.startDate);
+        const filterEnd = new Date(filters.endDate + 'T23:59:59');
+        
+        filteredData = data?.filter((record: any) => {
+          if (!record.service_date) return false;
+          
+          const serviceDate = new Date(record.service_date);
+          
+          return serviceDate >= filterStart && serviceDate <= filterEnd;
+        }) || [];
+      }
+
+      console.log('✅ Filtered service records:', filteredData.length, 'services');
+      
+      const services: ServiceRecord[] = filteredData.map((record: any) => ({
+        id: record.id,
+        service_type: record.service_type,
+        service_date: record.service_date,
+        findings: record.findings,
+        recommendations: record.recommendations,
+        customer_account: customer.account_number,
+        customer_name: customer.customer_name,
+      })).sort((a, b) => new Date(b.service_date).getTime() - new Date(a.service_date).getTime()) || [];
+
+      setCustomerServices(services);
+      setCurrentPage(1); // Reset to first page
+    } catch (error) {
+      console.error('❌ Error loading customer services:', error);
+      setCustomerServices([]);
+    }
+  };
+
+  const handleCustomerClick = (customer: CustomerEventData | CustomerServiceData) => {
     setSelectedCustomer(customer);
-    loadCustomerEvents(customer);
+    if (view === 'events') {
+      loadCustomerEvents(customer as CustomerEventData);
+    } else {
+      loadCustomerServices(customer as CustomerServiceData);
+    }
   };
 
   const handleApplyFilters = (newFilters: AffectedCustomerFilters) => {
     setFilters(newFilters);
     setSelectedCustomer(null);
     setCustomerEvents([]);
+    setCustomerServices([]);
   };
 
-  // Get severity color
+  const handleViewChange = (newView: 'events' | 'services') => {
+    setView(newView);
+    setSelectedCustomer(null);
+    setCustomerEvents([]);
+    setCustomerServices([]);
+  };
+
+  // Get severity color (for events view)
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -279,6 +450,15 @@ export default function AffectedCustomerChart() {
       default:
         return 'bg-slate-500 hover:bg-slate-600';
     }
+  };
+
+  // Get count-based color (for services view)
+  const getCountColor = (count: number, maxCount: number) => {
+    const percentage = (count / maxCount) * 100;
+    if (percentage >= 75) return 'bg-indigo-500 hover:bg-indigo-600';
+    if (percentage >= 50) return 'bg-blue-500 hover:bg-blue-600';
+    if (percentage >= 25) return 'bg-cyan-500 hover:bg-cyan-600';
+    return 'bg-teal-500 hover:bg-teal-600';
   };
 
   const getSeverityBadgeColor = (severity: string) => {
@@ -298,14 +478,21 @@ export default function AffectedCustomerChart() {
 
   // Squarified treemap algorithm
   const calculateTreeMapLayout = () => {
-    if (customerData.length === 0) return [];
+    const data = view === 'events' ? customerData : serviceData;
+    if (data.length === 0) return [];
 
     const containerWidth = 1000; // Normalized width
     const containerHeight = 400; // Normalized height
-    const totalValue = customerData.reduce((sum, c) => sum + c.event_count, 0);
+    const totalValue = data.reduce((sum, c) => 
+      sum + ('event_count' in c ? c.event_count : c.service_count), 0
+    );
 
     // Sort by value descending for better squarification
-    const sortedData = [...customerData].sort((a, b) => b.event_count - a.event_count);
+    const sortedData = [...data].sort((a, b) => {
+      const aCount = 'event_count' in a ? a.event_count : a.service_count;
+      const bCount = 'event_count' in b ? b.event_count : b.service_count;
+      return bCount - aCount;
+    });
 
     const layout: any[] = [];
     let remainingData = [...sortedData];
@@ -316,7 +503,9 @@ export default function AffectedCustomerChart() {
 
     while (remainingData.length > 0) {
       const isHorizontal = width >= height;
-      const totalRemaining = remainingData.reduce((sum, d) => sum + d.event_count, 0);
+      const totalRemaining = remainingData.reduce((sum, d) => 
+        sum + ('event_count' in d ? d.event_count : d.service_count), 0
+      );
       
       // Calculate how many items fit in current row/column
       let currentRow: typeof sortedData = [];
@@ -325,7 +514,9 @@ export default function AffectedCustomerChart() {
       
       for (let i = 0; i < remainingData.length; i++) {
         const testRow = remainingData.slice(0, i + 1);
-        const testValue = testRow.reduce((sum, d) => sum + d.event_count, 0);
+        const testValue = testRow.reduce((sum, d) => 
+          sum + ('event_count' in d ? d.event_count : d.service_count), 0
+        );
         const rowSize = isHorizontal 
           ? (testValue / totalRemaining) * height
           : (testValue / totalRemaining) * width;
@@ -333,9 +524,10 @@ export default function AffectedCustomerChart() {
         // Calculate worst aspect ratio in this row
         let worstRatio = 0;
         testRow.forEach(item => {
+          const itemCount = 'event_count' in item ? item.event_count : item.service_count;
           const itemSize = isHorizontal
-            ? (item.event_count / testValue) * width
-            : (item.event_count / testValue) * height;
+            ? (itemCount / testValue) * width
+            : (itemCount / testValue) * height;
           const ratio = Math.max(rowSize / itemSize, itemSize / rowSize);
           worstRatio = Math.max(worstRatio, ratio);
         });
@@ -356,9 +548,10 @@ export default function AffectedCustomerChart() {
       
       let offset = 0;
       currentRow.forEach(item => {
+        const itemCount = 'event_count' in item ? item.event_count : item.service_count;
         const itemSize = isHorizontal
-          ? (item.event_count / currentValue) * width
-          : (item.event_count / currentValue) * height;
+          ? (itemCount / currentValue) * width
+          : (itemCount / currentValue) * height;
         
         const rect = isHorizontal
           ? { x: offset, y, width: itemSize, height: rowSize }
@@ -367,7 +560,8 @@ export default function AffectedCustomerChart() {
         layout.push({
           ...item,
           ...rect,
-          percentage: (item.event_count / totalValue) * 100
+          count: itemCount,
+          percentage: (itemCount / totalValue) * 100
         });
         
         offset += isHorizontal ? itemSize : itemSize;
@@ -389,12 +583,18 @@ export default function AffectedCustomerChart() {
   };
 
   const treeMapData = calculateTreeMapLayout();
+  const maxCount = view === 'events' 
+    ? Math.max(...customerData.map(c => c.event_count), 1)
+    : Math.max(...serviceData.map(c => c.service_count), 1);
 
   // Pagination
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = customerEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-  const totalPages = Math.ceil(customerEvents.length / eventsPerPage);
+  const currentEvents = view === 'events' ? customerEvents.slice(indexOfFirstEvent, indexOfLastEvent) : [];
+  const currentServices = view === 'services' ? customerServices.slice(indexOfFirstEvent, indexOfLastEvent) : [];
+  const totalPages = view === 'events' 
+    ? Math.ceil(customerEvents.length / eventsPerPage)
+    : Math.ceil(customerServices.length / eventsPerPage);
 
   // Export to Excel
   const handleExportExcel = async () => {
@@ -575,7 +775,7 @@ export default function AffectedCustomerChart() {
             <div>
               <h2 className="text-xl font-bold text-slate-900">Affected Customers</h2>
               <p className="text-sm text-slate-600">
-                Top 10 customers by event count ({filters.startDate} to {filters.endDate})
+                Top 10 customers by {view === 'events' ? 'event' : 'service'} count ({filters.startDate} to {filters.endDate})
               </p>
             </div>
           </div>
@@ -633,45 +833,79 @@ export default function AffectedCustomerChart() {
           </div>
         </div>
 
+        {/* View Tabs */}
+        <div className="mb-6 flex gap-2 border-b border-slate-200">
+          <button
+            onClick={() => handleViewChange('events')}
+            className={`px-6 py-3 font-semibold transition-all relative ${
+              view === 'events'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Events
+          </button>
+          <button
+            onClick={() => handleViewChange('services')}
+            className={`px-6 py-3 font-semibold transition-all relative ${
+              view === 'services'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            PQ Services
+          </button>
+        </div>
+
         {/* Tree Map */}
         <div className="mb-6">
-          {customerData.length === 0 ? (
+          {(view === 'events' ? customerData : serviceData).length === 0 ? (
             <div className="h-96 flex items-center justify-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
               <div className="text-center">
                 <Users className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                <p className="text-slate-600">No customer data available</p>
+                <p className="text-slate-600">No {view === 'events' ? 'event' : 'service'} data available</p>
                 <p className="text-sm text-slate-500 mt-1">Adjust the date range or filters</p>
               </div>
             </div>
           ) : (
             <div className="relative w-full bg-slate-50 rounded-lg" style={{ height: '400px' }}>
-              {treeMapData.map((customer) => (
-                <button
-                  key={customer.customer_id}
-                  onClick={() => handleCustomerClick(customer)}
-                  className={`
-                    absolute ${getSeverityColor(customer.severity)}
-                    text-white p-3 rounded-lg transition-all duration-200
-                    hover:shadow-lg hover:scale-[1.02] hover:z-10
-                    border-2 border-white
-                    ${selectedCustomer?.customer_id === customer.customer_id ? 'ring-4 ring-blue-300 shadow-xl z-20' : ''}
-                  `}
-                  style={{
-                    left: `${(customer.x / 1000) * 100}%`,
-                    top: `${(customer.y / 400) * 100}%`,
-                    width: `${(customer.width / 1000) * 100}%`,
-                    height: `${(customer.height / 400) * 100}%`,
-                  }}
-                  title={`${customer.customer_name}\nEvents: ${customer.event_count}\nCritical: ${customer.critical_count}, High: ${customer.high_count}, Medium: ${customer.medium_count}, Low: ${customer.low_count}`}
-                >
-                  <div className="flex flex-col h-full justify-center overflow-hidden">
-                    <div className="text-xs font-medium mb-1 truncate">{customer.account_number}</div>
-                    <div className="text-sm font-semibold truncate">{customer.customer_name}</div>
-                    <div className="text-2xl font-bold mt-1">{customer.event_count}</div>
-                    <div className="text-xs opacity-90">events</div>
-                  </div>
-                </button>
-              ))}
+              {treeMapData.map((customer) => {
+                const isEvent = 'event_count' in customer;
+                const colorClass = isEvent 
+                  ? getSeverityColor((customer as any).severity)
+                  : getCountColor((customer as any).service_count, maxCount);
+                const tooltipText = isEvent
+                  ? `${customer.customer_name}\nEvents: ${(customer as any).event_count}\nCritical: ${(customer as any).critical_count}, High: ${(customer as any).high_count}, Medium: ${(customer as any).medium_count}, Low: ${(customer as any).low_count}`
+                  : `${customer.customer_name}\nPQ Services: ${(customer as any).service_count}`;
+                
+                return (
+                  <button
+                    key={customer.customer_id}
+                    onClick={() => handleCustomerClick(customer)}
+                    className={`
+                      absolute ${colorClass}
+                      text-white p-3 rounded-lg transition-all duration-200
+                      hover:shadow-lg hover:scale-[1.02] hover:z-10
+                      border-2 border-white
+                      ${selectedCustomer?.customer_id === customer.customer_id ? 'ring-4 ring-blue-300 shadow-xl z-20' : ''}
+                    `}
+                    style={{
+                      left: `${(customer.x / 1000) * 100}%`,
+                      top: `${(customer.y / 400) * 100}%`,
+                      width: `${(customer.width / 1000) * 100}%`,
+                      height: `${(customer.height / 400) * 100}%`,
+                    }}
+                    title={tooltipText}
+                  >
+                    <div className="flex flex-col h-full justify-center overflow-hidden">
+                      <div className="text-xs font-medium mb-1 truncate">{customer.account_number}</div>
+                      <div className="text-sm font-semibold truncate">{customer.customer_name}</div>
+                      <div className="text-2xl font-bold mt-1">{customer.count}</div>
+                      <div className="text-xs opacity-90">{view === 'events' ? 'events' : 'services'}</div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -682,85 +916,136 @@ export default function AffectedCustomerChart() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  Events for {selectedCustomer.account_number}
+                  {view === 'events' ? 'Events' : 'PQ Services'} for {selectedCustomer.account_number}
                 </h3>
                 <p className="text-sm text-slate-600">{selectedCustomer.customer_name}</p>
               </div>
               <div className="text-sm text-slate-600">
-                Total: {customerEvents.length} events
+                Total: {view === 'events' ? customerEvents.length : customerServices.length} {view === 'events' ? 'events' : 'services'}
               </div>
             </div>
 
-            {customerEvents.length === 0 ? (
+            {(view === 'events' ? customerEvents : customerServices).length === 0 ? (
               <div className="py-8 text-center text-slate-500">
-                No events found for this customer
+                No {view === 'events' ? 'events' : 'services'} found for this customer
               </div>
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          Customer Account
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          Customer Name
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          Event Type
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          PQ Services
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          Timestamp
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          Duration
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          Severity
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-slate-100">
-                      {currentEvents.map((event, index) => (
-                        <tr key={index} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 text-sm text-slate-900">{event.account_number}</td>
-                          <td className="px-4 py-3 text-sm text-slate-600">{event.customer_name}</td>
-                          <td className="px-4 py-3 text-sm text-slate-900 capitalize">
-                            {event.event_type.replace(/_/g, ' ')}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-600">
-                            {event.service_types && event.service_types.length > 0
-                              ? event.service_types.map(st => st.replace(/_/g, ' ')).join(', ')
-                              : '-'}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-600">
-                            {new Date(event.timestamp).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-600">
-                            {event.duration_ms < 1000
-                              ? `${event.duration_ms}ms`
-                              : `${(event.duration_ms / 1000).toFixed(2)}s`}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded ${getSeverityBadgeColor(event.severity)}`}>
-                              {event.severity}
-                            </span>
-                          </td>
+                  {view === 'events' ? (
+                    <table className="min-w-full divide-y divide-slate-200">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Customer Account
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Customer Name
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Event Type
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            PQ Services
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Timestamp
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Duration
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Severity
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-slate-100">
+                        {currentEvents.map((event, index) => (
+                          <tr key={index} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 text-sm text-slate-900">{event.account_number}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600">{event.customer_name}</td>
+                            <td className="px-4 py-3 text-sm text-slate-900 capitalize">
+                              {event.event_type.replace(/_/g, ' ')}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600">
+                              {event.service_types && event.service_types.length > 0
+                                ? event.service_types.map(st => st.replace(/_/g, ' ')).join(', ')
+                                : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600">
+                              {new Date(event.timestamp).toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600">
+                              {event.duration_ms < 1000
+                                ? `${event.duration_ms}ms`
+                                : `${(event.duration_ms / 1000).toFixed(2)}s`}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded ${getSeverityBadgeColor(event.severity)}`}>
+                                {event.severity}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <table className="min-w-full divide-y divide-slate-200">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Customer Account
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Customer Name
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Service Type
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Service Date
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Findings
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Recommendations
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-slate-100">
+                        {currentServices.map((service) => (
+                          <tr key={service.id} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 text-sm text-slate-900">{service.customer_account}</td>
+                            <td className="px-4 py-3 text-sm text-slate-600">{service.customer_name}</td>
+                            <td className="px-4 py-3 text-sm text-slate-900 capitalize">
+                              {service.service_type.replace(/_/g, ' ')}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600">
+                              {service.service_date ? new Date(service.service_date).toLocaleDateString() : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600">
+                              <div className="max-w-xs truncate" title={service.findings || '-'}>
+                                {service.findings || '-'}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-600">
+                              <div className="max-w-xs truncate" title={service.recommendations || '-'}>
+                                {service.recommendations || '-'}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="mt-4 flex items-center justify-between">
                     <div className="text-sm text-slate-600">
-                      Showing {indexOfFirstEvent + 1} to {Math.min(indexOfLastEvent, customerEvents.length)} of {customerEvents.length} events
+                      Showing {indexOfFirstEvent + 1} to {Math.min(indexOfLastEvent, view === 'events' ? customerEvents.length : customerServices.length)} of {view === 'events' ? customerEvents.length : customerServices.length} {view === 'events' ? 'events' : 'services'}
                     </div>
                     <div className="flex items-center gap-2">
                       <button

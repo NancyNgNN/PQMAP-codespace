@@ -14,11 +14,10 @@ export default function Navigation({ currentView, onViewChange, collapsed, onTog
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'events', icon: Activity, label: 'Event Management' },
-    { id: 'analytics', icon: BarChart3, label: 'Impact Analysis' },
     { id: 'assets', icon: DatabaseIcon, label: 'Asset Management' },
     { id: 'reporting', icon: FileText, label: 'Reporting' },
+    { id: 'notifications', icon: Bell, label: 'Notifications' },
     { id: 'services', icon: Wrench, label: 'PQ Services' },
-    { id: 'health', icon: Settings, label: 'System Health' },
   ];
 
   const dataMaintenanceItems = [

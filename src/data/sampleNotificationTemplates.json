@@ -1,0 +1,52 @@
+[
+  {
+    "id": "template-001",
+    "name": "Critical PQ Event Alert",
+    "code": "PQ_EVENT_CRITICAL",
+    "description": "Notification for critical power quality events",
+    "email_subject": "CRITICAL: {{event_type}} at {{substation_name}}",
+    "email_body": "<html><body><h2 style=\"color: #d32f2f;\">🚨 Critical Power Quality Event</h2><table style=\"width: 100%; border-collapse: collapse;\"><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Event Type:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{event_type}}</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Severity:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{severity}}</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Location:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{substation_name}}</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Time:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{event_timestamp}}</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Magnitude:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{magnitude}}%</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Duration:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{duration}}ms</td></tr></table><p style=\"margin-top: 20px;\"><a href=\"{{event_link}}\" style=\"background-color: #1976d2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View Event Details</a></p></body></html>",
+    "teams_body": null,
+    "variables": [
+      {"name": "event_type", "dataType": "string", "required": true, "description": "Type of PQ event", "example": "voltage_dip"},
+      {"name": "severity", "dataType": "string", "required": true, "description": "Event severity level", "example": "critical"},
+      {"name": "substation_name", "dataType": "string", "required": true, "description": "Substation name", "example": "APA Substation"},
+      {"name": "event_timestamp", "dataType": "datetime", "required": true, "description": "Event occurrence time", "example": "2026-01-14 14:30:25"},
+      {"name": "magnitude", "dataType": "number", "required": true, "description": "Voltage magnitude (%)", "example": 75},
+      {"name": "duration", "dataType": "number", "required": true, "description": "Event duration (ms)", "example": 150},
+      {"name": "event_link", "dataType": "string", "required": true, "description": "Link to event details", "example": "https://pqmap.clp.com/events/123"}
+    ],
+    "status": "approved",
+    "version": 1,
+    "applicable_channels": ["email"],
+    "tags": ["critical", "power quality"],
+    "created_at": "2026-01-14T09:00:00.000Z",
+    "updated_at": "2026-01-14T09:00:00.000Z",
+    "approved_at": "2026-01-14T09:00:00.000Z"
+  },
+  {
+    "id": "template-002",
+    "name": "Voltage Dip with Customer Impact",
+    "code": "VOLTAGE_DIP_CUSTOMER_IMPACT",
+    "description": "Voltage dip event affecting multiple customers",
+    "email_subject": "Voltage Dip Alert: {{customer_count}} Customers Affected at {{substation_name}}",
+    "email_body": "<html><body><h2 style=\"color: #f57c00;\">⚠️ Voltage Dip Event</h2><p style=\"font-size: 16px;\">A voltage dip event has been detected with customer impact.</p><table style=\"width: 100%; border-collapse: collapse; margin-top: 20px;\"><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Location:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{substation_name}}</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Time:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{event_timestamp}}</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Magnitude:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{magnitude}}%</td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Duration:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{duration}}ms</td></tr><tr style=\"background-color: #fff3e0;\"><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Affected Customers:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>{{customer_count}}</strong></td></tr><tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Est. Downtime:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{{downtime_min}} minutes</td></tr></table><p style=\"margin-top: 20px;\"><a href=\"{{event_link}}\" style=\"background-color: #1976d2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View Full Report</a></p></body></html>",
+    "teams_body": null,
+    "variables": [
+      {"name": "substation_name", "dataType": "string", "required": true, "description": "Substation name", "example": "TSW Substation"},
+      {"name": "event_timestamp", "dataType": "datetime", "required": true, "description": "Event time", "example": "2026-01-14 10:15:00"},
+      {"name": "magnitude", "dataType": "number", "required": true, "description": "Voltage magnitude (%)", "example": 82},
+      {"name": "duration", "dataType": "number", "required": true, "description": "Event duration (ms)", "example": 200},
+      {"name": "customer_count", "dataType": "number", "required": true, "description": "Number of affected customers", "example": 65},
+      {"name": "downtime_min", "dataType": "number", "required": false, "description": "Estimated downtime in minutes", "example": 5},
+      {"name": "event_link", "dataType": "string", "required": true, "description": "Link to event details", "example": "https://pqmap.clp.com/events/456"}
+    ],
+    "status": "approved",
+    "version": 1,
+    "applicable_channels": ["email"],
+    "tags": ["voltage dip", "customer impact"],
+    "created_at": "2026-01-14T09:00:00.000Z",
+    "updated_at": "2026-01-14T09:00:00.000Z",
+    "approved_at": "2026-01-14T09:00:00.000Z"
+  }
+]

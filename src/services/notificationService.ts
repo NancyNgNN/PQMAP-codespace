@@ -721,14 +721,12 @@ export const findMatchingRules = async (event: PQEvent): Promise<NotificationRul
 /**
  * Send a demo notification (logs to console instead of real channels)
  * 
- * @param channel - Channel type (email, sms, teams)
- * @param recipient - Email address or phone number
- * @param subject - Email subject (email only)
+ * @param recipient - Email address
+ * @param subject - Email subject
  * @param message - Notification message
  * @param metadata - Additional metadata for logging
  */
 export const sendDemoNotification = async (
-  channel: 'email' | 'sms' | 'teams',
   recipient: string,
   subject: string | null,
   message: string,
@@ -739,7 +737,7 @@ export const sendDemoNotification = async (
   }
 ) => {
   console.log('====================================');
-  console.log(`[DEMO NOTIFICATION - ${channel.toUpperCase()}]`);
+  console.log('[DEMO NOTIFICATION - EMAIL]');
   console.log('====================================');
   console.log(`To: ${recipient}`);
   
@@ -757,9 +755,8 @@ export const sendDemoNotification = async (
   
   // Log to database
   return createLog({
-    channel,
-    recipient_email: channel === 'email' ? recipient : null,
-    recipient_phone: channel === 'sms' ? recipient : null,
+    channel: 'email',
+    recipient_email: recipient,
     subject,
     message,
     status: 'sent',
@@ -816,31 +813,17 @@ export const processEventNotifications = async (event: PQEvent) => {
       recipients.push(...rule.additional_recipients);
     }
     
-    // Send notifications on each channel
-    for (const channel of rule.channels) {
-      let subject: string | null = null;
-      let message: string = '';
-      
-      if (channel === 'email' && template.email_subject && template.email_body) {
-        subject = substituteVariables(template.email_subject, variables);
-        message = substituteVariables(template.email_body, variables);
-      } else if (channel === 'sms' && template.sms_body) {
-        message = substituteVariables(template.sms_body, variables);
-      } else if (channel === 'teams' && template.teams_body) {
-        message = substituteVariables(template.teams_body, variables);
-      } else {
-        continue; // Skip if channel not configured in template
-      }
+    // Only send via email channel
+    if (template.email_subject && template.email_body) {
+      const subject = substituteVariables(template.email_subject, variables);
+      const message = substituteVariables(template.email_body, variables);
       
       // Send to each recipient
       for (const recipient of recipients) {
-        const recipientAddress = channel === 'email' ? recipient.email : recipient.phone;
-        
-        if (!recipientAddress) continue;
+        if (!recipient.email) continue;
         
         await sendDemoNotification(
-          channel as 'email' | 'sms' | 'teams',
-          recipientAddress,
+          recipient.email,
           subject,
           message,
           {
