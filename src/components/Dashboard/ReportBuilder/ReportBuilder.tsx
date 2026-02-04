@@ -424,32 +424,124 @@ export default function ReportBuilder({ events, substations }: ReportBuilderProp
     console.log('[ReportBuilder] Calculated fields:', calculatedFields.length);
     console.log('[ReportBuilder] Grouped fields:', groupedFields.length);
     console.log('[ReportBuilder] Enabled grouped fields:', groupedFields.filter(f => f.enabled).length);
+    
+    // If no events, create a template row with all field names to show available fields
+    if (filteredEvents.length === 0) {
+      const templateRow = {
+        'Event ID': 'No data',
+        'IDR No.': 'No data',
+        'Timestamp': 'No data',
+        'Date': 'yyyy/mm/dd',
+        'Time': 'HH:MI',
+        'Year': 0,
+        'Month': 'No data',
+        'Day': 0,
+        'Weekday': 'No data',
+        'Hour': 0,
+        'Quarter': 'No data',
+        'Voltage Level': 'No data',
+        'Circuit': 'No data',
+        'Faulty Phase': 'No data',
+        'Duration (ms)': 0,
+        'Duration (s)': 0,
+        'VL1(%)': 0,
+        'VL2(%)': 0,
+        'VL3(%)': 0,
+        'Remaining Voltage (%)': 0,
+        'Region': 'No data',
+        'Weather': 'No data',
+        'Equipment Category': 'No data',
+        'Equipment': 'No data',
+        'Cause Group': 'No data',
+        'Cause': 'No data',
+        'Faulty Component': 'No data',
+        'Remark (Cause / Reason)': 'No data',
+        'Minimum': 0,
+        'Interference by': 'No data',
+        'Object Part Group': 'No data',
+        'Object Part Code': 'No data',
+        'Damage Group': 'No data',
+        'Damage Code': 'No data',
+        'Total CMI': 0,
+        'Manual Created IDR': 'No',
+        'Distribution Fault': 'No',
+        'Substation': 'No data',
+        'Meter ID': 'No data',
+        'Event Type': 'No data',
+        'Severity': 'No data',
+        'Affected Customers': 0,
+        'Root Cause': 'No data',
+        'Status': 'No data',
+        'Is Valid': 'No data',
+      };
+      setDisplayData([templateRow]);
+      setIsRefreshing(false);
+      setLastRefresh(new Date());
+      console.log('[ReportBuilder] No events - showing template row with all field names');
+      return;
+    }
+    
     // Update display data from current filtered events
     const newDisplayData = filteredEvents.map(event => {
       const substation = substations.find(s => s.id === event.substation_id);
+      const eventDate = new Date(event.timestamp);
+      
+      // Format date as YYYY/MM/DD
+      const formattedDate = `${eventDate.getFullYear()}/${String(eventDate.getMonth() + 1).padStart(2, '0')}/${String(eventDate.getDate()).padStart(2, '0')}`;
+      
+      // Format time as HH:MI
+      const formattedTime = `${String(eventDate.getHours()).padStart(2, '0')}:${String(eventDate.getMinutes()).padStart(2, '0')}`;
+      
+      // Determine faulty phase from affected_phases array
+      const faultyPhase = event.affected_phases && event.affected_phases.length > 0 
+        ? event.affected_phases.map((p: string) => `L${p === 'A' ? '1' : p === 'B' ? '2' : '3'}`).join(', ')
+        : 'N/A';
+      
       const baseData: any = {
         'Event ID': event.id,
-        'Timestamp': new Date(event.timestamp).toLocaleString(),
-        'Date': new Date(event.timestamp).toLocaleDateString(),
-        'Time': new Date(event.timestamp).toLocaleTimeString(),
-        'Year': new Date(event.timestamp).getFullYear(),
-        'Month': new Date(event.timestamp).toLocaleString('default', { month: 'long' }),
-        'Day': new Date(event.timestamp).getDate(),
-        'Weekday': new Date(event.timestamp).toLocaleString('default', { weekday: 'long' }),
-        'Hour': new Date(event.timestamp).getHours(),
-        'Quarter': `Q${Math.floor(new Date(event.timestamp).getMonth() / 3) + 1}`,
+        'IDR No.': event.idr_no || 'N/A',
+        'Timestamp': eventDate.toLocaleString(),
+        'Date': formattedDate,
+        'Time': formattedTime,
+        'Year': eventDate.getFullYear(),
+        'Month': eventDate.toLocaleString('default', { month: 'long' }),
+        'Day': eventDate.getDate(),
+        'Weekday': eventDate.toLocaleString('default', { weekday: 'long' }),
+        'Hour': eventDate.getHours(),
+        'Quarter': `Q${Math.floor(eventDate.getMonth() / 3) + 1}`,
+        'Voltage Level': event.voltage_level || 'N/A',
+        'Circuit': event.circuit_id || 'N/A',
+        'Faulty Phase': faultyPhase,
+        'Duration (ms)': event.duration_ms || 0,
+        'Duration (s)': (event.duration_ms || 0) / 1000,
+        'VL1(%)': event.v1 || 0,
+        'VL2(%)': event.v2 || 0,
+        'VL3(%)': event.v3 || 0,
+        'Remaining Voltage (%)': event.remaining_voltage || 0,
+        'Region': substation?.region || event.oc || 'Unknown',
+        'Weather': event.weather || 'N/A',
+        'Equipment Category': event.equipment_type || 'N/A',
+        'Equipment': event.equipment_type || 'N/A',
+        'Cause Group': event.cause_group || 'Unknown',
+        'Cause': event.cause || 'Unknown',
+        'Faulty Component': event.object_part_code || 'N/A',
+        'Remark (Cause / Reason)': event.remarks || event.description || 'N/A',
+        'Minimum': event.remaining_voltage || 0,
+        'Interference by': 'N/A', // Not in schema, placeholder
+        'Object Part Group': event.object_part_group || 'N/A',
+        'Object Part Code': event.object_part_code || 'N/A',
+        'Damage Group': event.damage_group || 'N/A',
+        'Damage Code': event.damage_code || 'N/A',
+        'Total CMI': event.total_cmi || 0,
+        'Manual Created IDR': event.idr_no ? 'Yes' : 'No',
+        'Distribution Fault': event.outage_type === 'distribution' ? 'Yes' : 'No',
         'Substation': substation?.name || 'Unknown',
-        'Region': substation?.region || 'Unknown',
         'Meter ID': event.meter_id || 'N/A',
         'Event Type': event.event_type,
         'Severity': event.severity,
-        'Duration (ms)': event.duration_ms || 0,
-        'Duration (s)': (event.duration_ms || 0) / 1000,
-        'Remaining Voltage (%)': event.remaining_voltage || 0,
         'Affected Customers': event.customer_count || 0,
         'Root Cause': event.cause || event.cause_group || 'Unknown',
         'Status': event.status,
-        'Weather': event.weather_condition || 'Unknown',
         'Is Valid': !event.false_event ? 'Yes' : 'No',
       };
 
