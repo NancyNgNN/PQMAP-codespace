@@ -5,6 +5,7 @@ import LoginPage from './components/LoginPage';
 import Navigation from './components/Navigation';
 import CriticalMessageBar from './components/CriticalMessageBar';
 import NotificationBell from './components/NotificationBell';
+import GlobalNotificationStatus from './components/GlobalNotificationStatus';
 import TyphoonModeIndicator from './components/TyphoonModeIndicator';
 import Dashboard from './components/Dashboard/Dashboard';
 import EventManagement from './components/EventManagement/EventManagement';
@@ -59,6 +60,7 @@ function AppContent() {
         {/* Header Bar with Notification Bell */}
         <div className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-end gap-3 shadow-sm">
           <TyphoonModeIndicator />
+          <GlobalNotificationStatus />
           <NotificationBell />
         </div>
         

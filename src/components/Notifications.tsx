@@ -15,9 +15,23 @@ export default function Notifications() {
   const [rules, setRules] = useState<NotificationRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSystemConfig, setShowSystemConfig] = useState(false);
+  const [showTurnOffConfirm, setShowTurnOffConfirm] = useState(false);
+  const [globalNotificationEnabled, setGlobalNotificationEnabled] = useState(() => {
+    const saved = localStorage.getItem('globalNotificationEnabled');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   useEffect(() => {
     loadRules();
+  }, []);
+
+  useEffect(() => {
+    // Listen for changes from header toggle
+    const handleGlobalToggle = (event: CustomEvent) => {
+      setGlobalNotificationEnabled(event.detail.enabled);
+    };
+    window.addEventListener('globalNotificationToggle', handleGlobalToggle as EventListener);
+    return () => window.removeEventListener('globalNotificationToggle', handleGlobalToggle as EventListener);
   }, []);
 
   const loadRules = async () => {
@@ -40,6 +54,27 @@ export default function Notifications() {
       .eq('id', ruleId);
 
     loadRules();
+  };
+
+  const toggleGlobalNotification = () => {
+    // If currently enabled, show confirmation before turning off
+    if (globalNotificationEnabled) {
+      setShowTurnOffConfirm(true);
+    } else {
+      // Turning ON - no confirmation needed
+      const newValue = true;
+      setGlobalNotificationEnabled(newValue);
+      localStorage.setItem('globalNotificationEnabled', JSON.stringify(newValue));
+      window.dispatchEvent(new CustomEvent('globalNotificationToggle', { detail: { enabled: newValue } }));
+    }
+  };
+
+  const confirmTurnOff = () => {
+    const newValue = false;
+    setGlobalNotificationEnabled(newValue);
+    localStorage.setItem('globalNotificationEnabled', JSON.stringify(newValue));
+    window.dispatchEvent(new CustomEvent('globalNotificationToggle', { detail: { enabled: newValue } }));
+    setShowTurnOffConfirm(false);
   };
 
   if (loading) {
@@ -160,6 +195,43 @@ export default function Notifications() {
                   </div>
                 </div>
               </div>
+
+              {/* Global Notification Control */}
+              <div className={`rounded-2xl shadow-lg p-6 border-2 transition-all ${
+                globalNotificationEnabled 
+                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300' 
+                  : 'bg-gradient-to-r from-slate-100 to-gray-100 border-slate-300'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-4 rounded-xl ${
+                      globalNotificationEnabled ? 'bg-green-500' : 'bg-slate-400'
+                    }`}>
+                      <Bell className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900">Global Notification System</h2>
+                      <p className={`text-sm mt-1 font-medium ${
+                        globalNotificationEnabled ? 'text-green-700' : 'text-slate-600'
+                      }`}>
+                        {globalNotificationEnabled 
+                          ? '✓ All automated notifications are enabled' 
+                          : '✗ All automated notifications are disabled (No emails will be sent)'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={toggleGlobalNotification}
+                    className={`px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg ${
+                      globalNotificationEnabled
+                        ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700'
+                        : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                    }`}
+                  >
+                    {globalNotificationEnabled ? 'Turn OFF' : 'Turn ON'}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -191,6 +263,50 @@ export default function Notifications() {
             </div>
             <div className="flex-1 overflow-y-auto p-6">
               <SystemConfig onSaved={() => setShowSystemConfig(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Turn Off Confirmation Modal */}
+      {showTurnOffConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="bg-red-100 p-3 rounded-full">
+                  <Bell className="w-8 h-8 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Turn Off Global Notifications?</h2>
+                  <p className="text-slate-700 mb-4">
+                    This will <span className="font-bold text-red-600">disable ALL automated email notifications</span> system-wide, including:
+                  </p>
+                  <ul className="list-disc list-inside text-slate-700 space-y-1 mb-4 ml-2">
+                    <li>Voltage Dip Alerts</li>
+                    <li>Health Status Alerts</li>
+                    <li>Scheduled Reports</li>
+                    <li>All other notification rules</li>
+                  </ul>
+                  <p className="text-slate-600 text-sm bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    ⚠️ <strong>Warning:</strong> No emails will be sent until you turn the Global Notification System back ON.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 p-6 bg-slate-50 border-t border-slate-200">
+              <button
+                onClick={() => setShowTurnOffConfirm(false)}
+                className="flex-1 px-6 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmTurnOff}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg"
+              >
+                Yes, Turn OFF
+              </button>
             </div>
           </div>
         </div>
