@@ -42,20 +42,25 @@ export default function GroupList({ refreshKey }: GroupListProps) {
     const storedGroups = localStorage.getItem('notificationGroups');
     if (storedGroups) {
       const parsedGroups = JSON.parse(storedGroups);
-      // Add member_count: 0 for display (since we don't track members in localStorage yet)
-      const groupsWithCounts = parsedGroups.map((group: any) => ({
-        ...group,
-        member_count: Math.floor(Math.random() * 5) + 2, // 2-6 random members per group
-        members: getGroupMembers(group.id)
-      }));
+      const groupsWithCounts = parsedGroups.map((group: any) => {
+        const members = getGroupMembers(group.id);
+        return {
+          ...group,
+          member_count: members.length,
+          members: members
+        };
+      });
       setGroups(groupsWithCounts);
     } else {
       // Initialize with sample groups if localStorage is empty
-      const groupsWithCounts = sampleGroups.map((group: any) => ({
-        ...group,
-        member_count: Math.floor(Math.random() * 5) + 2,
-        members: getGroupMembers(group.id)
-      }));
+      const groupsWithCounts = sampleGroups.map((group: any) => {
+        const members = getGroupMembers(group.id);
+        return {
+          ...group,
+          member_count: members.length,
+          members: members
+        };
+      });
       localStorage.setItem('notificationGroups', JSON.stringify(sampleGroups));
       setGroups(groupsWithCounts);
     }
