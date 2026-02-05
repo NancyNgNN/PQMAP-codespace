@@ -1,19 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Users, Plus, Edit2, Trash2, UserCheck } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { Users, Trash2, UserCheck, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
-import type { NotificationGroup } from '../../types/database';
 import sampleGroups from '../../data/sampleNotificationGroups.json';
 
+// Dummy user data for display
+const dummyUsers = [
+  { id: '1', name: 'John Smith', email: 'john.smith@clp.com', avatar: '👨‍💼' },
+  { id: '2', name: 'Sarah Johnson', email: 'sarah.johnson@clp.com', avatar: '👩‍💼' },
+  { id: '3', name: 'Michael Chen', email: 'michael.chen@clp.com', avatar: '👨‍💼' },
+  { id: '4', name: 'Emma Williams', email: 'emma.williams@clp.com', avatar: '👩‍💼' },
+  { id: '5', name: 'David Brown', email: 'david.brown@clp.com', avatar: '👨‍💼' },
+  { id: '6', name: 'Lisa Garcia', email: 'lisa.garcia@clp.com', avatar: '👩‍💼' },
+  { id: '7', name: 'Robert Martinez', email: 'robert.martinez@clp.com', avatar: '👨‍💼' },
+  { id: '8', name: 'Jennifer Lee', email: 'jennifer.lee@clp.com', avatar: '👩‍💼' },
+];
+
 interface GroupListProps {
-  onEdit: (group: NotificationGroup) => void;
-  onNew: () => void;
   refreshKey?: number;
 }
 
-export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps) {
+export default function GroupList({ refreshKey }: GroupListProps) {
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   useEffect(() => {
     loadGroups();
@@ -36,20 +45,37 @@ export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps)
       // Add member_count: 0 for display (since we don't track members in localStorage yet)
       const groupsWithCounts = parsedGroups.map((group: any) => ({
         ...group,
-        member_count: 0
+        member_count: Math.floor(Math.random() * 5) + 2, // 2-6 random members per group
+        members: getGroupMembers(group.id)
       }));
       setGroups(groupsWithCounts);
     } else {
       // Initialize with sample groups if localStorage is empty
       const groupsWithCounts = sampleGroups.map((group: any) => ({
         ...group,
-        member_count: 0
+        member_count: Math.floor(Math.random() * 5) + 2,
+        members: getGroupMembers(group.id)
       }));
       localStorage.setItem('notificationGroups', JSON.stringify(sampleGroups));
       setGroups(groupsWithCounts);
     }
 
     setLoading(false);
+  };
+
+  // Function to assign dummy members to groups
+  const getGroupMembers = (groupId: string) => {
+    // Consistent assignment: each group gets 2-6 unique members based on group ID hash
+    const seedValue = groupId.charCodeAt(0) + groupId.charCodeAt(groupId.length - 1);
+    const memberCount = (seedValue % 4) + 2; // 2-6 members
+    const startIndex = (seedValue * 7) % dummyUsers.length;
+    
+    const members = [];
+    for (let i = 0; i < memberCount; i++) {
+      const index = (startIndex + i) % dummyUsers.length;
+      members.push(dummyUsers[index]);
+    }
+    return members;
   };
 
   const handleDelete = async (groupId: string, groupName: string) => {
@@ -74,28 +100,6 @@ export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps)
     }
   };
 
-  const toggleStatus = async (groupId: string, currentStatus: string, groupName: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    
-    try {
-      // Load from localStorage and update
-      const storedGroups = localStorage.getItem('notificationGroups');
-      if (storedGroups) {
-        const parsedGroups = JSON.parse(storedGroups);
-        const updatedGroups = parsedGroups.map((group: any) => 
-          group.id === groupId ? { ...group, status: newStatus } : group
-        );
-        localStorage.setItem('notificationGroups', JSON.stringify(updatedGroups));
-      }
-
-      toast.success(`Group "${groupName}" ${newStatus === 'active' ? 'activated' : 'deactivated'}!`);
-      loadGroups();
-    } catch (error) {
-      console.error('Error updating group status:', error);
-      toast.error('Failed to update group status. Please try again.');
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -109,29 +113,15 @@ export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps)
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Notification Groups</h2>
-          <p className="text-slate-600 mt-1">Manage recipient groups for targeted notifications</p>
+          <p className="text-slate-600 mt-1">View recipient groups and their members</p>
         </div>
-        <button
-          onClick={onNew}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:shadow-lg transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="font-semibold">New Group</span>
-        </button>
       </div>
 
       {groups.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
           <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-600 mb-2">No Groups Yet</h3>
-          <p className="text-slate-500 mb-4">Create your first notification group to get started</p>
-          <button
-            onClick={onNew}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
-          >
-            <Plus className="w-5 h-5" />
-            Create Group
-          </button>
+          <h3 className="text-xl font-semibold text-slate-600 mb-2">No Groups Available</h3>
+          <p className="text-slate-500">No notification groups have been created yet.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -175,26 +165,35 @@ export default function GroupList({ onEdit, onNew, refreshKey }: GroupListProps)
                         Created {new Date(group.created_at).toLocaleDateString()}
                       </div>
                     </div>
+
+                    {/* Members List Section */}
+                    {expandedGroup === group.id && group.members && group.members.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <div className="space-y-1">
+                          {group.members.map((member: any) => (
+                            <div key={member.id} className="py-1.5 px-2">
+                              <p className="text-sm font-medium text-slate-900">{member.name}</p>
+                              <p className="text-xs text-slate-500">{member.email}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 ml-4">
-                  <button
-                    onClick={() => toggleStatus(group.id, group.status, group.name)}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                      group.status === 'active'
-                        ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                        : 'bg-green-100 text-green-700 hover:bg-green-200'
-                    }`}
-                  >
-                    {group.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </button>
-                  <button
-                    onClick={() => onEdit(group)}
-                    className="p-2 hover:bg-slate-100 rounded-lg transition-all"
-                  >
-                    <Edit2 className="w-5 h-5 text-slate-600" />
-                  </button>
+                  {group.members && group.members.length > 0 && (
+                    <button
+                      onClick={() => setExpandedGroup(expandedGroup === group.id ? null : group.id)}
+                      className="p-2 hover:bg-slate-100 rounded-lg transition-all"
+                      title={expandedGroup === group.id ? 'Hide members' : 'Show members'}
+                    >
+                      <ChevronDown className={`w-5 h-5 text-slate-600 transition-transform ${
+                        expandedGroup === group.id ? 'rotate-180' : ''
+                      }`} />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(group.id, group.name)}
                     className="p-2 hover:bg-red-50 rounded-lg transition-all"
